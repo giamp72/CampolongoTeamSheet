@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Distinta Gara - A.S.D. Campolongo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" type="image/png" href="logo.png">
+<style>
+:root{
+  --bg:#f4f5f7; --panel:#ffffff; --ink:#1c2230; --muted:#6b7280; --border:#d8dbe2;
+  --accent:#0d5c3f; --accent-ink:#ffffff; --danger:#b3261e; --field-bg:#fbfbfc;
+  --shadow: 0 1px 2px rgba(20,20,30,.06), 0 4px 14px rgba(20,20,30,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14161b; --panel:#1c1f26; --ink:#eef0f3; --muted:#9aa1ad; --border:#333844;
+    --accent:#3ea679; --accent-ink:#0b1410; --field-bg:#22262e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14161b; --panel:#1c1f26; --ink:#eef0f3; --muted:#9aa1ad; --border:#333844;
+  --accent:#3ea679; --accent-ink:#0b1410; --field-bg:#22262e;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding: 16px;
+}
+.wrap{max-width: 100%; margin: 0 auto; padding: 0 20px;}
+h1{font-size:1.2rem; margin:0 0 4px;}
+.sub{color:var(--muted); font-size:.85rem; margin-bottom:14px;}
+.app-header{
+  display:flex; align-items:center; gap:12px; margin-bottom:14px;
+  background:var(--panel); border:1px solid var(--border); border-radius:12px;
+  padding:12px 16px; box-shadow: var(--shadow);
+}
+.app-header .logo{width:56px; height:56px; object-fit:contain; flex:0 0 auto;}
+.app-header .titles{flex:1; min-width:0;}
+.app-header h1{margin:0;}
+.app-header .sub{margin:2px 0 0;}
+@media(max-width:520px){
+  .app-header .logo{width:44px; height:44px;}
+  .app-header h1{font-size:1.02rem;}
+  .app-header .sub{font-size:.78rem;}
+}
+.card{
+  background:var(--panel); border:1px solid var(--border); border-radius:12px;
+  box-shadow: var(--shadow); padding:14px 16px; margin-bottom:14px;
+}
+.card h2{
+  font-size:.98rem; margin:0 0 12px; display:flex; align-items:center; gap:8px;
+  cursor:pointer; user-select:none;
+}
+.card h2 .chev{transition: transform .15s; font-size:.75rem; color:var(--muted);}
+.card.collapsed h2 .chev{transform: rotate(-90deg);}
+.card .body{display:block;}
+.card.collapsed .body{display:none;}
+.grid{display:grid; grid-template-columns: repeat(2,1fr); gap:12px;}
+@media(max-width:640px){.grid{grid-template-columns:1fr;}}
+label{font-size:.78rem; color:var(--muted); display:block; margin-bottom:4px;}
+input[type=text],input[type=date],input[type=time],input[type=number],select{
+  width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border);
+  background:var(--field-bg); color:var(--ink); font-size:16px;
+}
+input:focus,select:focus{outline:2px solid var(--accent); outline-offset:1px;}
+.field{margin-bottom:10px;}
+.row-inline{display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;}
+.row-inline > div{flex:1; min-width:140px;}
+button{
+  border:none; border-radius:8px; padding:9px 14px; font-size:.88rem; cursor:pointer;
+  background:var(--field-bg); color:var(--ink); border:1px solid var(--border);
+  -webkit-tap-highlight-color: transparent;
+}
+button:hover{filter:brightness(1.05);}
+button.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600;}
+button.small{padding:6px 10px; font-size:.8rem;}
+button.link{background:transparent; border:none; color:var(--accent); padding:4px 6px;}
+button.danger{color:var(--danger); border-color:var(--danger);}
+table.roster{width:100%; border-collapse:collapse; font-size:.85rem;}
+table.roster th, table.roster td{border-bottom:1px solid var(--border); padding:6px 6px; text-align:left; vertical-align:middle;}
+table.roster th{color:var(--muted); font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.02em;}
+table.roster input[type=text],table.roster input[type=number],table.roster input[type=date],table.roster select{padding:6px 8px; font-size:.85rem;}
+.chk{width:22px; height:22px;}
+.tiny-col{width:56px;}
+.rosterhead-add{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+.rosterhead-add input, .rosterhead-add select{flex:1; min-width:110px;}
+.selected-list{display:flex; flex-direction:column; gap:4px; margin-top:4px;}
+.sel-row{
+  display:flex; align-items:center; gap:8px; background:var(--field-bg); border:1px solid var(--border);
+  border-radius:8px; padding:6px 10px; font-size:.86rem;
+}
+.sel-row .num{width:22px; text-align:center; font-weight:700; color:var(--accent);}
+.sel-row .name{flex:1;}
+.sel-row .tag{font-size:.7rem; padding:2px 6px; border-radius:5px; background:var(--accent); color:var(--accent-ink); font-weight:700;}
+.sel-row .btns{display:flex; gap:2px;}
+.empty-hint{color:var(--muted); font-size:.85rem; font-style:italic; padding:8px 0;}
+.actions-bar{display:flex; gap:10px; flex-wrap:wrap; margin: 10px 0 4px;}
+.count-badge{font-size:.78rem; color:var(--muted);}
+.count-badge b{color:var(--ink);}
+.table-wrap{overflow-x:auto; -webkit-overflow-scrolling: touch;}
+.scroll-hint{display:none; text-align:center; font-size:.72rem; color:var(--muted); font-style:italic; margin-top:4px;}
+
+table.roster th:nth-child(1),  table.roster td:nth-child(1)  { min-width: 60px; }
+table.roster th:nth-child(2),  table.roster td:nth-child(2)  { min-width: 220px; }
+table.roster th:nth-child(3),  table.roster td:nth-child(3)  { min-width: 150px; }
+table.roster th:nth-child(4),  table.roster td:nth-child(4)  { min-width: 60px; }
+table.roster th:nth-child(5),  table.roster td:nth-child(5)  { min-width: 60px; }
+table.roster th:nth-child(6),  table.roster td:nth-child(6)  { min-width: 80px; }
+table.roster th:nth-child(7),  table.roster td:nth-child(7)  { min-width: 130px; }
+table.roster th:nth-child(8),  table.roster td:nth-child(8)  { min-width: 130px; }
+table.roster th:nth-child(9),  table.roster td:nth-child(9)  { min-width: 150px; }
+table.roster th:nth-child(10), table.roster td:nth-child(10) { min-width: 130px; }
+table.roster th:nth-child(11), table.roster td:nth-child(11) { min-width: 50px;  }
+
+.table-wrap{ overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.roster{ min-width: 1280px; }
+table.roster input[type=text],
+table.roster input[type=number],
+table.roster input[type=date],
+table.roster select{ width:100%; min-width:0; }
+
+.table-wrap::-webkit-scrollbar{ height:10px; }
+.table-wrap::-webkit-scrollbar-track{ background: var(--bg); border-radius:5px; }
+.table-wrap::-webkit-scrollbar-thumb{ background: var(--muted); border-radius:5px; }
+.table-wrap::-webkit-scrollbar-thumb:hover{ background: var(--ink); }
+
+@media(max-width:760px){
+  .wrap{ padding: 0 12px; }
+  table.roster{ font-size:.82rem; }
+  .table-wrap{
+    margin: 0 -12px;
+    padding: 0 12px 6px;
+  }
+  table.roster th, table.roster td{ padding:5px 6px; }
+  .scroll-hint{ display:block; }
+}
+
+/* ==================== PRINT SHEET FIGC ==================== */
+:root{ --ps-blue:#000099; --ps-blue2:#000099; }
+#printSheet{
+  background:#fff; color:#000; width: 210mm; min-height: 297mm; margin: 0 auto;
+  padding: 5mm 8mm; font-family: Calibri, Arial, "Segoe UI", sans-serif;
+  border:1px solid #ccc; box-shadow: var(--shadow);
+  display:flex; flex-direction:column;
+}
+#printSheet, #printSheet *{ box-sizing:border-box; }
+
+.ps-top-logos{
+  display:flex; justify-content:space-between; align-items:center;
+  flex: 0 0 auto;
+  padding: 0 0 3px 0;
+  position: relative;
+}
+.ps-top-logos .ps-logo-soc{ width: 70px; height: auto; flex: 0 0 auto; }
+.ps-top-logos .ps-logo-lnd{ width: 70px; height: auto; flex: 0 0 auto; }
+.ps-top-logos .ps-top-center{ flex: 1; text-align: center; padding: 0 12px; }
+.ps-top-center .ps-federation{
+  font-size: 11px; font-weight: 700; color: var(--ps-blue);
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.ps-top-center .ps-federation span{ margin: 0 6px; }
+.ps-top-center .ps-team-name{
+  font-family: "Arial Black", Arial, sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  color: var(--ps-blue);
+  letter-spacing: 0.5px;
+  line-height: 1.1;
+  margin: 4px 0 4px 0;
+  text-transform: uppercase;
+}
+.ps-top-center .ps-blue-line{
+  width: 60%; height: 3px;
+  background: var(--ps-blue);
+  margin: 0 auto 5px auto;
+}
+.ps-top-center .ps-addr-line{
+  font-size: 9px; color: var(--ps-blue);
+  line-height: 1.3; margin-bottom: 3px;
+}
+.ps-top-center .ps-league-line{
+  font-size: 11px; font-weight: 700;
+  color: var(--ps-blue);
+  letter-spacing: 0.5px;
+}
+
+.ps-titlebar{
+  border: 1px solid #000;
+  display: flex; align-items: stretch;
+  margin-top: 6px;
+  font-size: 11.5px;
+  flex: 0 0 auto;
+}
+.ps-titlebar > div{
+  padding: 4px 8px;
+  border-right: 1px solid #000;
+  display: flex; align-items: center;
+}
+.ps-titlebar > div:last-child{ border-right: none; }
+.ps-titlebar .tb-label{ flex: 0 0 auto; font-weight: 400; }
+.ps-titlebar .tb-denom{ flex: 1; font-weight: 700; text-align: center; text-transform: uppercase; color: var(--ps-blue); }
+.ps-titlebar .tb-dash{ flex: 0 0 auto; padding: 4px 4px; }
+.ps-titlebar .tb-match{ flex: 2; font-weight: 700; text-align: center; text-transform: uppercase; color: var(--ps-blue); }
+.ps-note-right{
+  font-size: 7.5px; text-align:right; font-style:italic; color:#000;
+  margin-top: 1px; margin-bottom: 2px;
+  flex: 0 0 auto;
+}
+
+.ps-gamebar{
+  border: 1px solid #000;
+  display: flex; align-items: stretch;
+  font-size: 11.5px;
+  margin-top: 0;
+  flex: 0 0 auto;
+}
+.ps-gamebar > div{
+  padding: 4px 8px;
+  border-right: 1px solid #000;
+  display: flex; align-items: center;
+}
+.ps-gamebar > div:last-child{ border-right: none; }
+.ps-gamebar .gb-tipo{ flex: 0 0 auto; font-weight: 700; }
+.ps-gamebar .gb-lbl{ flex: 0 0 auto; font-weight: 400; }
+.ps-gamebar .gb-data{ flex: 1; font-weight: 700; text-align: center; }
+.ps-gamebar .gb-ora{ flex: 0 0 auto; font-weight: 700; }
+.ps-gamebar .gb-luogo{ flex: 2; font-weight: 700; text-align: center; }
+.ps-note-row-bottom{
+  display: flex; justify-content: space-between;
+  font-size: 7.5px; font-style: italic; color: #000;
+  padding: 0 6px; margin-bottom: 6px;
+  flex: 0 0 auto;
+}
+
+table.ps-table{
+  width:100%; border-collapse:collapse; margin-top:6px;
+  font-size: 10px; border: 1px solid #000;
+  flex: 1 1 auto;
+}
+table.ps-table th, table.ps-table td{
+  border: 1px solid #000; padding: 3px 4px; text-align: center;
+  vertical-align: middle; height: auto;
+}
+table.ps-table tbody tr{ height: auto; }
+table.ps-table thead th{
+  font-size: 8px; font-weight: 700; color:#000; background:#f2f4fa;
+  line-height: 1.1;
+}
+table.ps-table td.rolenum{ font-weight: 700; color:#000; width: 22px; }
+table.ps-table td.name-cell{
+  text-align:left; font-size: 10px; white-space:nowrap; padding-left:4px;
+  font-weight: 600;
+}
+table.ps-table td.cap-cell{ font-weight: 700; }
+table.ps-table td.mat-cell{ font-weight: 600; }
+table.ps-table td.doc-cell{ font-size: 9px; }
+table.ps-table td.doc-cell-ril{ font-size: 9px; font-weight: 600; }
+table.ps-table tr.ps-assist td{
+  font-size: 8px; font-weight: 400; text-align: left; color:#000;
+  height: 18px; padding: 2px 4px;
+}
+table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
+
+.ps-footer-line{
+  display:flex; gap:5px; align-items:baseline;
+  font-size:9.5px; margin-top:3px;
+  flex: 0 0 auto;
+}
+.ps-footer-line .val{border-bottom:1px dotted #000; flex:1; padding:0 4px; font-weight:700; min-height:12px;}
+.ps-footer-line .lbl{white-space:nowrap;}
+.ps-footer-line .tess{white-space:nowrap;}
+.ps-footer-line .valtess{border-bottom:1px dotted #000; flex:0 0 80px; padding:0 4px; font-weight:700; text-align:center;}
+.ps-declaration{
+  font-size:8px; margin-top:5px; text-align:justify;
+  border-top:1px solid #000; padding-top:3px;
+  flex: 0 0 auto;
+}
+.ps-declaration.b{border-top:none; padding-top:1px;}
+.ps-sign-row{
+  display:flex; justify-content:space-between;
+  margin-top:auto; padding-top:20mm; margin-bottom:4mm;
+  font-size:9.5px; font-weight:700;
+  flex: 0 0 auto;
+}
+.ps-sign-row div{text-align:center; width:44%;}
+.ps-final-note{
+  font-size:7.3px; margin-top:6px; margin-bottom:2mm;
+  text-align:justify; color:#111;
+  border-top:1px solid #000; padding-top:3px;
+  flex: 0 0 auto;
+}
+
+/* ==================== BACHECA SHEET ==================== */
+#bachecaSheet{
+  background:#fff; color:#111; width: 210mm; min-height: 297mm; margin: 0 auto;
+  font-family: "Helvetica Neue", Arial, "Segoe UI", sans-serif;
+  border:1px solid #ccc; box-shadow: var(--shadow);
+  position:relative; overflow:hidden;
+  display:flex; flex-direction:column;
+}
+#bachecaSheet, #bachecaSheet *{ box-sizing:border-box; }
+
+#bachecaSheet::before{
+  content:"";
+  position:absolute; top:0; left:0; right:0; height: 38mm;
+  background:
+    repeating-linear-gradient(135deg, transparent 0, transparent 8px, rgba(180,190,200,.14) 8px, rgba(180,190,200,.14) 9px),
+    #ffffff;
+  z-index:0;
+}
+
+.bk-header{
+  position:relative; z-index:1;
+  display:flex; align-items:center; gap:14px;
+  padding: 8mm 10mm 6mm 10mm;
+}
+.bk-header .logo{ width: 52px; height: 52px; object-fit:contain; flex:0 0 auto; }
+.bk-header .comp{
+  flex:1;
+  font-size: 10px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: #111;
+}
+.bk-header .match-block{
+  flex: 2;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; line-height:1.15;
+}
+.bk-header .match-line{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  font-size: 17px; font-weight: 900; color:#111; text-transform:uppercase;
+  letter-spacing:.3px;
+}
+.bk-header .vs{
+  display:inline-flex; align-items:center; justify-content:center;
+  width: 28px; height: 28px; border-radius:50%;
+  background:#2a7ec7; color:#fff; font-size:11px; font-weight:900;
+  text-transform: lowercase;
+}
+.bk-header .location{
+  font-size: 9px; color:#555; text-transform:uppercase; letter-spacing:.6px;
+  margin-top: 4px;
+}
+.bk-header .meta{
+  text-align:right; flex: 0 0 auto; line-height:1.2;
+}
+.bk-header .meta .date{ font-size: 17px; font-weight: 900; color:#111; }
+.bk-header .meta .time-lbl{
+  font-size: 8px; color:#555; text-transform:uppercase; letter-spacing:.6px;
+  margin-top: 2px;
+}
+.bk-header .meta .time{ font-size: 20px; font-weight: 900; color:#111; margin-top:2px; }
+
+.bk-titleblock{
+  position:relative; z-index:1;
+  padding: 6mm 10mm 0 10mm;
+  border-bottom: 1.5px solid #111;
+}
+.bk-title{
+  font-family: "Arial Black", Arial, sans-serif;
+  font-size: 36px; font-weight:900; color:#111; letter-spacing:-.5px;
+  text-transform: uppercase; line-height:1; margin:0;
+  position:relative; display:inline-block; padding-bottom: 8px;
+}
+.bk-title::after{
+  content:""; position:absolute; left:0; bottom:-2px; width: 55px; height: 5px;
+  background: #2a7ec7;
+}
+
+.bk-players{
+  position:relative; z-index:1;
+  padding: 8mm 10mm 6mm 10mm;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  column-count: 2;
+  column-gap: 12mm;
+  column-rule: none;
+}
+.bk-player{
+  display:block;
+  font-size: 12px; font-weight: 800; color:#111;
+  text-transform: uppercase;
+  padding: 4mm 0 4mm 10mm;
+  break-inside: avoid;
+  line-height: 1.15;
+  position: relative;
+  border-bottom: 1px solid #d8d8d8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bk-player::before{
+  content:"";
+  position:absolute; left:0; top: 3.5mm; bottom: 3.5mm;
+  width: 3px; background: #2a7ec7;
+}
+.bk-player .yr{
+  font-weight: 700; color: #2a7ec7; font-size: 10px;
+  margin-left: 3px;
+}
+.bk-player .tag{
+  color:#b3261e; font-size: 10px; margin-left: 3px;
+}
+.bk-empty{
+  column-span: all; text-align:center; color:#999; font-style:italic;
+  padding: 20px 0;
+}
+
+.bk-player-img{
+  position:absolute;
+  right: 4mm; bottom: 16mm;
+  height: 105mm; width: auto; max-width: 70mm;
+  pointer-events: none; z-index: 0; opacity: 0.35;
+}
+
+.bk-footer{
+  position: relative; z-index: 2;
+  background:#111; color:#fff;
+  padding: 5mm 10mm 4mm 10mm;
+  display:flex; align-items:center; gap:10px;
+  font-size: 12.5px; font-weight: 700; letter-spacing:.4px;
+  text-transform: uppercase;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+.bk-footer .dot{ width: 10px; height:10px; background:#2a7ec7; flex:0 0 auto; }
+.bk-footer .hint{
+  font-size: 9px; font-weight: 400; color:#bbb; text-transform: uppercase;
+  margin-top: 2px;
+}
+.bk-footer-text{ flex:1; }
+
+.bk-brandbar{
+  background: #2a7ec7; color:#fff;
+  text-align:center; font-size: 11px; font-weight: 800;
+  letter-spacing: 3px; text-transform: uppercase;
+  padding: 5mm 10mm;
+  position: relative; z-index:2;
+  flex-shrink: 0;
+}
+
+.app-footer{
+  text-align: center;
+  font-size: .75rem;
+  color: var(--muted);
+  padding: 20px 0 12px 0;
+  margin-top: 8px;
+  letter-spacing: .5px;
+  opacity: .8;
+}
+
+/* ==================== STAMPA ==================== */
+@media print{
+  @page{ size: A4 portrait; margin: 0mm; }
+  @page :first{ margin: 0mm; }
+
+  html, body{
+    margin: 0 !important; padding: 0 !important;
+    background: #fff !important;
+    height: 100% !important; max-height: 100% !important;
+    overflow: hidden !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  *{
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body > *:not(.print-wrapper){ display: none !important; }
+
+  .print-wrapper{
+    display: block !important; position: static !important;
+    width: 209mm !important; height: 296mm !important;
+    max-height: 296mm !important;
+    margin: 0 !important; padding: 0 !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+  }
+
+  #printSheet{
+    width: 209mm !important; height: 296mm !important;
+    min-height: 296mm !important; max-height: 296mm !important;
+    padding: 4mm 7mm !important; margin: 0 !important;
+    border: none !important; box-shadow: none !important;
+    box-sizing: border-box !important;
+    page-break-after: avoid; page-break-inside: avoid;
+    display: flex !important; flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  #bachecaSheet{
+    width: 209mm !important; height: 296mm !important;
+    min-height: 296mm !important; max-height: 296mm !important;
+    padding: 0 !important; margin: 0 !important;
+    border: none !important; box-shadow: none !important;
+    box-sizing: border-box !important;
+    page-break-after: avoid; page-break-inside: avoid;
+    display: flex !important; flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  #bachecaSheet .bk-footer{ background: #111 !important; color: #fff !important; }
+  #bachecaSheet .bk-brandbar{ background: #2a7ec7 !important; color: #fff !important; }
+  #bachecaSheet .bk-footer .dot{ background: #2a7ec7 !important; }
+
+  #printSheet .ps-table{ flex: 1 1 auto !important; }
+  #printSheet .ps-table tbody tr{ height: auto !important; }
+  #printSheet .ps-table tbody tr td{
+    height: auto !important;
+    padding: 3px 4px !important;
+  }
+  #printSheet .ps-footer-line .val{ min-height: 14px !important; }
+  #printSheet .ps-sign-row{
+    margin-top: auto !important;
+    padding-top: 18mm !important;
+  }
+  #printSheet .ps-final-note{ margin-bottom: 3mm !important; }
+
+  .app-footer{ display: none !important; }
+}
+
+@media(max-width:760px){
+  #printSheet, #bachecaSheet{width:100%; padding:12px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="appRoot">
+
+  <div class="app-header">
+    <img class="logo" src="logo.png" alt="Logo A.S.D. Campolongo">
+    <div class="titles">
+      <h1>Distinta Gara — A.S.D. Campolongo</h1>
+      <div class="sub">Compila i dati, seleziona i convocati, poi stampa la distinta o il PDF da bacheca.</div>
+    </div>
+  </div>
+
+  <div class="actions-bar">
+    <button onclick="resetMatch()">🆕 Nuova gara (pulisci convocazione)</button>
+  </div>
+
+  <div class="card" id="cardTeam">
+    <h2 onclick="toggleCard('cardTeam')"><span class="chev">▾</span> Dati società</h2>
+    <div class="body">
+      <div class="grid">
+        <div class="field"><label>Nome squadra</label><input type="text" id="t_nome"></div>
+        <div class="field"><label>Matricola FIGC società</label><input type="text" id="t_matricola"></div>
+        <div class="field" style="grid-column:1/-1"><label>Sede legale / contatti</label><input type="text" id="t_sede"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="cardGara">
+    <h2 onclick="toggleCard('cardGara')"><span class="chev">▾</span> Dati gara</h2>
+    <div class="body">
+      <div class="grid">
+        <div class="field">
+          <label>Tipo di gara</label>
+          <select id="g_tipo">
+            <option>Campionato</option>
+            <option>Torneo</option>
+            <option>Amichevole</option>
+            <option>Coppa</option>
+            <option>Altro</option>
+          </select>
+        </div>
+        <div class="field"><label>Denominazione</label><input type="text" id="g_denom" placeholder="Esordienti"></div>
+        <div class="field"><label>Girone</label><input type="text" id="g_girone" placeholder="Girone A"></div>
+        <div class="field"><label>Squadra ospitante</label><input type="text" id="g_ospitante" placeholder="Nome squadra"></div>
+        <div class="field"><label>Squadra ospite</label><input type="text" id="g_ospite" placeholder="Nome squadra"></div>
+        <div class="field"><label>Data gara</label><input type="date" id="g_data"></div>
+        <div class="field"><label>Ora gara</label><input type="time" id="g_ora"></div>
+        <div class="field"><label>Orario convocazione (auto = -45 min)</label><input type="time" id="g_orarioConvocazione"></div>
+        <div class="field" style="grid-column:1/-1"><label>Luogo</label><input type="text" id="g_luogo" placeholder="Nome del campo / città"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="cardRosa">
+    <h2 onclick="toggleCard('cardRosa')"><span class="chev">▾</span> Rosa giocatori e convocati</h2>
+    <div class="body">
+      <div class="count-badge" id="countBadge"></div>
+      <div class="count-badge" id="cloudStatus" style="margin-bottom:6px;"></div>
+
+      <div class="row-inline" style="margin-bottom:10px;">
+        <div style="max-width:200px;">
+          <label>Filtra per anno di nascita</label>
+          <select id="rosterYearFilter" onchange="renderRoster()">
+            <option value="">Tutti gli anni</option>
+          </select>
+        </div>
+        <div style="max-width:200px;">
+          <label>Filtra per categoria</label>
+          <select id="rosterCatFilter" onchange="renderRoster()">
+            <option value="">Tutte le categorie</option>
+          </select>
+        </div>
+        <div style="flex:2; min-width:200px;">
+          <label>Cerca per nome giocatore</label>
+          <input type="text" id="rosterSearch" placeholder="Cognome o nome…" oninput="renderRoster()">
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="roster">
+          <thead>
+            <tr>
+              <th class="tiny-col">Conv.</th>
+              <th>Cognome e nome</th>
+              <th>Categoria</th>
+              <th class="tiny-col">G</th>
+              <th class="tiny-col">M</th>
+              <th class="tiny-col">A</th>
+              <th>N. Matricola</th>
+              <th>N. Tessera</th>
+              <th>Data Rilascio</th>
+              <th>Ente Rilascio</th>
+              <th class="tiny-col"></th>
+            </tr>
+          </thead>
+          <tbody id="rosterBody"></tbody>
+        </table>
+      </div>
+      <div class="scroll-hint">← scorri lateralmente per vedere tutte le colonne →</div>
+
+      <div class="rosterhead-add">
+        <input type="text" id="np_nome" placeholder="Cognome e nome">
+        <select id="np_cat" style="max-width:150px"></select>
+        <input type="number" id="np_g" placeholder="GG" style="max-width:60px">
+        <input type="number" id="np_m" placeholder="MM" style="max-width:60px">
+        <input type="number" id="np_a" placeholder="AAAA" style="max-width:80px">
+        <input type="text" id="np_mat" placeholder="Matricola" style="max-width:110px">
+        <input type="text" id="np_tessera" placeholder="N. Tessera" style="max-width:110px">
+        <input type="date" id="np_dataRilascio" style="max-width:140px">
+        <select id="np_enteRilascio" style="max-width:120px"></select>
+        <button onclick="addPlayer()">+ Aggiungi alla rosa</button>
+      </div>
+
+      <div style="margin-top:18px;">
+        <b style="font-size:.9rem;">Ordine convocati in distinta</b>
+        <div class="actions-bar" style="margin:8px 0;">
+          <button onclick="addBlankSlot()" title="Aggiungi una riga vuota in distinta (es. per il secondo portiere assente)">+ Riga vuota in distinta</button>
+        </div>
+        <div class="selected-list" id="selectedList"></div>
+        <div class="empty-hint" id="emptyHint">Nessun giocatore convocato: seleziona dalla rosa sopra.</div>
+      </div>
+
+      <div class="grid" style="margin-top:14px;">
+        <div class="field">
+          <label>Capitano</label>
+          <select id="capSel"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Vice Capitano</label>
+          <select id="vcapSel"><option value="">—</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card collapsed" id="cardStaff">
+    <h2 onclick="toggleCard('cardStaff')"><span class="chev">▾</span> Dirigenti / Staff</h2>
+    <div class="body">
+      <label>Elenco dirigenti / staff societario</label>
+
+      <div class="row-inline" style="margin:8px 0 10px 0;">
+        <div style="max-width:220px;">
+          <label>Filtra per categoria</label>
+          <select id="staffCatFilter" onchange="renderStaffRoster()">
+            <option value="">Tutte le categorie</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="roster">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Matricola</th>
+              <th>N. Tessera</th>
+              <th>Data Rilascio</th>
+              <th>Ente Rilascio</th>
+              <th class="tiny-col"></th>
+            </tr>
+          </thead>
+          <tbody id="staffRosterBody"></tbody>
+        </table>
+      </div>
+      <div class="scroll-hint">← scorri lateralmente per vedere tutte le colonne →</div>
+
+      <div class="rosterhead-add">
+        <input type="text" id="ns_nome" placeholder="Nome e cognome">
+        <select id="ns_cat" style="max-width:150px"></select>
+        <input type="text" id="ns_mat" placeholder="Matricola" style="max-width:110px">
+        <input type="text" id="ns_tess" placeholder="N. Tessera" style="max-width:110px">
+        <input type="date" id="ns_dataRilascio" style="max-width:140px">
+        <select id="ns_enteRilascio" style="max-width:120px"></select>
+        <button onclick="addStaff()">+ Aggiungi alla lista</button>
+      </div>
+
+      <div class="grid" style="margin-top:16px;">
+        <div class="field">
+          <label>Dirigente accompagnatore ufficiale</label>
+          <select id="s_dirigente"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Dirigente addetto ufficiali di gara</label>
+          <select id="s_dirigente2"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Medico sociale</label>
+          <select id="s_medico"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Allenatore</label>
+          <select id="s_allenatore"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Allenatore in seconda</label>
+          <select id="s_allenatore2"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Dirigente / Massaggiatore</label>
+          <select id="s_massaggiatore"><option value="">—</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-bar">
+    <button class="primary" onclick="printSheet('printSheet')">🖨️ Stampa distinta FIGC / PDF</button>
+    <button class="primary" onclick="printSheet('bachecaSheet')">📌 Stampa PDF bacheca</button>
+    <button onclick="generateWhatsappList()">💬 Genera lista convocati (WhatsApp)</button>
+  </div>
+
+  <div class="card collapsed" id="cardWA">
+    <h2 onclick="toggleCard('cardWA')"><span class="chev">▾</span> Lista convocati per WhatsApp</h2>
+    <div class="body">
+      <label>Testo generato (modificabile prima di copiare/inviare)</label>
+      <textarea id="waText" rows="14" style="width:100%; font-family:inherit; font-size:.88rem; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--field-bg); color:var(--ink);"></textarea>
+      <div class="actions-bar">
+        <button onclick="copyWaText(event)">📋 Copia testo</button>
+        <a id="waShareLink" href="#" target="_blank" rel="noopener" style="text-decoration:none;">
+          <button type="button">📲 Apri in WhatsApp</button>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="cardPreview">
+    <h2 onclick="toggleCard('cardPreview')"><span class="chev">▾</span> Anteprima distinta FIGC</h2>
+    <div class="body" style="overflow-x:auto; padding-top:4px;">
+      <div id="printSheet"></div>
+    </div>
+  </div>
+
+  <div class="card" id="cardBacheca">
+    <h2 onclick="toggleCard('cardBacheca')"><span class="chev">▾</span> Anteprima PDF bacheca</h2>
+    <div class="body" style="overflow-x:auto; padding-top:4px;">
+      <div id="bachecaSheet"></div>
+    </div>
+  </div>
+
+  <div class="app-footer">developed by @giamp72</div>
+
+</div>
+
+<script>
+/* ---------------- Storage helpers ---------------- */
+function loadJSON(key, fallback){
+  try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }catch(e){ return fallback; }
+}
+function saveJSON(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+}
+
+/* ---------- CLOUD ---------- */
+const CLOUD_BIN_ID = "6abcbe41ac6210605a048b41";
+const CLOUD_API_KEY = "$2a$10$5zFBKxq8W/ShcR0tjP2AJesSd8Mj7y.GdBfyYTQqXDia0RtsXhNzq";
+const CLOUD_ENABLED = !!(CLOUD_BIN_ID && CLOUD_API_KEY);
+const CLOUD_POLL_MS = 15000;
+let cloudStatus = CLOUD_ENABLED ? 'connecting' : 'off';
+
+async function cloudFetch(){
+  if(!CLOUD_ENABLED) return null;
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': CLOUD_API_KEY }
+  });
+  if(!res.ok) throw new Error('cloud fetch failed');
+  const data = await res.json();
+  return data.record || null;
+}
+async function cloudPush(){
+  if(!CLOUD_ENABLED) return;
+  try{
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`, {
+      method: 'PUT',
+      headers: { 'Content-Type':'application/json', 'X-Master-Key': CLOUD_API_KEY },
+      body: JSON.stringify({ roster, staffRoster })
+    });
+    if(!res.ok) throw new Error('cloud push failed');
+    cloudStatus = 'ok';
+  }catch(e){
+    cloudStatus = 'error';
+  }
+  renderCloudStatus();
+}
+async function cloudRefresh(showLoading){
+  if(!CLOUD_ENABLED) return;
+  if(showLoading){ cloudStatus = 'connecting'; renderCloudStatus(); }
+  try{
+    const record = await cloudFetch();
+    if(record){
+      if(Array.isArray(record.roster)) roster = record.roster.map(p => ({ categoria: "", tessera: "", dataRilascio: "", enteRilascio: "", ...p }));
+      if(Array.isArray(record.staffRoster)) staffRoster = record.staffRoster.map(s => ({ categoria: "", matricola: "", dataRilascio: "", enteRilascio: "", ...s }));
+      saveJSON('campolongo_roster', roster);
+      saveJSON('campolongo_staff_roster', staffRoster);
+      nextId = Math.max(0, ...roster.map(p=>p.id), 0) + 1;
+      nextStaffId = Math.max(0, ...staffRoster.map(p=>p.id), 0) + 1;
+    }
+    cloudStatus = 'ok';
+    renderAll();
+  }catch(e){
+    cloudStatus = 'error';
+    renderCloudStatus();
+  }
+}
+function renderCloudStatus(){
+  const el = document.getElementById('cloudStatus');
+  if(!el) return;
+  if(!CLOUD_ENABLED){
+    el.innerHTML = '📴 Modalità solo locale — dati salvati solo su questo browser.';
+    return;
+  }
+  if(cloudStatus==='connecting') el.innerHTML = '🔄 Sincronizzazione in corso…';
+  else if(cloudStatus==='ok') el.innerHTML = '☁️ Sincronizzato. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Aggiorna ora</button>';
+  else el.innerHTML = '⚠️ Sincronizzazione non riuscita. Dati salvati solo localmente. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Riprova</button>';
+}
+
+/* ---------------- Categorie ---------------- */
+const CATEGORIE = [
+  "Piccoli Amici",
+  "Primi Calci",
+  "Pulcini",
+  "Esordienti",
+  "Giovanissimi",
+  "Allievi",
+  "Juniores",
+  "Prima Squadra",
+  "Altro"
+];
+function categoriaOptions(selected){
+  return '<option value="">—</option>' + CATEGORIE.map(c =>
+    `<option value="${c}" ${selected===c?'selected':''}>${c}</option>`
+  ).join('');
+}
+
+/* ---------------- Enti Rilascio ---------------- */
+const ENTI_RILASCIO = [
+  "F.I.G.C.",
+  "LND",
+  "Altro"
+];
+function enteRilascioOptions(selected){
+  return '<option value="">—</option>' + ENTI_RILASCIO.map(e =>
+    `<option value="${e}" ${selected===e?'selected':''}>${e}</option>`
+  ).join('');
+}
+
+/* ---------------- Defaults ---------------- */
+const DEFAULT_ROSTER = [
+  {id:1, nome:"MEMAJ ALTEO", g:22, m:8, a:2016, mat:"4240115", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
+  {id:2, nome:"BOTTEGA PIETRO", g:7, m:10, a:2016, mat:"4210962", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
+  {id:3, nome:"CAMI ANGELO ANTONIO", g:27, m:5, a:2016, mat:"3624295", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
+  {id:4, nome:"DA RE FRANCESCO", g:15, m:3, a:2016, mat:"4513064", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
+  {id:5, nome:"LALA LIAM", g:26, m:5, a:2016, mat:"3624297", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
+  {id:6, nome:"ROS TOMMASO", g:16, m:7, a:2016, mat:"3878297", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
+  {id:7, nome:"SANCA GOMES RUIDY", g:11, m:1, a:2016, mat:"4437996", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
+  {id:8, nome:"SCALA EMANUELE", g:7, m:6, a:2016, mat:"4472053", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
+  {id:9, nome:"GJORGA FRANCESCO", g:4, m:10, a:2016, mat:"4923885", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
+  {id:10, nome:"TOMASELLA LEONARDO", g:15, m:10, a:2016, mat:"3918179", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
+  {id:11, nome:"AGYEKUM ELLIOT AMOAKO", g:24, m:6, a:2016, mat:"3649907", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
+  {id:12, nome:"SHANE JOEN", g:30, m:1, a:2016, mat:"4254632", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""}
+];
+const DEFAULT_TEAM = {
+  nome: "A.S.D. CAMPOLONGO",
+  matricola: "934019",
+  sede: "Sede legale e operativa: Via Monticano 4- Conegliano (Treviso) - Tel. 3333254028 - calcio@campolongo.org"
+};
+const DEFAULT_STAFF_ROSTER = [
+  {id:1, nome:"TOMASELLA GIANPIETRO", tessera:"2026934", categoria:"", matricola:"", dataRilascio:"", enteRilascio:""},
+  {id:2, nome:"MODOLO LUIGINO", tessera:"48508", categoria:"", matricola:"", dataRilascio:"", enteRilascio:""}
+];
+
+let roster = loadJSON('campolongo_roster', DEFAULT_ROSTER);
+let team = loadJSON('campolongo_team', DEFAULT_TEAM);
+let staffRoster = loadJSON('campolongo_staff_roster', DEFAULT_STAFF_ROSTER);
+roster = roster.map(p => ({ categoria: "", tessera: "", dataRilascio: "", enteRilascio: "", ...p }));
+staffRoster = staffRoster.map(s => ({ categoria: "", matricola: "", dataRilascio: "", enteRilascio: "", ...s }));
+
+let match = loadJSON('campolongo_match_draft', {
+  tipo:"Campionato", denom:"", girone:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", orarioConvocazione:"",
+  rows: [], capitanoId:null, vcapId:null,
+  staffDirigente:null, staffDirigente2:null, staffMedico:null, staffAllenatore:null, staffAllenatore2:null, staffMassaggiatore:null
+});
+
+if(match.selected && Array.isArray(match.selected) && !match.rows){
+  match.rows = match.selected.map(id => ({ type:'player', id }));
+  delete match.selected;
+  saveJSON('campolongo_match_draft', match);
+}
+if(!match.rows) match.rows = [];
+
+function getPlayerIdsInRows(){
+  return match.rows.filter(r => r.type==='player').map(r => r.id);
+}
+function isPlayerInRows(id){
+  return match.rows.some(r => r.type==='player' && r.id === id);
+}
+
+let nextId = Math.max(0, ...roster.map(p=>p.id)) + 1;
+let nextStaffId = Math.max(0, ...staffRoster.map(p=>p.id)) + 1;
+
+/* ---------------- Init ---------------- */
+function initFields(){
+  document.getElementById('np_cat').innerHTML = categoriaOptions('');
+  document.getElementById('ns_cat').innerHTML = categoriaOptions('');
+  document.getElementById('np_enteRilascio').innerHTML = enteRilascioOptions('');
+  document.getElementById('ns_enteRilascio').innerHTML = enteRilascioOptions('');
+
+  document.getElementById('t_nome').value = team.nome;
+  document.getElementById('t_matricola').value = team.matricola;
+  document.getElementById('t_sede').value = team.sede;
+
+  document.getElementById('g_tipo').value = match.tipo || "Campionato";
+  document.getElementById('g_denom').value = match.denom || "";
+  document.getElementById('g_girone').value = match.girone || "";
+  document.getElementById('g_ospitante').value = match.ospitante || team.nome;
+  document.getElementById('g_ospite').value = match.ospite || "";
+  document.getElementById('g_data').value = match.data || "";
+  document.getElementById('g_ora').value = match.ora || "";
+  document.getElementById('g_orarioConvocazione').value = match.orarioConvocazione || "";
+  document.getElementById('g_luogo').value = match.luogo || "";
+
+  document.getElementById('s_dirigente').addEventListener('change', ()=>{ match.staffDirigente = document.getElementById('s_dirigente').value||null; persistMatch(); renderPrint(); renderBacheca(); });
+  document.getElementById('s_dirigente2').addEventListener('change', ()=>{ match.staffDirigente2 = document.getElementById('s_dirigente2').value||null; persistMatch(); renderPrint(); renderBacheca(); });
+  document.getElementById('s_medico').addEventListener('change', ()=>{ match.staffMedico = document.getElementById('s_medico').value||null; persistMatch(); renderPrint(); renderBacheca(); });
+  document.getElementById('s_allenatore').addEventListener('change', ()=>{ match.staffAllenatore = document.getElementById('s_allenatore').value||null; persistMatch(); renderPrint(); renderBacheca(); });
+  document.getElementById('s_allenatore2').addEventListener('change', ()=>{ match.staffAllenatore2 = document.getElementById('s_allenatore2').value||null; persistMatch(); renderPrint(); renderBacheca(); });
+  document.getElementById('s_massaggiatore').addEventListener('change', ()=>{ match.staffMassaggiatore = document.getElementById('s_massaggiatore').value||null; persistMatch(); renderPrint(); renderBacheca(); });
+
+  ['t_nome','t_matricola','t_sede'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', onTeamChange);
+  });
+  ['g_tipo','g_denom','g_girone','g_ospitante','g_ospite','g_data','g_ora','g_orarioConvocazione','g_luogo'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', onMatchChange);
+    document.getElementById(id).addEventListener('change', onMatchChange);
+  });
+  document.getElementById('capSel').addEventListener('change', ()=>{
+    match.capitanoId = document.getElementById('capSel').value || null;
+    if(match.capitanoId && match.capitanoId == match.vcapId) match.vcapId = null;
+    persistMatch(); renderAll();
+  });
+  document.getElementById('vcapSel').addEventListener('change', ()=>{
+    match.vcapId = document.getElementById('vcapSel').value || null;
+    if(match.vcapId && match.vcapId == match.capitanoId) match.capitanoId = null;
+    persistMatch(); renderAll();
+  });
+}
+
+function onTeamChange(){
+  team.nome = document.getElementById('t_nome').value;
+  team.matricola = document.getElementById('t_matricola').value;
+  team.sede = document.getElementById('t_sede').value;
+  saveJSON('campolongo_team', team);
+  renderPrint();
+  renderBacheca();
+}
+function onMatchChange(){
+  match.tipo = document.getElementById('g_tipo').value;
+  match.denom = document.getElementById('g_denom').value;
+  match.girone = document.getElementById('g_girone').value;
+
+  const prevOra = match.ora || "";
+  const newOra = document.getElementById('g_ora').value;
+  match.ora = newOra;
+
+  const convField = document.getElementById('g_orarioConvocazione');
+  const currentConv = convField.value;
+  const autoPrev = prevOra ? minusMinutes(prevOra, 45) : "";
+  if(newOra && (!currentConv || currentConv === autoPrev)){
+    const autoNew = minusMinutes(newOra, 45);
+    convField.value = autoNew;
+    match.orarioConvocazione = autoNew;
+  } else {
+    match.orarioConvocazione = currentConv;
+  }
+
+  match.ospitante = document.getElementById('g_ospitante').value;
+  match.ospite = document.getElementById('g_ospite').value;
+  match.data = document.getElementById('g_data').value;
+  match.luogo = document.getElementById('g_luogo').value;
+  persistMatch();
+  renderPrint();
+  renderBacheca();
+}
+function persistMatch(){ saveJSON('campolongo_match_draft', match); }
+
+/* ---------------- Staff roster ---------------- */
+function renderStaffRoster(){
+  const body = document.getElementById('staffRosterBody');
+  const catSel = document.getElementById('staffCatFilter');
+  const currentCat = catSel ? catSel.value : '';
+
+  if(catSel){
+    const catsInStaff = [...new Set(staffRoster.map(s=>s.categoria).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'it'));
+    catSel.innerHTML = '<option value="">Tutte le categorie</option>' +
+      catsInStaff.map(c=>`<option value="${c}" ${c===currentCat?'selected':''}>${c}</option>`).join('');
+  }
+
+  body.innerHTML = '';
+  const sortedStaff = [...staffRoster]
+    .filter(s => !currentCat || s.categoria === currentCat)
+    .sort((a,b)=> a.nome.localeCompare(b.nome, 'it'));
+
+  sortedStaff.forEach(s=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" value="${escapeAttr(s.nome)}" onchange="editStaff(${s.id},'nome',this.value)"></td>
+      <td><select onchange="editStaff(${s.id},'categoria',this.value)">${categoriaOptions(s.categoria||'')}</select></td>
+      <td><input type="text" value="${escapeAttr(s.matricola||'')}" onchange="editStaff(${s.id},'matricola',this.value)"></td>
+      <td><input type="text" value="${escapeAttr(s.tessera||'')}" onchange="editStaff(${s.id},'tessera',this.value)"></td>
+      <td><input type="date" value="${escapeAttr(s.dataRilascio||'')}" onchange="editStaff(${s.id},'dataRilascio',this.value)"></td>
+      <td><select onchange="editStaff(${s.id},'enteRilascio',this.value)">${enteRilascioOptions(s.enteRilascio||'')}</select></td>
+      <td><button class="link danger small" onclick="removeStaff(${s.id})" title="Rimuovi dalla lista">✕</button></td>
+    `;
+    body.appendChild(tr);
+  });
+
+  const roles = [
+    ['s_dirigente','staffDirigente'],
+    ['s_dirigente2','staffDirigente2'],
+    ['s_medico','staffMedico'],
+    ['s_allenatore','staffAllenatore'],
+    ['s_allenatore2','staffAllenatore2'],
+    ['s_massaggiatore','staffMassaggiatore']
+  ];
+  roles.forEach(([selectId, matchField])=>{
+    const sel = document.getElementById(selectId);
+    const currentVal = match[matchField];
+    sel.innerHTML = '<option value="">—</option>' + staffRoster.map(s=>
+      `<option value="${s.id}" ${currentVal==s.id?'selected':''}>${escapeHtml(s.nome)}${s.categoria?` (${escapeHtml(s.categoria)})`:''}</option>`
+    ).join('');
+  });
+}
+function addStaff(){
+  if(staffRoster.length >= 100){
+    alert('Limite massimo raggiunto: 100 membri staff.');
+    return;
+  }
+  const nome = document.getElementById('ns_nome').value.trim();
+  if(!nome){ return; }
+  staffRoster.push({
+    id: nextStaffId++,
+    nome: nome.toUpperCase(),
+    categoria: document.getElementById('ns_cat').value || "",
+    matricola: document.getElementById('ns_mat').value.trim(),
+    tessera: document.getElementById('ns_tess').value.trim(),
+    dataRilascio: document.getElementById('ns_dataRilascio').value || "",
+    enteRilascio: document.getElementById('ns_enteRilascio').value || ""
+  });
+  saveJSON('campolongo_staff_roster', staffRoster);
+  ['ns_nome','ns_mat','ns_tess','ns_dataRilascio'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ns_cat').value='';
+  document.getElementById('ns_enteRilascio').value='';
+  renderStaffRoster();
+  renderPrint();
+  renderBacheca();
+  cloudPush();
+}
+function editStaff(id, field, value){
+  const s = staffRoster.find(x=>x.id===id);
+  if(!s) return;
+  if(field==='nome') s[field] = value.toUpperCase();
+  else s[field] = value;
+  saveJSON('campolongo_staff_roster', staffRoster);
+  renderStaffRoster();
+  renderPrint();
+  renderBacheca();
+  cloudPush();
+}
+function removeStaff(id){
+  const s = staffRoster.find(x=>x.id===id);
+  const nome = s ? s.nome : 'questo membro dello staff';
+  if(!confirm(`Sei sicuro di voler eliminare "${nome}" dallo staff?\n\nL'operazione non può essere annullata.`)) return;
+  staffRoster = staffRoster.filter(x=>x.id!==id);
+  ['staffDirigente','staffDirigente2','staffMedico','staffAllenatore','staffAllenatore2','staffMassaggiatore'].forEach(f=>{
+    if(match[f]==id) match[f]=null;
+  });
+  saveJSON('campolongo_staff_roster', staffRoster);
+  persistMatch();
+  renderStaffRoster();
+  renderPrint();
+  renderBacheca();
+  cloudPush();
+}
+function getStaffById(id){ return id ? staffRoster.find(s=>s.id==id) : null; }
+
+/* ---------------- Roster ---------------- */
+function renderRoster(){
+  const body = document.getElementById('rosterBody');
+  const yearSel = document.getElementById('rosterYearFilter');
+  const catSel = document.getElementById('rosterCatFilter');
+  const currentYear = yearSel.value;
+  const currentCat = catSel.value;
+  const searchQuery = (document.getElementById('rosterSearch').value || '').trim().toLowerCase();
+
+  const years = [...new Set(roster.map(p=>p.a).filter(Boolean))].sort((a,b)=>b-a);
+  yearSel.innerHTML = '<option value="">Tutti gli anni</option>' +
+    years.map(y=>`<option value="${y}" ${String(y)===currentYear?'selected':''}>${y}</option>`).join('');
+
+  const catsInRoster = [...new Set(roster.map(p=>p.categoria).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'it'));
+  catSel.innerHTML = '<option value="">Tutte le categorie</option>' +
+    catsInRoster.map(c=>`<option value="${c}" ${c===currentCat?'selected':''}>${c}</option>`).join('');
+
+  body.innerHTML = '';
+  const sortedRoster = [...roster]
+    .filter(p => !currentYear || String(p.a) === currentYear)
+    .filter(p => !currentCat || p.categoria === currentCat)
+    .filter(p => !searchQuery || p.nome.toLowerCase().includes(searchQuery))
+    .sort((a,b)=> a.nome.localeCompare(b.nome, 'it'));
+
+  const canSelectMore = match.rows.length < 20;
+
+  sortedRoster.forEach(p=>{
+    const tr = document.createElement('tr');
+    const checked = isPlayerInRows(p.id);
+    const disabled = !checked && !canSelectMore ? 'disabled' : '';
+    tr.innerHTML = `
+      <td style="text-align:center"><input type="checkbox" class="chk" ${checked?'checked':''} ${disabled} onchange="toggleSelect(${p.id}, this.checked)"></td>
+      <td><input type="text" value="${escapeAttr(p.nome)}" onchange="editPlayer(${p.id},'nome',this.value)"></td>
+      <td><select onchange="editPlayer(${p.id},'categoria',this.value)">${categoriaOptions(p.categoria||'')}</select></td>
+      <td><input type="number" value="${p.g??''}" style="width:52px" onchange="editPlayer(${p.id},'g',this.value)"></td>
+      <td><input type="number" value="${p.m??''}" style="width:52px" onchange="editPlayer(${p.id},'m',this.value)"></td>
+      <td><input type="number" value="${p.a??''}" style="width:70px" onchange="editPlayer(${p.id},'a',this.value)"></td>
+      <td><input type="text" value="${escapeAttr(p.mat||'')}" onchange="editPlayer(${p.id},'mat',this.value)"></td>
+      <td><input type="text" value="${escapeAttr(p.tessera||'')}" onchange="editPlayer(${p.id},'tessera',this.value)"></td>
+      <td><input type="date" value="${escapeAttr(p.dataRilascio||'')}" onchange="editPlayer(${p.id},'dataRilascio',this.value)"></td>
+      <td><select onchange="editPlayer(${p.id},'enteRilascio',this.value)">${enteRilascioOptions(p.enteRilascio||'')}</select></td>
+      <td><button class="link danger small" onclick="removePlayer(${p.id})" title="Rimuovi dalla rosa">✕</button></td>
+    `;
+    body.appendChild(tr);
+  });
+  const playerCount = match.rows.filter(r=>r.type==='player').length;
+  const blankCount = match.rows.filter(r=>r.type==='blank').length;
+  const totalRows = match.rows.length;
+  const selColor = totalRows >= 20 ? 'color:#b3261e;' : '';
+  document.getElementById('countBadge').innerHTML = `<b>${roster.length}</b> giocatori in rosa · <b style="${selColor}">${playerCount} convocati${blankCount>0?` + ${blankCount} righe vuote`:''} (${totalRows} / 20)</b>`;
+}
+function escapeAttr(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+
+function addPlayer(){
+  if(roster.length >= 500){
+    alert('Limite massimo raggiunto: 500 giocatori in anagrafica.');
+    return;
+  }
+  const nome = document.getElementById('np_nome').value.trim();
+  if(!nome){ return; }
+  const p = {
+    id: nextId++,
+    nome: nome.toUpperCase(),
+    categoria: document.getElementById('np_cat').value || "",
+    g: parseInt(document.getElementById('np_g').value)||null,
+    m: parseInt(document.getElementById('np_m').value)||null,
+    a: parseInt(document.getElementById('np_a').value)||null,
+    mat: document.getElementById('np_mat').value.trim(),
+    tessera: document.getElementById('np_tessera').value.trim(),
+    dataRilascio: document.getElementById('np_dataRilascio').value || "",
+    enteRilascio: document.getElementById('np_enteRilascio').value || ""
+  };
+  roster.push(p);
+  saveJSON('campolongo_roster', roster);
+  ['np_nome','np_g','np_m','np_a','np_mat','np_tessera','np_dataRilascio'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('np_cat').value = '';
+  document.getElementById('np_enteRilascio').value = '';
+  renderAll();
+  cloudPush();
+}
+function editPlayer(id, field, value){
+  const p = roster.find(x=>x.id===id);
+  if(!p) return;
+  if(field==='g'||field==='m'||field==='a') p[field] = parseInt(value)||null;
+  else if(field==='nome') p[field] = value.toUpperCase();
+  else p[field] = value;
+  saveJSON('campolongo_roster', roster);
+  renderPrint();
+  renderBacheca();
+  cloudPush();
+}
+function removePlayer(id){
+  const p = roster.find(x=>x.id===id);
+  const nome = p ? p.nome : 'questo giocatore';
+  if(!confirm(`Sei sicuro di voler eliminare "${nome}" dalla rosa?\n\nL'operazione non può essere annullata.`)) return;
+  roster = roster.filter(x=>x.id!==id);
+  match.rows = match.rows.filter(r => !(r.type==='player' && r.id === id));
+  if(match.capitanoId==id) match.capitanoId=null;
+  if(match.vcapId==id) match.vcapId=null;
+  saveJSON('campolongo_roster', roster);
+  persistMatch();
+  renderAll();
+  cloudPush();
+}
+
+/* ---------------- Selection / Rows ---------------- */
+function toggleSelect(id, checked){
+  if(checked){
+    if(isPlayerInRows(id)) return;
+    if(match.rows.length >= 20){
+      alert('Massimo 20 righe in distinta (giocatori + righe vuote).');
+      renderRoster();
+      return;
+    }
+    match.rows.push({ type:'player', id });
+  } else {
+    match.rows = match.rows.filter(r => !(r.type==='player' && r.id === id));
+    if(match.capitanoId==id) match.capitanoId=null;
+    if(match.vcapId==id) match.vcapId=null;
+  }
+  persistMatch();
+  renderAll();
+}
+function moveRow(idx, dir){
+  const newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= match.rows.length) return;
+  [match.rows[idx], match.rows[newIdx]] = [match.rows[newIdx], match.rows[idx]];
+  persistMatch();
+  renderAll();
+}
+function removeRow(idx){
+  const row = match.rows[idx];
+  if(!row) return;
+  if(row.type === 'player'){
+    if(match.capitanoId == row.id) match.capitanoId = null;
+    if(match.vcapId == row.id) match.vcapId = null;
+  }
+  match.rows.splice(idx, 1);
+  persistMatch();
+  renderAll();
+}
+function addBlankSlot(){
+  if(match.rows.length >= 20){
+    alert('Massimo 20 righe in distinta (giocatori + righe vuote).');
+    return;
+  }
+  match.rows.push({ type:'blank' });
+  persistMatch();
+  renderAll();
+}
+function removeSel(id){
+  match.rows = match.rows.filter(r => !(r.type==='player' && r.id === id));
+  if(match.capitanoId==id) match.capitanoId=null;
+  if(match.vcapId==id) match.vcapId=null;
+  persistMatch();
+  renderAll();
+}
+
+function renderSelectedList(){
+  const list = document.getElementById('selectedList');
+  const hint = document.getElementById('emptyHint');
+  list.innerHTML = '';
+
+  hint.style.display = match.rows.length ? 'none' : 'block';
+
+  match.rows.forEach((row, i)=>{
+    const el = document.createElement('div');
+    el.className = 'sel-row';
+
+    if(row.type === 'player'){
+      const p = roster.find(x=>x.id===row.id);
+      if(!p){
+        match.rows.splice(i,1);
+        return;
+      }
+      const tag = (match.capitanoId==row.id) ? '<span class="tag">C</span>' : (match.vcapId==row.id ? '<span class="tag">VC</span>' : '');
+      el.innerHTML = `
+        <div class="num">${i+1}</div>
+        <div class="name">${escapeHtml(p.nome)}</div>
+        ${tag}
+        <div class="btns">
+          <button class="small" onclick="moveRow(${i},-1)" ${i===0?'disabled':''}>↑</button>
+          <button class="small" onclick="moveRow(${i},1)" ${i===match.rows.length-1?'disabled':''}>↓</button>
+          <button class="small danger" onclick="removeRow(${i})">✕</button>
+        </div>
+      `;
+    } else {
+      el.style.opacity = '.65';
+      el.innerHTML = `
+        <div class="num">${i+1}</div>
+        <div class="name" style="font-style:italic; color:var(--muted);">(riga vuota)</div>
+        <div class="btns">
+          <button class="small" onclick="moveRow(${i},-1)" ${i===0?'disabled':''}>↑</button>
+          <button class="small" onclick="moveRow(${i},1)" ${i===match.rows.length-1?'disabled':''}>↓</button>
+          <button class="small danger" onclick="removeRow(${i})">✕</button>
+        </div>
+      `;
+    }
+    list.appendChild(el);
+  });
+
+  const capSel = document.getElementById('capSel');
+  const vcapSel = document.getElementById('vcapSel');
+  const playerIds = getPlayerIdsInRows();
+  capSel.innerHTML = '<option value="">—</option>' + playerIds.map(id=>{
+    const p = roster.find(x=>x.id===id);
+    return p ? `<option value="${id}" ${match.capitanoId==id?'selected':''}>${escapeHtml(p.nome)}</option>` : '';
+  }).join('');
+  vcapSel.innerHTML = '<option value="">—</option>' + playerIds.map(id=>{
+    const p = roster.find(x=>x.id===id);
+    return p ? `<option value="${id}" ${match.vcapId==id?'selected':''}>${escapeHtml(p.nome)}</option>` : '';
+  }).join('');
+}
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+/* ---------------- Utils ---------------- */
+function pad2(n){ return (n===null||n===undefined||n==='') ? '' : String(n).padStart(2,'0'); }
+function fmtDate(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+function minusMinutes(hhmm, minsToSubtract){
+  if(!hhmm) return '';
+  const [h,m] = hhmm.split(':').map(Number);
+  let total = h*60 + m - minsToSubtract;
+  if(total < 0) total += 24*60;
+  const nh = Math.floor(total/60)%24;
+  const nm = total%60;
+  return `${String(nh).padStart(2,'0')}:${String(nm).padStart(2,'0')}`;
+}
+function toTitleCase(s){
+  return String(s).toLowerCase().split(' ').filter(Boolean).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+}
+
+/* ---------------- PRINT distinta FIGC ---------------- */
+function renderPrint(){
+  const sheet = document.getElementById('printSheet');
+  const rows = [];
+  for(let i=0;i<20;i++){
+    const row = match.rows[i];
+    const id = (row && row.type === 'player') ? row.id : null;
+    const p = id ? roster.find(x=>x.id===id) : null;
+    const capVal = p ? (match.capitanoId==p.id ? 'C' : (match.vcapId==p.id ? 'V.C.' : '')) : '';
+    rows.push(`
+      <tr>
+        <td class="rolenum">${i+1}</td>
+        <td>${p?pad2(p.g):''}</td>
+        <td>${p?pad2(p.m):''}</td>
+        <td>${p?(p.a||''):''}</td>
+        <td class="name-cell">${p?escapeHtml(p.nome):''}</td>
+        <td class="cap-cell">${capVal}</td>
+        <td class="mat-cell">${p?escapeHtml(p.mat||''):''}</td>
+        <td></td>
+        <td class="doc-cell">${p?escapeHtml(p.tessera||''):''}</td>
+        <td class="doc-cell doc-cell-ril">${p?escapeHtml(p.enteRilascio||''):''}</td>
+        <td></td>
+        <td></td>
+      </tr>
+    `);
+  }
+
+  const osp = match.ospitante || team.nome;
+  const ospite = match.ospite || '';
+  const matchLineHTML = ospite
+    ? `${escapeHtml(osp)} - ${escapeHtml(ospite)}`
+    : escapeHtml(osp);
+
+  const compParts = [];
+  if(match.denom) compParts.push(match.denom.toUpperCase());
+  if(match.girone) compParts.push(`Girone ${match.girone}`);
+  const denomLine = compParts.join(' ') || match.tipo || '';
+
+  const dataOra = `${fmtDate(match.data)}${match.ora ? ' ' + match.ora : ''}`;
+
+  sheet.innerHTML = `
+    <div class="ps-top-logos">
+      <img class="ps-logo-soc" src="logo.png" alt="logo società">
+      <div class="ps-top-center">
+        <div class="ps-federation">CONI<span>•</span>FIGC<span>•</span>Matr. ${escapeHtml(team.matricola||'')}</div>
+        <div class="ps-team-name">${escapeHtml(team.nome||'')}</div>
+        <div class="ps-blue-line"></div>
+        <div class="ps-addr-line">${escapeHtml(team.sede||'')}</div>
+        <div class="ps-league-line">F.I.G.C. - LEGA NAZIONALE DILETTANTI</div>
+      </div>
+      <img class="ps-logo-lnd" src="logolega.jpg" alt="LND">
+    </div>
+
+    <div class="ps-titlebar">
+      <div class="tb-label">Distinta dei giocatori partecipanti alla gara</div>
+      <div class="tb-denom">${escapeHtml(denomLine)}</div>
+      <div class="tb-dash">-</div>
+      <div class="tb-match">${matchLineHTML}</div>
+    </div>
+    <div class="ps-note-right">(scrivere prima la ospitante)</div>
+
+    <div class="ps-gamebar">
+      <div class="gb-tipo">${escapeHtml(match.tipo||'')}</div>
+      <div class="gb-lbl">da disputare il</div>
+      <div class="gb-data">${fmtDate(match.data)}</div>
+      <div class="gb-lbl">ore</div>
+      <div class="gb-ora">${escapeHtml(match.ora||'')}</div>
+      <div class="gb-lbl">a</div>
+      <div class="gb-luogo">${escapeHtml(match.luogo||'')}</div>
+    </div>
+    <div class="ps-note-row-bottom">
+      <div>(serie, torneo, amichevole)</div>
+      <div>(località)</div>
+    </div>
+
+    <table class="ps-table">
+      <thead>
+        <tr>
+          <th rowspan="2">N&deg; del<br>Ruolo</th>
+          <th colspan="3">Data di nascita</th>
+          <th rowspan="2">Cognome e nome</th>
+          <th rowspan="2">Capitano<br>V. Cap.</th>
+          <th rowspan="2">N. Matricola<br>F.I.G.C.</th>
+          <th colspan="3">Documento di identificazione</th>
+          <th rowspan="2">Espulsi</th>
+          <th rowspan="2">Ammoniti</th>
+        </tr>
+        <tr>
+          <th>G</th><th>M</th><th>A</th>
+          <th>Tipo</th><th>Numero</th><th>Rilasciato</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.join('')}
+        <tr class="ps-assist">
+          <td colspan="5" class="assist-label">Assistente Dirigente dell'Arbitro di Gioco</td>
+          <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="ps-footer-line" style="margin-top:6px;">
+      <div class="lbl">Dirigente accompagnatore ufficiale della squadra: Sig.</div>
+      <div class="val">${escapeHtml(getStaffById(match.staffDirigente)?.nome||'')}</div>
+      <div class="tess">Tessera personale F.I.G.C. N&deg;</div>
+      <div class="valtess">${escapeHtml(getStaffById(match.staffDirigente)?.tessera||'')}</div>
+    </div>
+    <div class="ps-footer-line">
+      <div class="lbl">Dirigente addetto ufficiali di gare: Sig.</div>
+      <div class="val">${escapeHtml(getStaffById(match.staffDirigente2)?.nome||'')}</div>
+      <div class="tess">Tessera personale F.I.G.C. N&deg;</div>
+      <div class="valtess">${escapeHtml(getStaffById(match.staffDirigente2)?.tessera||'')}</div>
+    </div>
+    <div class="ps-footer-line">
+      <div class="lbl">Medico Sociale: Sig.</div>
+      <div class="val">${escapeHtml(getStaffById(match.staffMedico)?.nome||'')}</div>
+      <div class="tess">Tessera personale F.I.G.C. N&deg;</div>
+      <div class="valtess">${escapeHtml(getStaffById(match.staffMedico)?.tessera||'')}</div>
+    </div>
+    <div class="ps-footer-line">
+      <div class="lbl">Allenatore: Sig.</div>
+      <div class="val">${escapeHtml(getStaffById(match.staffAllenatore)?.nome||'')}</div>
+      <div class="tess">Tessera personale F.I.G.C. N&deg;</div>
+      <div class="valtess">${escapeHtml(getStaffById(match.staffAllenatore)?.tessera||'')}</div>
+    </div>
+    <div class="ps-footer-line">
+      <div class="lbl">Allenatore in seconda: Sig.</div>
+      <div class="val">${escapeHtml(getStaffById(match.staffAllenatore2)?.nome||'')}</div>
+      <div class="tess">Tessera personale F.I.G.C. N&deg;</div>
+      <div class="valtess">${escapeHtml(getStaffById(match.staffAllenatore2)?.tessera||'')}</div>
+    </div>
+    <div class="ps-footer-line">
+      <div class="lbl">Dirigente / Massaggiatore: Sig.</div>
+      <div class="val">${escapeHtml(getStaffById(match.staffMassaggiatore)?.nome||'')}</div>
+      <div class="tess">Tessera personale F.I.G.C. N&deg;</div>
+      <div class="valtess">${escapeHtml(getStaffById(match.staffMassaggiatore)?.tessera||'')}</div>
+    </div>
+
+    <div class="ps-declaration">
+      Le persone qui sopra elencate possono essere ammesse solo se munite delle prescritte tessere F.I.G.C. valide per l'annata in corso
+    </div>
+    <div class="ps-declaration b">
+      Il sottoscritto Dirigente accompagnatore ufficiale dichiara che i giuocatori sopraindicati sono regolarmente tesserati e partecipano alla gara sotto la responsabilit&agrave; della Societ&agrave; di appartenenza, giusto le norme vigenti.
+    </div>
+
+    <div class="ps-sign-row">
+      <div>L'ARBITRO</div>
+      <div>IL DIRIGENTE ACCOMPAGNATORE UFFICIALE</div>
+    </div>
+
+    <div class="ps-final-note">
+      Questa distinta deve essere consegnata all'arbitro in quadruplice copia, prima dell'inizio della gara, unitamente all'ultimo elenco dei giuocatori tesserati ricevuto dalla F.I.G.C. alle tessere federali, laddove previste, ed ai documenti di identificazione.
+    </div>
+  `;
+}
+
+/* ---------------- PRINT bacheca ---------------- */
+function renderBacheca(){
+  const sheet = document.getElementById('bachecaSheet');
+
+  const playerIds = getPlayerIdsInRows();
+  const selectedSorted = [...playerIds].sort((a,b)=>{
+    const pa = roster.find(x=>x.id===a);
+    const pb = roster.find(x=>x.id===b);
+    if(!pa || !pb) return 0;
+    return pa.nome.localeCompare(pb.nome, 'it');
+  });
+
+  const righeGiocatori = selectedSorted.map(id=>{
+    const p = roster.find(x=>x.id===id);
+    if(!p) return '';
+    const tag = (match.capitanoId==id) ? '<span class="tag">· C</span>' : (match.vcapId==id ? '<span class="tag">· VC</span>' : '');
+    const anno = p.a ? `<span class="yr">· ${p.a}</span>` : '';
+    return `<div class="bk-player">${escapeHtml(p.nome)} ${anno}${tag}</div>`;
+  }).join('');
+
+  const osp = match.ospitante || team.nome;
+  const ospite = match.ospite || '';
+  const matchLine = ospite
+    ? `<span>${escapeHtml(osp)}</span> <span class="vs">vs</span> <span>${escapeHtml(ospite)}</span>`
+    : `<span>${escapeHtml(osp)}</span>`;
+
+  const competizione = [match.tipo, match.denom].filter(Boolean).join(' · ').toUpperCase();
+  const dataStr = fmtDate(match.data) || '';
+  const oraStr = match.ora || '';
+  const ritrovoStr = match.orarioConvocazione || (match.ora ? minusMinutes(match.ora, 45) : '');
+  const ritrovoLine = ritrovoStr && match.luogo
+    ? `ENTRO LE ORE ${ritrovoStr} C/O ${escapeHtml(match.luogo).toUpperCase()}`
+    : (ritrovoStr ? `ENTRO LE ORE ${ritrovoStr}` : 'RITROVO DA CONFERMARE');
+
+  sheet.innerHTML = `
+    <div class="bk-header">
+      <img class="logo" src="logo.png" alt="logo">
+      <div class="comp">${competizione || 'CONVOCAZIONE'}</div>
+      <div class="match-block">
+        <div class="match-line">${matchLine}</div>
+        ${match.luogo ? `<div class="location">${escapeHtml(match.luogo).toUpperCase()}</div>` : ''}
+      </div>
+      <div class="meta">
+        ${dataStr ? `<div class="date">${dataStr}</div>` : ''}
+        ${oraStr ? `<div class="time-lbl">ORARIO INIZIO GARA</div><div class="time">${escapeHtml(oraStr)}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="bk-titleblock">
+      <h1 class="bk-title">CONVOCATI</h1>
+    </div>
+
+    <div class="bk-players">
+      ${righeGiocatori || '<div class="bk-empty">Nessun giocatore convocato</div>'}
+    </div>
+
+    <img class="bk-player-img" src="giocatore.png" alt="" onerror="this.style.display='none'">
+
+    <div class="bk-footer">
+      <div class="dot"></div>
+      <div class="bk-footer-text">
+        <div>${ritrovoLine}</div>
+        <div class="hint">RICORDARSI DI PORTARE SEMPRE CON VOI IL DOCUMENTO DI IDENTITÀ</div>
+      </div>
+    </div>
+
+    <div class="bk-brandbar">
+      ${escapeHtml(team.nome||'')} · SETTORE GIOVANILE
+    </div>
+  `;
+}
+
+/* ---------------- Stampa con wrapper (iOS-friendly) ---------------- */
+function printSheet(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+
+  const parent = el.parentNode;
+  const nextSibling = el.nextSibling;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'print-wrapper';
+
+  wrapper.appendChild(el);
+  document.body.appendChild(wrapper);
+
+  // Forza un reflow prima di stampare (importante su iOS)
+  void wrapper.offsetHeight;
+
+  // Delay più lungo per iOS/Safari
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const delay = isIOS ? 250 : 80;
+
+  setTimeout(()=>{
+    try{
+      window.print();
+    }catch(e){
+      setTimeout(()=>window.print(), 200);
+    }
+
+    setTimeout(()=>{
+      if(nextSibling){
+        parent.insertBefore(el, nextSibling);
+      } else {
+        parent.appendChild(el);
+      }
+      wrapper.remove();
+    }, isIOS ? 1500 : 500);
+  }, delay);
+}
+
+/* ---------------- WhatsApp ---------------- */
+function buildWaText(){
+  const titolo = [match.tipo, match.denom].filter(Boolean).join(' - ') || 'Convocazione';
+  const dataStr = fmtDate(match.data) || '—';
+  const oraStr = match.ora || '—';
+  const ritrovoStr = match.orarioConvocazione || (match.ora ? minusMinutes(match.ora, 45) : '—');
+  const luogoStr = match.luogo || '—';
+
+  const convocatiNomi = getPlayerIdsInRows()
+    .map(id => roster.find(p=>p.id===id))
+    .filter(Boolean)
+    .map(p => toTitleCase(p.nome))
+    .sort((a,b)=> a.localeCompare(b, 'it'));
+
+  let lines = [];
+  lines.push(`📋 CONVOCAZIONE — ${titolo}`);
+  lines.push(`🗓️ Data: ${dataStr}`);
+  lines.push(`⏰ Ritrovo: ${ritrovoStr}  (inizio gara ore ${oraStr})`);
+  lines.push(`📍 Luogo: ${luogoStr}`);
+  lines.push('');
+  lines.push('Convocati:');
+  if(convocatiNomi.length){
+    convocatiNomi.forEach((n,i)=> lines.push(`${i+1}. ${n}`));
+  } else {
+    lines.push('(nessun giocatore convocato)');
+  }
+  lines.push('');
+  lines.push('Mi raccomando puntualità 💪');
+  return lines.join('\n');
+}
+function generateWhatsappList(){
+  const text = buildWaText();
+  document.getElementById('waText').value = text;
+  document.getElementById('waShareLink').href = 'https://wa.me/?text=' + encodeURIComponent(text);
+  document.getElementById('cardWA').classList.remove('collapsed');
+  document.getElementById('cardWA').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function copyWaText(ev){
+  const ta = document.getElementById('waText');
+  ta.select();
+  const btn = (ev && ev.target) ? ev.target : null;
+  const old = btn ? btn.textContent : null;
+  navigator.clipboard?.writeText(ta.value).then(()=>{
+    if(btn){ btn.textContent = '✅ Copiato!'; setTimeout(()=>{ btn.textContent = old; }, 1500); }
+  }).catch(()=>{
+    document.execCommand('copy');
+  });
+}
+
+/* ---------------- UI ---------------- */
+function toggleCard(id){
+  document.getElementById(id).classList.toggle('collapsed');
+}
+function resetMatch(){
+  if(!confirm('Svuotare la convocazione e i dati gara per iniziare una nuova distinta? La rosa giocatori resta invariata.')) return;
+  match = { tipo:"Campionato", denom:"", girone:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", orarioConvocazione:"", rows: [], capitanoId:null, vcapId:null,
+    staffDirigente: match.staffDirigente, staffDirigente2: match.staffDirigente2, staffMedico: match.staffMedico,
+    staffAllenatore: match.staffAllenatore, staffAllenatore2: match.staffAllenatore2, staffMassaggiatore: match.staffMassaggiatore };
+  persistMatch();
+  initFields();
+  renderAll();
+}
+
+function renderAll(){
+  renderRoster();
+  renderSelectedList();
+  renderStaffRoster();
+  renderPrint();
+  renderBacheca();
+  renderCloudStatus();
+}
+
+initFields();
+renderAll();
+if(CLOUD_ENABLED){
+  cloudRefresh(true);
+  setInterval(()=>cloudRefresh(false), CLOUD_POLL_MS);
+}
+</script>
+</body>
+</html>
