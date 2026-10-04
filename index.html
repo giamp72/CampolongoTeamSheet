@@ -533,6 +533,16 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 </style>
 </head>
 <body>
+<div id="authPanel" class="card" style="display:none; max-width:440px; margin:40px auto;">
+  <h1>Accesso ai dati condivisi</h1>
+  <p>Accedi con l’account creato per te dall’amministratore.</p>
+  <form id="loginForm">
+    <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required></div>
+    <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
+    <button class="primary" type="submit">Accedi</button>
+    <div id="authError" role="alert" style="margin-top:10px;color:var(--danger);"></div>
+  </form>
+</div>
 <div class="wrap" id="appRoot">
 
   <div class="app-header">
@@ -790,16 +800,76 @@ const SUPABASE_ANON_KEY = "";
 const CLOUD_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 const CLOUD_POLL_MS = 15000;
 let cloudStatus = CLOUD_ENABLED ? 'connecting' : 'off';
+let authSession = loadJSON('campolongo_supabase_session', null);
 let cloudVersion = null;
 let cloudDirty = false;
 let cloudRevision = 0;
 let cloudPushTimer = null;
 let cloudWriteInFlight = false;
 
+function showAuthPanel(){
+  const needsLogin = CLOUD_ENABLED && !authSession;
+  document.getElementById('authPanel').style.display = needsLogin ? 'block' : 'none';
+  document.getElementById('appRoot').style.display = needsLogin ? 'none' : '';
+}
+async function authRequest(path, body){
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/${path}`, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.msg || data.message || 'Accesso non riuscito.');
+  return data;
+}
+async function accessToken(){
+  if(!authSession) throw new Error('Sessione scaduta. Accedi di nuovo.');
+  if(authSession.expires_at && authSession.expires_at > Date.now() + 60000) return authSession.access_token;
+  const refreshed = await authRequest('token?grant_type=refresh_token', { refresh_token: authSession.refresh_token });
+  authSession = { ...refreshed, expires_at: Date.now() + refreshed.expires_in * 1000 };
+  saveJSON('campolongo_supabase_session', authSession);
+  return authSession.access_token;
+}
+function handleAuthFailure(){
+  authSession = null;
+  saveJSON('campolongo_supabase_session', null);
+  showAuthPanel();
+}
+async function login(event){
+  event.preventDefault();
+  const error = document.getElementById('authError');
+  error.textContent = '';
+  try{
+    const session = await authRequest('token?grant_type=password', {
+      email: document.getElementById('loginEmail').value.trim(),
+      password: document.getElementById('loginPassword').value
+    });
+    authSession = { ...session, expires_at: Date.now() + session.expires_in * 1000 };
+    saveJSON('campolongo_supabase_session', authSession);
+    document.getElementById('loginPassword').value = '';
+    showAuthPanel();
+    cloudStatus = 'connecting';
+    await cloudRefresh(true);
+  }catch(e){
+    error.textContent = e.message;
+  }
+}
+async function logout(){
+  try{
+    const token = await accessToken();
+    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token }
+    });
+  }catch(e){}
+  handleAuthFailure();
+  cloudStatus = 'off';
+}
 async function cloudFetch(){
   if(!CLOUD_ENABLED) return null;
+  const token = await accessToken();
   const res = await fetch(`${SUPABASE_URL}/rest/v1/team_sheet?id=eq.true&select=version,payload`, {
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY }
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token }
   });
   if(!res.ok) throw new Error('cloud fetch failed');
   const records = await res.json();
@@ -809,7 +879,7 @@ function cloudPayload(){
   return { roster, staffRoster, team, match };
 }
 function scheduleCloudPush(){
-  if(!CLOUD_ENABLED) return;
+  if(!CLOUD_ENABLED || !authSession) return;
   cloudDirty = true;
   cloudRevision++;
   cloudStatus = 'connecting';
@@ -818,16 +888,17 @@ function scheduleCloudPush(){
   cloudPushTimer = setTimeout(flushCloudPush, 500);
 }
 async function flushCloudPush(){
-  if(!CLOUD_ENABLED || !cloudDirty || cloudVersion === null) return;
+  if(!CLOUD_ENABLED || !authSession || !cloudDirty || cloudVersion === null) return;
   if(cloudWriteInFlight) return;
   cloudWriteInFlight = true;
   const revision = cloudRevision;
   try{
+    const token = await accessToken();
     const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/save_team_sheet`, {
       method: 'POST',
       headers: {
         apikey: SUPABASE_ANON_KEY,
-        Authorization: 'Bearer ' + SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + token,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ p_expected_version: cloudVersion, p_payload: cloudPayload() })
@@ -842,6 +913,11 @@ async function flushCloudPush(){
       cloudStatus = cloudDirty ? 'connecting' : 'ok';
     }
   }catch(e){
+    if(!authSession || e.message.includes('Sessione scaduta')){
+      handleAuthFailure();
+      cloudStatus = 'off';
+      return;
+    }
     cloudStatus = 'error';
   }finally{
     cloudWriteInFlight = false;
@@ -880,8 +956,9 @@ function applyCloudPayload(payload){
   document.getElementById('g_luogo').value = match.luogo || '';
 }
 async function cloudRefresh(showLoading, discardLocal){
-  if(!CLOUD_ENABLED) return;
-  if(discardLocal && cloudDirty && !confirm('Ricaricare i dati condivisi? Le modifiche locali non ancora sincronizzate andranno perse.')) return;
+  if(!CLOUD_ENABLED || !authSession) return;
+  if(discardLocal && (cloudDirty || cloudStatus === 'remote-updated') &&
+     !confirm('Ricaricare i dati condivisi? Le modifiche locali non ancora sincronizzate andranno perse.')) return;
   if(showLoading){ cloudStatus = 'connecting'; renderCloudStatus(); }
   try{
     const record = await cloudFetch();
@@ -895,12 +972,24 @@ async function cloudRefresh(showLoading, discardLocal){
       cloudPushTimer = setTimeout(flushCloudPush, 0);
       return;
     }
+    if(!cloudDirty && !discardLocal && record.version === cloudVersion){
+      cloudStatus = 'ok';
+      renderCloudStatus();
+      return;
+    }
     if(cloudDirty && !discardLocal){
       if(record.version !== cloudVersion) cloudStatus = 'conflict';
-      else if(cloudStatus === 'error'){
+      else{
         cloudStatus = 'connecting';
         cloudPushTimer = setTimeout(flushCloudPush, 0);
       }
+      renderCloudStatus();
+      return;
+    }
+    const active = document.activeElement;
+    if(!discardLocal && active && document.getElementById('appRoot').contains(active) &&
+       (active.matches('input, select, textarea') || active.isContentEditable)){
+      cloudStatus = 'remote-updated';
       renderCloudStatus();
       return;
     }
@@ -917,6 +1006,11 @@ async function cloudRefresh(showLoading, discardLocal){
     cloudStatus = 'ok';
     renderAll();
   }catch(e){
+    if(e.message.includes('Sessione scaduta')){
+      handleAuthFailure();
+      cloudStatus = 'off';
+      return;
+    }
     cloudStatus = 'error';
     renderCloudStatus();
   }
@@ -929,9 +1023,10 @@ function renderCloudStatus(){
     return;
   }
   if(cloudStatus==='connecting') el.innerHTML = '🔄 Sincronizzazione in corso…';
-  else if(cloudStatus==='ok') el.innerHTML = '☁️ Dati condivisi sincronizzati. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Aggiorna</button>';
+  else if(cloudStatus==='ok') el.innerHTML = '☁️ Dati condivisi sincronizzati. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Aggiorna</button> <button class="link" onclick="logout()" style="font-size:.78rem;">Esci</button>';
   else if(cloudStatus==='conflict') el.innerHTML = '⚠️ Modifica concorrente rilevata: i tuoi dati locali sono conservati. <button class="link" onclick="cloudRefresh(true,true)" style="font-size:.78rem;">Ricarica dati condivisi</button>';
-  else el.innerHTML = '⚠️ Sincronizzazione non riuscita. Modifiche conservate localmente. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Riprova</button>';
+  else if(cloudStatus==='remote-updated') el.innerHTML = 'ℹ️ Sono disponibili dati più recenti. <button class="link" onclick="cloudRefresh(true,true)" style="font-size:.78rem;">Ricarica dati condivisi</button>';
+  else el.innerHTML = '⚠️ Sincronizzazione non riuscita. Modifiche conservate localmente. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Riprova</button> <button class="link" onclick="logout()" style="font-size:.78rem;">Esci</button>';
 }
 
 /* ---------------- Categorie ---------------- */
@@ -1784,9 +1879,11 @@ function renderAll(){
 
 initFields();
 renderAll();
+showAuthPanel();
+document.getElementById('loginForm').addEventListener('submit', login);
 if(CLOUD_ENABLED){
-  cloudRefresh(true);
-  setInterval(()=>cloudRefresh(false), CLOUD_POLL_MS);
+  if(authSession) cloudRefresh(true);
+  setInterval(()=>{ if(authSession) cloudRefresh(false); }, CLOUD_POLL_MS);
 }
 </script>
 </body>
