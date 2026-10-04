@@ -785,48 +785,134 @@ function saveJSON(key, val){
 }
 
 /* ---------- CLOUD ---------- */
-const CLOUD_BIN_ID = "6abcbe41ac6210605a048b41";
-const CLOUD_API_KEY = "$2a$10$5zFBKxq8W/ShcR0tjP2AJesSd8Mj7y.GdBfyYTQqXDia0RtsXhNzq";
-const CLOUD_ENABLED = !!(CLOUD_BIN_ID && CLOUD_API_KEY);
+const SUPABASE_URL = "";
+const SUPABASE_ANON_KEY = "";
+const CLOUD_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 const CLOUD_POLL_MS = 15000;
 let cloudStatus = CLOUD_ENABLED ? 'connecting' : 'off';
+let cloudVersion = null;
+let cloudDirty = false;
+let cloudRevision = 0;
+let cloudPushTimer = null;
+let cloudWriteInFlight = false;
 
 async function cloudFetch(){
   if(!CLOUD_ENABLED) return null;
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {
-    headers: { 'X-Master-Key': CLOUD_API_KEY }
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/team_sheet?id=eq.true&select=version,payload`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY }
   });
   if(!res.ok) throw new Error('cloud fetch failed');
-  const data = await res.json();
-  return data.record || null;
+  const records = await res.json();
+  return records[0] || null;
 }
-async function cloudPush(){
+function cloudPayload(){
+  return { roster, staffRoster, team, match };
+}
+function scheduleCloudPush(){
   if(!CLOUD_ENABLED) return;
+  cloudDirty = true;
+  cloudRevision++;
+  cloudStatus = 'connecting';
+  renderCloudStatus();
+  clearTimeout(cloudPushTimer);
+  cloudPushTimer = setTimeout(flushCloudPush, 500);
+}
+async function flushCloudPush(){
+  if(!CLOUD_ENABLED || !cloudDirty || cloudVersion === null) return;
+  if(cloudWriteInFlight) return;
+  cloudWriteInFlight = true;
+  const revision = cloudRevision;
   try{
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`, {
-      method: 'PUT',
-      headers: { 'Content-Type':'application/json', 'X-Master-Key': CLOUD_API_KEY },
-      body: JSON.stringify({ roster, staffRoster })
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/save_team_sheet`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_expected_version: cloudVersion, p_payload: cloudPayload() })
     });
     if(!res.ok) throw new Error('cloud push failed');
-    cloudStatus = 'ok';
+    const saved = await res.json();
+    if(!saved){
+      cloudStatus = 'conflict';
+    } else {
+      cloudVersion = saved.version;
+      cloudDirty = revision !== cloudRevision;
+      cloudStatus = cloudDirty ? 'connecting' : 'ok';
+    }
   }catch(e){
     cloudStatus = 'error';
+  }finally{
+    cloudWriteInFlight = false;
   }
   renderCloudStatus();
+  if(cloudDirty && cloudStatus === 'connecting') cloudPushTimer = setTimeout(flushCloudPush, 500);
 }
-async function cloudRefresh(showLoading){
+function cloudPush(){ scheduleCloudPush(); }
+function applyCloudPayload(payload){
+  if(Array.isArray(payload.roster)) roster = payload.roster.map(p => ({ categoria: "", tessera: "", dataRilascio: "", enteRilascio: "", ...p }));
+  if(Array.isArray(payload.staffRoster)) staffRoster = payload.staffRoster.map(s => ({ categoria: "", matricola: "", dataRilascio: "", enteRilascio: "", ...s }));
+  if(payload.team && typeof payload.team === 'object') team = { ...team, ...payload.team };
+  if(payload.match && typeof payload.match === 'object') match = { ...match, ...payload.match };
+  if(!Array.isArray(match.rows)) match.rows = [];
+  if(match.selected && !payload.match?.rows){
+    match.rows = match.selected.map(id => ({ type:'player', id }));
+    delete match.selected;
+  }
+  nextId = Math.max(0, ...roster.map(p=>p.id), 0) + 1;
+  nextStaffId = Math.max(0, ...staffRoster.map(s=>s.id), 0) + 1;
+  saveJSON('campolongo_roster', roster);
+  saveJSON('campolongo_staff_roster', staffRoster);
+  saveJSON('campolongo_team', team);
+  saveJSON('campolongo_match_draft', match);
+  document.getElementById('t_nome').value = team.nome || '';
+  document.getElementById('t_matricola').value = team.matricola || '';
+  document.getElementById('t_sede').value = team.sede || '';
+  document.getElementById('g_tipo').value = match.tipo || 'Campionato';
+  document.getElementById('g_denom').value = match.denom || '';
+  document.getElementById('g_girone').value = match.girone || '';
+  document.getElementById('g_ospitante').value = match.ospitante || team.nome || '';
+  document.getElementById('g_ospite').value = match.ospite || '';
+  document.getElementById('g_data').value = match.data || '';
+  document.getElementById('g_ora').value = match.ora || '';
+  document.getElementById('g_orarioConvocazione').value = match.orarioConvocazione || '';
+  document.getElementById('g_luogo').value = match.luogo || '';
+}
+async function cloudRefresh(showLoading, discardLocal){
   if(!CLOUD_ENABLED) return;
+  if(discardLocal && cloudDirty && !confirm('Ricaricare i dati condivisi? Le modifiche locali non ancora sincronizzate andranno perse.')) return;
   if(showLoading){ cloudStatus = 'connecting'; renderCloudStatus(); }
   try{
     const record = await cloudFetch();
-    if(record){
-      if(Array.isArray(record.roster)) roster = record.roster.map(p => ({ categoria: "", tessera: "", dataRilascio: "", enteRilascio: "", ...p }));
-      if(Array.isArray(record.staffRoster)) staffRoster = record.staffRoster.map(s => ({ categoria: "", matricola: "", dataRilascio: "", enteRilascio: "", ...s }));
-      saveJSON('campolongo_roster', roster);
-      saveJSON('campolongo_staff_roster', staffRoster);
-      nextId = Math.max(0, ...roster.map(p=>p.id), 0) + 1;
-      nextStaffId = Math.max(0, ...staffRoster.map(p=>p.id), 0) + 1;
+    if(!record){
+      cloudVersion = 0;
+      if(cloudDirty) throw new Error('cloud row missing');
+      cloudDirty = true;
+      cloudRevision++;
+      cloudStatus = 'connecting';
+      renderCloudStatus();
+      cloudPushTimer = setTimeout(flushCloudPush, 0);
+      return;
+    }
+    if(cloudDirty && !discardLocal){
+      if(record.version !== cloudVersion) cloudStatus = 'conflict';
+      else if(cloudStatus === 'error'){
+        cloudStatus = 'connecting';
+        cloudPushTimer = setTimeout(flushCloudPush, 0);
+      }
+      renderCloudStatus();
+      return;
+    }
+    cloudVersion = record.version;
+    cloudDirty = false;
+    if(record.payload) applyCloudPayload(record.payload);
+    else{
+      cloudDirty = true;
+      cloudRevision++;
+      cloudStatus = 'connecting';
+      cloudPushTimer = setTimeout(flushCloudPush, 0);
+      return;
     }
     cloudStatus = 'ok';
     renderAll();
@@ -839,12 +925,13 @@ function renderCloudStatus(){
   const el = document.getElementById('cloudStatus');
   if(!el) return;
   if(!CLOUD_ENABLED){
-    el.innerHTML = '📴 Modalità solo locale — dati salvati solo su questo browser.';
+    el.innerHTML = '📴 Configura Supabase per condividere i dati; per ora sono salvati solo in questo browser.';
     return;
   }
   if(cloudStatus==='connecting') el.innerHTML = '🔄 Sincronizzazione in corso…';
-  else if(cloudStatus==='ok') el.innerHTML = '☁️ Sincronizzato. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Aggiorna ora</button>';
-  else el.innerHTML = '⚠️ Sincronizzazione non riuscita. Dati salvati solo localmente. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Riprova</button>';
+  else if(cloudStatus==='ok') el.innerHTML = '☁️ Dati condivisi sincronizzati. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Aggiorna</button>';
+  else if(cloudStatus==='conflict') el.innerHTML = '⚠️ Modifica concorrente rilevata: i tuoi dati locali sono conservati. <button class="link" onclick="cloudRefresh(true,true)" style="font-size:.78rem;">Ricarica dati condivisi</button>';
+  else el.innerHTML = '⚠️ Sincronizzazione non riuscita. Modifiche conservate localmente. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Riprova</button>';
 }
 
 /* ---------------- Categorie ---------------- */
@@ -983,6 +1070,7 @@ function onTeamChange(){
   team.matricola = document.getElementById('t_matricola').value;
   team.sede = document.getElementById('t_sede').value;
   saveJSON('campolongo_team', team);
+  cloudPush();
   renderPrint();
   renderBacheca();
 }
@@ -1014,7 +1102,10 @@ function onMatchChange(){
   renderPrint();
   renderBacheca();
 }
-function persistMatch(){ saveJSON('campolongo_match_draft', match); }
+function persistMatch(){
+  saveJSON('campolongo_match_draft', match);
+  cloudPush();
+}
 
 /* ---------------- Staff roster ---------------- */
 function renderStaffRoster(){
