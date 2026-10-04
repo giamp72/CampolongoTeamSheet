@@ -801,6 +801,7 @@ const CLOUD_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 const CLOUD_POLL_MS = 15000;
 let cloudStatus = CLOUD_ENABLED ? 'connecting' : 'off';
 let authSession = loadJSON('campolongo_supabase_session', null);
+let cloudInitialized = !CLOUD_ENABLED || !authSession;
 let cloudVersion = null;
 let cloudDirty = false;
 let cloudRevision = 0;
@@ -815,8 +816,13 @@ let matchCloudWriteInFlight = false;
 
 function showAuthPanel(){
   const needsLogin = CLOUD_ENABLED && !authSession;
-  document.getElementById('authPanel').style.display = needsLogin ? 'block' : 'none';
-  document.getElementById('appRoot').style.display = needsLogin ? 'none' : '';
+  const waitingForData = CLOUD_ENABLED && authSession && !cloudInitialized;
+  document.getElementById('authPanel').style.display = needsLogin || waitingForData ? 'block' : 'none';
+  document.getElementById('loginForm').style.display = needsLogin ? '' : 'none';
+  document.getElementById('authPanel').querySelector('p').textContent = waitingForData
+    ? 'Caricamento dei dati condivisi e della tua convocazione…'
+    : 'Accedi con l’account creato per te dall’amministratore.';
+  document.getElementById('appRoot').style.display = needsLogin || waitingForData ? 'none' : '';
 }
 async function authRequest(path, body){
   const res = await fetch(`${SUPABASE_URL}/auth/v1/${path}`, {
@@ -853,16 +859,21 @@ async function login(event){
     authSession = { ...session, expires_at: Date.now() + session.expires_in * 1000 };
     saveJSON('campolongo_supabase_session', authSession);
     document.getElementById('loginPassword').value = '';
+    cloudInitialized = false;
     match = loadJSON(matchStorageKey(), defaultMatch());
     if(!Array.isArray(match.rows)) match.rows = [];
     matchCloudVersion = null;
     matchCloudDirty = false;
+    matchCloudStatus = 'connecting';
     showAuthPanel();
+    renderCloudStatus();
     populateMatchFields();
-    renderAll();
     cloudStatus = 'connecting';
     await cloudRefresh(true);
     await matchCloudRefresh(true);
+    cloudInitialized = true;
+    showAuthPanel();
+    renderAll();
   }catch(e){
     error.textContent = e.message;
   }
@@ -1241,7 +1252,7 @@ let match = loadJSON(matchStorageKey(), defaultMatch());
 if(match.selected && Array.isArray(match.selected) && !match.rows){
   match.rows = match.selected.map(id => ({ type:'player', id }));
   delete match.selected;
-  saveJSON('campolongo_match_draft', match);
+  saveJSON(matchStorageKey(), match);
 }
 if(!match.rows) match.rows = [];
 
@@ -2026,7 +2037,11 @@ renderAll();
 showAuthPanel();
 document.getElementById('loginForm').addEventListener('submit', login);
 if(CLOUD_ENABLED){
-  if(authSession) refreshCloudData();
+  if(authSession) refreshCloudData().finally(()=>{
+    cloudInitialized = true;
+    showAuthPanel();
+    renderAll();
+  });
   setInterval(()=>{ if(authSession) refreshCloudData(); }, CLOUD_POLL_MS);
 }
 </script>
