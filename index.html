@@ -533,6 +533,16 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 </style>
 </head>
 <body>
+<div id="authPanel" class="card" style="display:none; max-width:440px; margin:40px auto;">
+  <h1>Accesso ai dati condivisi</h1>
+  <p>Accedi con l’account creato per te dall’amministratore.</p>
+  <form id="loginForm">
+    <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required></div>
+    <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
+    <button class="primary" type="submit">Accedi</button>
+    <div id="authError" role="alert" style="margin-top:10px;color:var(--danger);"></div>
+  </form>
+</div>
 <div class="wrap" id="appRoot">
 
   <div class="app-header">
@@ -785,66 +795,385 @@ function saveJSON(key, val){
 }
 
 /* ---------- CLOUD ---------- */
-const CLOUD_BIN_ID = "6abcbe41ac6210605a048b41";
-const CLOUD_API_KEY = "$2a$10$5zFBKxq8W/ShcR0tjP2AJesSd8Mj7y.GdBfyYTQqXDia0RtsXhNzq";
-const CLOUD_ENABLED = !!(CLOUD_BIN_ID && CLOUD_API_KEY);
+const SUPABASE_URL = "https://hucreexhapayhutzlmup.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_JTeVPicyUISKyO4xtzV7OA_IPZ6km3v";
+const CLOUD_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 const CLOUD_POLL_MS = 15000;
 let cloudStatus = CLOUD_ENABLED ? 'connecting' : 'off';
+let authSession = loadJSON('campolongo_supabase_session', null);
+let cloudInitialized = !CLOUD_ENABLED || !authSession;
+let cloudVersion = null;
+let cloudDirty = false;
+let cloudRevision = 0;
+let cloudPushTimer = null;
+let cloudWriteInFlight = false;
+let matchCloudStatus = CLOUD_ENABLED ? 'connecting' : 'off';
+let matchCloudVersion = null;
+let matchCloudDirty = false;
+let matchCloudRevision = 0;
+let matchCloudPushTimer = null;
+let matchCloudWriteInFlight = false;
 
+function showAuthPanel(){
+  const needsLogin = CLOUD_ENABLED && !authSession;
+  const waitingForData = CLOUD_ENABLED && authSession && !cloudInitialized;
+  document.getElementById('authPanel').style.display = needsLogin || waitingForData ? 'block' : 'none';
+  document.getElementById('loginForm').style.display = needsLogin ? '' : 'none';
+  document.getElementById('authPanel').querySelector('p').textContent = waitingForData
+    ? 'Caricamento dei dati condivisi e della tua convocazione…'
+    : 'Accedi con l’account creato per te dall’amministratore.';
+  document.getElementById('appRoot').style.display = needsLogin || waitingForData ? 'none' : '';
+}
+async function authRequest(path, body){
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/${path}`, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if(!res.ok) throw new Error(data.msg || data.message || 'Accesso non riuscito.');
+  return data;
+}
+async function accessToken(){
+  if(!authSession) throw new Error('Sessione scaduta. Accedi di nuovo.');
+  if(authSession.expires_at && authSession.expires_at > Date.now() + 60000) return authSession.access_token;
+  const refreshed = await authRequest('token?grant_type=refresh_token', { refresh_token: authSession.refresh_token });
+  authSession = { ...refreshed, expires_at: Date.now() + refreshed.expires_in * 1000 };
+  saveJSON('campolongo_supabase_session', authSession);
+  return authSession.access_token;
+}
+function handleAuthFailure(){
+  authSession = null;
+  saveJSON('campolongo_supabase_session', null);
+  showAuthPanel();
+}
+async function login(event){
+  event.preventDefault();
+  const error = document.getElementById('authError');
+  error.textContent = '';
+  try{
+    const session = await authRequest('token?grant_type=password', {
+      email: document.getElementById('loginEmail').value.trim(),
+      password: document.getElementById('loginPassword').value
+    });
+    authSession = { ...session, expires_at: Date.now() + session.expires_in * 1000 };
+    saveJSON('campolongo_supabase_session', authSession);
+    document.getElementById('loginPassword').value = '';
+    cloudInitialized = false;
+    match = loadJSON(matchStorageKey(), defaultMatch());
+    if(!Array.isArray(match.rows)) match.rows = [];
+    matchCloudVersion = null;
+    matchCloudDirty = false;
+    matchCloudStatus = 'connecting';
+    showAuthPanel();
+    renderCloudStatus();
+    populateMatchFields();
+    cloudStatus = 'connecting';
+    await cloudRefresh(true);
+    await matchCloudRefresh(true);
+    cloudInitialized = true;
+    showAuthPanel();
+    renderAll();
+  }catch(e){
+    error.textContent = e.message;
+  }
+}
+async function logout(){
+  try{
+    const token = await accessToken();
+    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token }
+    });
+  }catch(e){}
+  handleAuthFailure();
+  cloudStatus = 'off';
+}
 async function cloudFetch(){
   if(!CLOUD_ENABLED) return null;
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}/latest`, {
-    headers: { 'X-Master-Key': CLOUD_API_KEY }
+  const token = await accessToken();
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/team_sheet?id=eq.true&select=version,payload`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token }
   });
   if(!res.ok) throw new Error('cloud fetch failed');
-  const data = await res.json();
-  return data.record || null;
+  const records = await res.json();
+  return records[0] || null;
 }
-async function cloudPush(){
-  if(!CLOUD_ENABLED) return;
+function cloudPayload(){
+  return { roster, staffRoster, team };
+}
+function scheduleCloudPush(){
+  if(!CLOUD_ENABLED || !authSession) return;
+  cloudDirty = true;
+  cloudRevision++;
+  cloudStatus = 'connecting';
+  renderCloudStatus();
+  clearTimeout(cloudPushTimer);
+  cloudPushTimer = setTimeout(flushCloudPush, 500);
+}
+async function flushCloudPush(){
+  if(!CLOUD_ENABLED || !authSession || !cloudDirty || cloudVersion === null) return;
+  if(cloudWriteInFlight) return;
+  cloudWriteInFlight = true;
+  const revision = cloudRevision;
   try{
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${CLOUD_BIN_ID}`, {
-      method: 'PUT',
-      headers: { 'Content-Type':'application/json', 'X-Master-Key': CLOUD_API_KEY },
-      body: JSON.stringify({ roster, staffRoster })
+    const token = await accessToken();
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/save_team_sheet`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_expected_version: cloudVersion, p_payload: cloudPayload() })
     });
     if(!res.ok) throw new Error('cloud push failed');
-    cloudStatus = 'ok';
+    const saved = await res.json();
+    if(!saved){
+      cloudStatus = 'conflict';
+    } else {
+      cloudVersion = saved.version;
+      cloudDirty = revision !== cloudRevision;
+      cloudStatus = cloudDirty ? 'connecting' : 'ok';
+    }
   }catch(e){
+    if(!authSession || e.message.includes('Sessione scaduta')){
+      handleAuthFailure();
+      cloudStatus = 'off';
+      return;
+    }
     cloudStatus = 'error';
+  }finally{
+    cloudWriteInFlight = false;
   }
   renderCloudStatus();
+  if(cloudDirty && cloudStatus === 'connecting') cloudPushTimer = setTimeout(flushCloudPush, 500);
 }
-async function cloudRefresh(showLoading){
-  if(!CLOUD_ENABLED) return;
+function cloudPush(){ scheduleCloudPush(); }
+function applyCloudPayload(payload){
+  if(Array.isArray(payload.roster)) roster = payload.roster.map(p => ({ categoria: "", tessera: "", dataRilascio: "", enteRilascio: "", ...p }));
+  if(Array.isArray(payload.staffRoster)) staffRoster = payload.staffRoster.map(s => ({ categoria: "", matricola: "", dataRilascio: "", enteRilascio: "", ...s }));
+  if(payload.team && typeof payload.team === 'object') team = { ...team, ...payload.team };
+  nextId = Math.max(0, ...roster.map(p=>p.id), 0) + 1;
+  nextStaffId = Math.max(0, ...staffRoster.map(s=>s.id), 0) + 1;
+  saveJSON('campolongo_roster', roster);
+  saveJSON('campolongo_staff_roster', staffRoster);
+  saveJSON('campolongo_team', team);
+  document.getElementById('t_nome').value = team.nome || '';
+  document.getElementById('t_matricola').value = team.matricola || '';
+  document.getElementById('t_sede').value = team.sede || '';
+}
+async function matchCloudFetch(){
+  const token = await accessToken();
+  const userId = encodeURIComponent(authSession.user.id);
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/user_matches?user_id=eq.${userId}&select=version,payload`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token }
+  });
+  if(!res.ok) throw new Error('match fetch failed');
+  const records = await res.json();
+  return records[0] || null;
+}
+function scheduleMatchCloudPush(){
+  if(!CLOUD_ENABLED || !authSession) return;
+  matchCloudDirty = true;
+  matchCloudRevision++;
+  matchCloudStatus = 'connecting';
+  renderCloudStatus();
+  clearTimeout(matchCloudPushTimer);
+  matchCloudPushTimer = setTimeout(flushMatchCloudPush, 500);
+}
+async function flushMatchCloudPush(){
+  if(!CLOUD_ENABLED || !authSession || !matchCloudDirty || matchCloudVersion === null || matchCloudWriteInFlight) return;
+  matchCloudWriteInFlight = true;
+  const revision = matchCloudRevision;
+  try{
+    const token = await accessToken();
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/save_user_match`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: 'Bearer ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_expected_version: matchCloudVersion, p_payload: match })
+    });
+    if(!res.ok) throw new Error('match save failed');
+    const saved = await res.json();
+    if(!saved){
+      matchCloudStatus = 'conflict';
+    } else {
+      matchCloudVersion = saved.version;
+      matchCloudDirty = revision !== matchCloudRevision;
+      matchCloudStatus = matchCloudDirty ? 'connecting' : 'ok';
+    }
+  }catch(e){
+    if(!authSession || e.message.includes('Sessione scaduta')){
+      handleAuthFailure();
+      cloudStatus = 'off';
+      matchCloudStatus = 'off';
+      return;
+    }
+    matchCloudStatus = 'error';
+  }finally{
+    matchCloudWriteInFlight = false;
+  }
+  renderCloudStatus();
+  if(matchCloudDirty && matchCloudStatus === 'connecting'){
+    matchCloudPushTimer = setTimeout(flushMatchCloudPush, 500);
+  }
+}
+function applyCloudMatch(payload){
+  match = { ...defaultMatch(), ...payload };
+  if(!Array.isArray(match.rows)) match.rows = [];
+  if(match.selected && !payload.rows){
+    match.rows = match.selected.map(id => ({ type:'player', id }));
+    delete match.selected;
+  }
+  saveJSON(matchStorageKey(), match);
+  populateMatchFields();
+}
+function populateMatchFields(){
+  document.getElementById('g_tipo').value = match.tipo || 'Campionato';
+  document.getElementById('g_denom').value = match.denom || '';
+  document.getElementById('g_girone').value = match.girone || '';
+  document.getElementById('g_ospitante').value = match.ospitante || team.nome || '';
+  document.getElementById('g_ospite').value = match.ospite || '';
+  document.getElementById('g_data').value = match.data || '';
+  document.getElementById('g_ora').value = match.ora || '';
+  document.getElementById('g_orarioConvocazione').value = match.orarioConvocazione || '';
+  document.getElementById('g_luogo').value = match.luogo || '';
+}
+async function matchCloudRefresh(showLoading, discardLocal){
+  if(!CLOUD_ENABLED || !authSession) return;
+  if(discardLocal && (matchCloudDirty || matchCloudStatus === 'remote-updated') &&
+     !confirm('Ricaricare la tua convocazione salvata? Le modifiche locali non ancora sincronizzate andranno perse.')) return;
+  if(showLoading){ matchCloudStatus = 'connecting'; renderCloudStatus(); }
+  try{
+    const record = await matchCloudFetch();
+    if(!record){
+      matchCloudVersion = 0;
+      if(matchCloudDirty){
+        matchCloudStatus = 'connecting';
+        matchCloudPushTimer = setTimeout(flushMatchCloudPush, 0);
+      } else matchCloudStatus = 'ok';
+      renderCloudStatus();
+      return;
+    }
+    if(matchCloudDirty && !discardLocal){
+      if(record.version !== matchCloudVersion) matchCloudStatus = 'conflict';
+      else{
+        matchCloudStatus = 'connecting';
+        matchCloudPushTimer = setTimeout(flushMatchCloudPush, 0);
+      }
+      renderCloudStatus();
+      return;
+    }
+    if(!discardLocal && record.version === matchCloudVersion){
+      matchCloudStatus = 'ok';
+      renderCloudStatus();
+      return;
+    }
+    const active = document.activeElement;
+    if(!discardLocal && active && document.getElementById('appRoot').contains(active) &&
+       (active.matches('input, select, textarea') || active.isContentEditable)){
+      matchCloudStatus = 'remote-updated';
+      renderCloudStatus();
+      return;
+    }
+    matchCloudVersion = record.version;
+    matchCloudDirty = false;
+    applyCloudMatch(record.payload || {});
+    matchCloudStatus = 'ok';
+    renderAll();
+  }catch(e){
+    if(e.message.includes('Sessione scaduta')){
+      handleAuthFailure();
+      cloudStatus = 'off';
+      matchCloudStatus = 'off';
+      return;
+    }
+    matchCloudStatus = 'error';
+    renderCloudStatus();
+  }
+}
+async function cloudRefresh(showLoading, discardLocal){
+  if(!CLOUD_ENABLED || !authSession) return;
+  if(discardLocal && (cloudDirty || cloudStatus === 'remote-updated') &&
+     !confirm('Ricaricare i dati condivisi? Le modifiche locali non ancora sincronizzate andranno perse.')) return;
   if(showLoading){ cloudStatus = 'connecting'; renderCloudStatus(); }
   try{
     const record = await cloudFetch();
-    if(record){
-      if(Array.isArray(record.roster)) roster = record.roster.map(p => ({ categoria: "", tessera: "", dataRilascio: "", enteRilascio: "", ...p }));
-      if(Array.isArray(record.staffRoster)) staffRoster = record.staffRoster.map(s => ({ categoria: "", matricola: "", dataRilascio: "", enteRilascio: "", ...s }));
-      saveJSON('campolongo_roster', roster);
-      saveJSON('campolongo_staff_roster', staffRoster);
-      nextId = Math.max(0, ...roster.map(p=>p.id), 0) + 1;
-      nextStaffId = Math.max(0, ...staffRoster.map(p=>p.id), 0) + 1;
+    if(!record){
+      cloudVersion = 0;
+      if(cloudDirty) throw new Error('cloud row missing');
+      cloudDirty = true;
+      cloudRevision++;
+      cloudStatus = 'connecting';
+      renderCloudStatus();
+      cloudPushTimer = setTimeout(flushCloudPush, 0);
+      return;
+    }
+    if(!cloudDirty && !discardLocal && record.version === cloudVersion){
+      cloudStatus = 'ok';
+      renderCloudStatus();
+      return;
+    }
+    if(cloudDirty && !discardLocal){
+      if(record.version !== cloudVersion) cloudStatus = 'conflict';
+      else{
+        cloudStatus = 'connecting';
+        cloudPushTimer = setTimeout(flushCloudPush, 0);
+      }
+      renderCloudStatus();
+      return;
+    }
+    const active = document.activeElement;
+    if(!discardLocal && active && document.getElementById('appRoot').contains(active) &&
+       (active.matches('input, select, textarea') || active.isContentEditable)){
+      cloudStatus = 'remote-updated';
+      renderCloudStatus();
+      return;
+    }
+    cloudVersion = record.version;
+    cloudDirty = false;
+    if(record.payload) applyCloudPayload(record.payload);
+    else{
+      cloudDirty = true;
+      cloudRevision++;
+      cloudStatus = 'connecting';
+      cloudPushTimer = setTimeout(flushCloudPush, 0);
+      return;
     }
     cloudStatus = 'ok';
     renderAll();
   }catch(e){
+    if(e.message.includes('Sessione scaduta')){
+      handleAuthFailure();
+      cloudStatus = 'off';
+      return;
+    }
     cloudStatus = 'error';
     renderCloudStatus();
   }
+}
+async function refreshCloudData(){
+  await cloudRefresh(true);
+  await matchCloudRefresh(true);
 }
 function renderCloudStatus(){
   const el = document.getElementById('cloudStatus');
   if(!el) return;
   if(!CLOUD_ENABLED){
-    el.innerHTML = '📴 Modalità solo locale — dati salvati solo su questo browser.';
+    el.innerHTML = '📴 Configura Supabase per condividere i dati; per ora sono salvati solo in questo browser.';
     return;
   }
-  if(cloudStatus==='connecting') el.innerHTML = '🔄 Sincronizzazione in corso…';
-  else if(cloudStatus==='ok') el.innerHTML = '☁️ Sincronizzato. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Aggiorna ora</button>';
-  else el.innerHTML = '⚠️ Sincronizzazione non riuscita. Dati salvati solo localmente. <button class="link" onclick="cloudRefresh(true)" style="font-size:.78rem;">Riprova</button>';
+  if(cloudStatus==='conflict') el.innerHTML = '⚠️ Modifica simultanea della rosa rilevata: modifiche locali conservate. <button class="link" onclick="cloudRefresh(true,true)" style="font-size:.78rem;">Ricarica rosa condivisa</button>';
+  else if(matchCloudStatus==='conflict') el.innerHTML = '⚠️ Modifica simultanea della tua convocazione rilevata: modifiche locali conservate. <button class="link" onclick="matchCloudRefresh(true,true)" style="font-size:.78rem;">Ricarica la mia convocazione</button>';
+  else if(cloudStatus==='remote-updated') el.innerHTML = 'ℹ️ È disponibile una rosa condivisa più recente. <button class="link" onclick="cloudRefresh(true,true)" style="font-size:.78rem;">Ricarica rosa</button>';
+  else if(matchCloudStatus==='remote-updated') el.innerHTML = 'ℹ️ È disponibile una convocazione più recente per il tuo account. <button class="link" onclick="matchCloudRefresh(true,true)" style="font-size:.78rem;">Ricarica convocazione</button>';
+  else if(cloudStatus==='error' || matchCloudStatus==='error') el.innerHTML = '⚠️ Sincronizzazione non riuscita. Le modifiche locali sono conservate. <button class="link" onclick="refreshCloudData()" style="font-size:.78rem;">Riprova</button> <button class="link" onclick="logout()" style="font-size:.78rem;">Esci</button>';
+  else if(cloudStatus==='connecting' || matchCloudStatus==='connecting') el.innerHTML = '🔄 Sincronizzazione in corso…';
+  else el.innerHTML = '☁️ Rosa e staff condivisi; convocazione privata sincronizzata. <button class="link" onclick="refreshCloudData()" style="font-size:.78rem;">Aggiorna</button> <button class="link" onclick="logout()" style="font-size:.78rem;">Esci</button>';
 }
 
 /* ---------------- Categorie ---------------- */
@@ -901,6 +1230,16 @@ const DEFAULT_STAFF_ROSTER = [
   {id:1, nome:"TOMASELLA GIANPIETRO", tessera:"2026934", categoria:"", matricola:"", dataRilascio:"", enteRilascio:""},
   {id:2, nome:"MODOLO LUIGINO", tessera:"48508", categoria:"", matricola:"", dataRilascio:"", enteRilascio:""}
 ];
+function defaultMatch(){
+  return {
+    tipo:"Campionato", denom:"", girone:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", orarioConvocazione:"",
+    rows: [], capitanoId:null, vcapId:null,
+    staffDirigente:null, staffDirigente2:null, staffMedico:null, staffAllenatore:null, staffAllenatore2:null, staffMassaggiatore:null
+  };
+}
+function matchStorageKey(){
+  return authSession?.user?.id ? `campolongo_match_draft_${authSession.user.id}` : 'campolongo_match_draft';
+}
 
 let roster = loadJSON('campolongo_roster', DEFAULT_ROSTER);
 let team = loadJSON('campolongo_team', DEFAULT_TEAM);
@@ -908,16 +1247,12 @@ let staffRoster = loadJSON('campolongo_staff_roster', DEFAULT_STAFF_ROSTER);
 roster = roster.map(p => ({ categoria: "", tessera: "", dataRilascio: "", enteRilascio: "", ...p }));
 staffRoster = staffRoster.map(s => ({ categoria: "", matricola: "", dataRilascio: "", enteRilascio: "", ...s }));
 
-let match = loadJSON('campolongo_match_draft', {
-  tipo:"Campionato", denom:"", girone:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", orarioConvocazione:"",
-  rows: [], capitanoId:null, vcapId:null,
-  staffDirigente:null, staffDirigente2:null, staffMedico:null, staffAllenatore:null, staffAllenatore2:null, staffMassaggiatore:null
-});
+let match = loadJSON(matchStorageKey(), defaultMatch());
 
 if(match.selected && Array.isArray(match.selected) && !match.rows){
   match.rows = match.selected.map(id => ({ type:'player', id }));
   delete match.selected;
-  saveJSON('campolongo_match_draft', match);
+  saveJSON(matchStorageKey(), match);
 }
 if(!match.rows) match.rows = [];
 
@@ -983,6 +1318,7 @@ function onTeamChange(){
   team.matricola = document.getElementById('t_matricola').value;
   team.sede = document.getElementById('t_sede').value;
   saveJSON('campolongo_team', team);
+  cloudPush();
   renderPrint();
   renderBacheca();
 }
@@ -1014,7 +1350,10 @@ function onMatchChange(){
   renderPrint();
   renderBacheca();
 }
-function persistMatch(){ saveJSON('campolongo_match_draft', match); }
+function persistMatch(){
+  saveJSON(matchStorageKey(), match);
+  scheduleMatchCloudPush();
+}
 
 /* ---------------- Staff roster ---------------- */
 function renderStaffRoster(){
@@ -1674,9 +2013,11 @@ function toggleCard(id){
 }
 function resetMatch(){
   if(!confirm('Svuotare la convocazione e i dati gara per iniziare una nuova distinta? La rosa giocatori resta invariata.')) return;
-  match = { tipo:"Campionato", denom:"", girone:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", orarioConvocazione:"", rows: [], capitanoId:null, vcapId:null,
+  const staffSelections = {
     staffDirigente: match.staffDirigente, staffDirigente2: match.staffDirigente2, staffMedico: match.staffMedico,
-    staffAllenatore: match.staffAllenatore, staffAllenatore2: match.staffAllenatore2, staffMassaggiatore: match.staffMassaggiatore };
+    staffAllenatore: match.staffAllenatore, staffAllenatore2: match.staffAllenatore2, staffMassaggiatore: match.staffMassaggiatore
+  };
+  match = { ...defaultMatch(), ...staffSelections };
   persistMatch();
   initFields();
   renderAll();
@@ -1693,9 +2034,15 @@ function renderAll(){
 
 initFields();
 renderAll();
+showAuthPanel();
+document.getElementById('loginForm').addEventListener('submit', login);
 if(CLOUD_ENABLED){
-  cloudRefresh(true);
-  setInterval(()=>cloudRefresh(false), CLOUD_POLL_MS);
+  if(authSession) refreshCloudData().finally(()=>{
+    cloudInitialized = true;
+    showAuthPanel();
+    renderAll();
+  });
+  setInterval(()=>{ if(authSession) refreshCloudData(); }, CLOUD_POLL_MS);
 }
 </script>
 </body>
