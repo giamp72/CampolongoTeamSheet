@@ -43,10 +43,16 @@ h1{font-size:1.2rem; margin:0 0 4px;}
 .app-header .titles{flex:1; min-width:0;}
 .app-header h1{margin:0;}
 .app-header .sub{margin:2px 0 0;}
+.app-user{display:flex; align-items:center; gap:8px; margin-left:auto; flex:0 0 auto;}
+.app-user[hidden]{display:none;}
+.app-user-name{max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.82rem; color:var(--muted);}
 @media(max-width:520px){
+  .app-header{flex-wrap:wrap;}
   .app-header .logo{width:44px; height:44px;}
   .app-header h1{font-size:1.02rem;}
   .app-header .sub{font-size:.78rem;}
+  .app-user{margin-left:auto;}
+  .app-user-name{max-width:130px;}
 }
 .card{
   background:var(--panel); border:1px solid var(--border); border-radius:12px;
@@ -551,6 +557,10 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
       <h1>Distinta Gara — A.S.D. Campolongo</h1>
       <div class="sub">Compila i dati, seleziona i convocati, poi stampa la distinta o il PDF da bacheca.</div>
     </div>
+    <div class="app-user" id="appUser" hidden>
+      <span class="app-user-name" id="appUserName"></span>
+      <button class="small" type="button" onclick="logout()">Esci</button>
+    </div>
   </div>
 
   <div class="actions-bar">
@@ -817,12 +827,21 @@ let matchCloudWriteInFlight = false;
 function showAuthPanel(){
   const needsLogin = CLOUD_ENABLED && !authSession;
   const waitingForData = CLOUD_ENABLED && authSession && !cloudInitialized;
+  renderUserMenu();
   document.getElementById('authPanel').style.display = needsLogin || waitingForData ? 'block' : 'none';
   document.getElementById('loginForm').style.display = needsLogin ? '' : 'none';
   document.getElementById('authPanel').querySelector('p').textContent = waitingForData
     ? 'Caricamento dei dati condivisi e della tua convocazione…'
     : 'Accedi con l’account creato per te dall’amministratore.';
   document.getElementById('appRoot').style.display = needsLogin || waitingForData ? 'none' : '';
+}
+function renderUserMenu(){
+  const userMenu = document.getElementById('appUser');
+  const user = authSession?.user;
+  userMenu.hidden = !CLOUD_ENABLED || !user;
+  if(userMenu.hidden) return;
+  document.getElementById('appUserName').textContent =
+    user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.display_name || user.email || 'Utente';
 }
 async function authRequest(path, body){
   const res = await fetch(`${SUPABASE_URL}/auth/v1/${path}`, {
