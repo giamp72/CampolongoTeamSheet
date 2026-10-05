@@ -799,7 +799,6 @@ function saveJSON(key, val){
 const SUPABASE_URL = "https://hucreexhapayhutzlmup.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_JTeVPicyUISKyO4xtzV7OA_IPZ6km3v";
 const CLOUD_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
-const CLOUD_POLL_MS = 15000;
 let cloudStatus = CLOUD_ENABLED ? 'connecting' : 'off';
 let authSession = loadJSON('campolongo_supabase_session', null);
 let cloudInitialized = !CLOUD_ENABLED || !authSession;
@@ -2060,7 +2059,6 @@ if(CLOUD_ENABLED){
     showAuthPanel();
     renderAll();
   });
-  setInterval(()=>{ if(authSession) refreshCloudData(); }, CLOUD_POLL_MS);
 }
 </script>
 </body>
