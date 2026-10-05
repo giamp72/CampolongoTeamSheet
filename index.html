@@ -466,14 +466,15 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 .rg-title{font-size:9px; font-weight:800; text-transform:uppercase;}
 .rg-header-bands{display:grid; grid-template-columns:1fr 1fr; gap:2mm; margin-top:1mm;}
 .rg-band{border:1px solid #172b54; background:#dcebd6; text-align:center; font-weight:800; text-transform:uppercase; padding:1mm;}
-.rg-options{display:grid; grid-template-columns:repeat(3,1fr); gap:2mm; margin:1mm 0; font-weight:700; font-size:6px;}
-.rg-options span{white-space:nowrap; border:1px solid #172b54; background:#e5efdf; padding:1mm; text-align:center;}
+.rg-options{display:grid; grid-template-columns:repeat(3,1fr); gap:5mm; margin:1mm 0; font-weight:700; font-size:6px;}
+.rg-option-choice{white-space:nowrap; border:1px solid #172b54; background:#e5efdf; padding:1mm; text-align:center;}
+.rg-option-note{text-align:center; font-size:5px; padding-top:.5mm;}
 .rg-instruction{text-align:center; font-size:5px; font-weight:700; margin:1mm 0;}
-.rg-fields{display:grid; grid-template-columns:repeat(4,1fr); gap:1mm 2mm;}
+.rg-fields{display:grid; grid-template-columns:repeat(4,35mm); justify-content:space-between; gap:1mm 0; width:170mm; margin:0 auto;}
 .rg-field{display:flex; flex-direction:column-reverse; gap:.5mm; height:9mm;}
 .rg-field b{white-space:nowrap; font-size:6px; text-align:center;}
 .rg-fill{border:1px solid #172b54; background:#e9edf3; min-height:5mm; flex:1; padding:1mm 2mm; color:#111; font-size:8px;}
-.rg-wide{grid-column:1/-1;}
+.rg-wide{grid-column:1/-1; width:110mm; justify-self:center;}
 .rg-teams-head,.rg-team-row{display:grid; grid-template-columns:38mm 53mm 57mm 31mm; justify-content:space-between; align-items:center;}
 .rg-teams-head{margin-top:1mm;}
 .rg-teams-head .rg-score-grid{display:grid; grid-template-columns:repeat(4,1fr); color:#102653;}
@@ -486,21 +487,26 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 .rg-score-grid span{border:1px solid #172b54; text-align:center; min-height:8mm; padding:1mm .5mm;}
 .rg-total{border:1px solid #172b54; text-align:center; min-height:8mm; background:#f8e7dd;}
 .rg-section-title{background:#dcebd6; border:1px solid #172b54; text-align:center; font-weight:800; margin-top:1mm; padding:1mm;}
-.rg-cols{display:grid; grid-template-columns:1fr 1fr; gap:2mm;}
-.rg-lines{border:1px solid #172b54; padding:1mm 2mm; min-height:13mm; color:#111; font-size:6px;}
-.rg-lines div{min-height:4mm;}
+.rg-cols{display:grid; grid-template-columns:1fr 1fr; gap:5mm;}
+.rg-lines{border:1px solid #172b54; padding:1mm 2mm; min-height:17mm; color:#111; font-size:6px;}
+.rg-score-rule{display:grid; grid-template-columns:1fr 8mm 8mm 16mm; align-items:center; min-height:4mm;}
+.rg-check{display:grid; grid-template-columns:1fr 8mm 8mm 8mm 8mm; align-items:center; min-height:4mm; text-align:center;}
+.rg-check span:first-child{text-align:left;}
+.rg-check .rg-check-mark{border:1px solid #172b54; background:#e5efdf; height:4mm;}
 .rg-example{width:100%; border-collapse:collapse; margin-top:1mm; color:#111; font-size:5.5px;}
+.rg-example-scores{width:70%; margin-left:auto; margin-right:auto;}
 .rg-example th,.rg-example td{border:1px solid #172b54; padding:.7mm; text-align:center;}
 .rg-example .rg-desc{text-align:left;}
-.rg-write{display:grid; grid-template-columns:32mm 1fr; border:1px solid #172b54; margin-top:1mm; min-height:11mm; color:#111;}
+.rg-write{display:grid; grid-template-columns:38mm 1fr; border:1px solid #172b54; margin-top:1mm; min-height:11mm; color:#111;}
+.rg-write-card{min-height:6mm;}
 .rg-write b{background:#dcebd6; color:#102653; text-align:center; padding:2mm; border-right:1px solid #172b54;}
 .rg-write .rg-write-lines{padding:1mm 2mm;}
 .rg-write .rg-write-lines div{height:4mm;}
 .rg-legend{text-align:center; font-size:5.5px; font-weight:700; margin:1mm 0;}
 .rg-signatures{display:flex; justify-content:space-between; margin-top:auto; padding-top:2mm; font-weight:700;}
-.rg-signatures span{width:49%; border:1px solid #172b54; background:#dcebd6; padding:1mm;}
+.rg-signatures span{width:60mm; border:1px solid #172b54; background:#dcebd6; padding:1mm; text-align:center;}
 .rg-signature-lines{display:flex; justify-content:space-between; margin-top:3mm;}
-.rg-signature-lines span{width:49%; border-bottom:1px solid #172b54; height:6mm;}
+.rg-signature-lines span{width:60mm; border-bottom:1px solid #172b54; height:6mm;}
 
 .app-footer{
   text-align: center;
@@ -1973,9 +1979,9 @@ function renderReport(){
       <div class="rg-band">Tornei Pulcini</div><div class="rg-band">S.S. 2025/2026</div>
     </div>
     <div class="rg-options">
-      <span>◯ &nbsp; 7 VS 7 · (2015) · 2° ANNO</span>
-      <span>◯ &nbsp; 7 VS 7 · (2016) · 1° ANNO</span>
-      <span>◯ &nbsp; 7 VS 7 · (2015 / 2016) · MISTI</span>
+      <div><div class="rg-option-choice">◯ &nbsp; 7 VS 7 - (2015) - 2° ANNO</div><div class="rg-option-note">↑ + MAX N.3 NATI NEL 2016 ↑</div></div>
+      <div><div class="rg-option-choice">◯ &nbsp; 7 VS 7 - (2016) - 1° ANNO</div><div class="rg-option-note">↑ + MAX N.3 NATI NEL 2017 ↑</div></div>
+      <div><div class="rg-option-choice">◯ &nbsp; 7 VS 7 - (2015 / 2016) - MISTI</div><div class="rg-option-note">↑ NATI NEL 2017 (8 ANNI COMPIUTI) ↑</div></div>
     </div>
     <div class="rg-instruction">OPPORTUNITÀ CONCESSA SOLO ALLE SOCIETÀ CHE DIMOSTRANO EFFETTIVA NECESSITÀ DI INSERIRE GIOVANI CALCIATORI DI ETÀ INFERIORE A QUELLA CONSENTITA PER COMPLETARE LA ROSA.</div>
     <div class="rg-fields">${fields}
@@ -2001,16 +2007,16 @@ function renderReport(){
     <div class="rg-cols">
       <div><div class="rg-section-title">ATTRIBUZIONE PUNTEGGI GARA</div>
         <div class="rg-lines">
-          <div>• VITTORIA SINGOLO TEMPO &nbsp;&nbsp; PT 3 &nbsp;&nbsp; VINCENTE</div>
-          <div>• PAREGGIO SINGOLO TEMPO &nbsp; PT 1 &nbsp;&nbsp; AD ENTRAMBE</div>
-          <div>• SCONFITTA SINGOLO TEMPO &nbsp; PT 0 &nbsp;&nbsp; PERDENTE</div>
+          <div class="rg-score-rule"><span>• VITTORIA SINGOLO TEMPO</span><span>PT</span><span>3</span><span>VINCENTE</span></div>
+          <div class="rg-score-rule"><span>• PAREGGIO SINGOLO TEMPO</span><span>PT</span><span>1</span><span>AD ENTRAMBE</span></div>
+          <div class="rg-score-rule"><span>• SCONFITTA SINGOLO TEMPO</span><span>PT</span><span>0</span><span>PERDENTE</span></div>
         </div>
       </div>
       <div><div class="rg-section-title">ATTIVITÀ AGGIUNTIVE (C.U. N. 3 S.G.S. NAZIONALE)</div>
         <div class="rg-lines">
-          <div>• PROPOSTE PRE-GARA &nbsp;&nbsp; SI ◯ &nbsp;&nbsp; NO ◯</div>
-          <div>• MULTI PARTITA &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SI ◯ &nbsp;&nbsp; NO ◯</div>
-          <div>• 4° TEMPO &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SI ◯ &nbsp;&nbsp; NO ◯</div>
+          <div class="rg-check"><span>• PROPOSTE PRE-GARA</span><span>SI</span><span class="rg-check-mark">◯</span><span>NO</span><span class="rg-check-mark">◯</span></div>
+          <div class="rg-check"><span>• MULTI PARTITA</span><span>SI</span><span class="rg-check-mark">◯</span><span>NO</span><span class="rg-check-mark">◯</span></div>
+          <div class="rg-check"><span>• 4° TEMPO</span><span>SI</span><span class="rg-check-mark">◯</span><span>NO</span><span class="rg-check-mark">◯</span></div>
         </div>
       </div>
     </div>
@@ -2022,13 +2028,13 @@ function renderReport(){
       <tr><td>2° T.</td><td>4 (GOL)</td><td>3 (GOL)</td><td>0</td><td>0</td><td>1</td><td>/</td><td>1</td></tr>
     </tbody></table>
     <div class="rg-section-title">ESEMPI PUNTEGGI GARA</div>
-    <table class="rg-example"><tbody>${exampleRows}</tbody></table>
-    <div class="rg-write"><b>GIOCATORI<br>AMM./ESP.</b><span class="rg-write-lines"><div>•</div><div>•</div></span></div>
+    <table class="rg-example rg-example-scores"><tbody>${exampleRows}</tbody></table>
+    <div class="rg-write rg-write-players"><b>GIOCATORI<br>AMM./ESP.</b><span class="rg-write-lines"><div>•</div><div>•</div></span></div>
     <div class="rg-legend">INDICARE MIN. / T. – COGNOME E NOME – N. MAGLIA – SOCIETÀ – MOTIVAZIONE</div>
-    <div class="rg-write"><b>GREEN CARD</b><span class="rg-write-lines"><div>•</div></span></div>
+    <div class="rg-write rg-write-card"><b>GREEN CARD</b><span class="rg-write-lines"><div>•</div></span></div>
     <div class="rg-legend">INDICARE MIN. / T. – COGNOME E NOME – N. MAGLIA – SOCIETÀ – MOTIVAZIONE</div>
-    <div class="rg-write"><b>COMP.<br>ALL./DIR./PUB.</b><span class="rg-write-lines"><div>•</div></span></div>
-    <div class="rg-write"><b>VARIE<br>NO RINVII/RECUPERI</b><span class="rg-write-lines"><div>•</div></span></div>
+    <div class="rg-write rg-write-others"><b>COMP.<br>ALL./DIR./PUB.</b><span class="rg-write-lines"><div>•</div></span></div>
+    <div class="rg-write rg-write-others"><b>VARIE<br>NO RINVII/RECUPERI</b><span class="rg-write-lines"><div>•</div></span></div>
     <div class="rg-instruction">IL PRESENTE RAPPORTO DI GARA DOVRÀ CATEGORICAMENTE ESSERE FATTO PERVENIRE, ASSIEME ALLE DISTINTE DI GARA, ALLA DEL. PROV. TRAMITE MAIL (TREVISO.ATTIVITADIBASE@LND.IT) ENTRO E NON OLTRE LA DISPUTA DELLA PARTITA SUCCESSIVA E COMUNQUE ENTRO 7 GIORNI DALLA DISPUTA DELLA GARA, UNITAMENTE A COPIA DELLA DISTINTA DI GARA.</div>
     <div class="rg-signatures"><span>DIRIGENTE RESP. SOCIETÀ OSPITANTE</span><span>DIRIGENTE RESP. SOCIETÀ OSPITATA</span></div>
     <div class="rg-signature-lines"><span></span><span></span></div>
