@@ -451,6 +451,49 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   flex-shrink: 0;
 }
 
+/* ==================== RAPPORTO DI GARA PULCINI ==================== */
+#reportSheet{
+  width:210mm; min-height:297mm; margin:0 auto; padding:3mm 8mm;
+  background:#fff; color:#102653; border:1px solid #ccc; box-shadow:var(--shadow);
+  font-family:Arial,Helvetica,sans-serif; font-size:7px;
+}
+#reportSheet, #reportSheet *{box-sizing:border-box;}
+.rg-header{display:grid; grid-template-columns:16mm 1fr 16mm; align-items:center; text-align:center;}
+.rg-logo{width:10mm; height:10mm; object-fit:contain; justify-self:center;}
+.rg-title{font-size:9px; font-weight:800; text-transform:uppercase;}
+.rg-header-bands{display:grid; grid-template-columns:1fr 1fr; gap:2mm; margin-top:1mm;}
+.rg-band{border:1px solid #dcebd6; background:#dcebd6; text-align:center; font-weight:800; text-transform:uppercase; padding:1mm;}
+.rg-options{display:flex; justify-content:space-between; gap:2mm; margin:1mm 0; font-weight:700; font-size:6px;}
+.rg-options span{white-space:nowrap;}
+.rg-instruction{text-align:center; font-size:5px; font-weight:700; margin:1mm 0;}
+.rg-fields{display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:1mm 2mm;}
+.rg-field{display:flex; align-items:center; gap:2mm; min-height:6mm;}
+.rg-field b{white-space:nowrap; font-size:6px;}
+.rg-fill{border:1px solid #172b54; background:#e9edf3; min-height:6mm; flex:1; padding:1mm 2mm; color:#111;}
+.rg-wide{grid-column:1/-1;}
+.rg-teams{display:grid; grid-template-columns:38mm 1fr 54mm 35mm; gap:1mm; align-items:center; margin-top:1mm;}
+.rg-teams .rg-fill{min-height:8mm;}
+.rg-score-grid{display:grid; grid-template-columns:repeat(4,1fr); color:#111;}
+.rg-score-grid span{border:1px solid #172b54; text-align:center; min-height:8mm; padding:1mm .5mm;}
+.rg-total{display:grid; grid-template-rows:1fr 1fr; text-align:center; color:#111;}
+.rg-total b,.rg-total span{border:1px solid #172b54; padding:1mm; font-size:5px;}
+.rg-section-title{background:#dcebd6; border:1px solid #172b54; text-align:center; font-weight:800; margin-top:1mm; padding:1mm;}
+.rg-cols{display:grid; grid-template-columns:1fr 1fr; gap:2mm;}
+.rg-lines{border:1px solid #172b54; padding:1mm 2mm; min-height:13mm; color:#111; font-size:6px;}
+.rg-lines div{min-height:4mm;}
+.rg-example{width:100%; border-collapse:collapse; margin-top:1mm; color:#111; font-size:5.5px;}
+.rg-example th,.rg-example td{border:1px solid #172b54; padding:.7mm; text-align:center;}
+.rg-example .rg-desc{text-align:left;}
+.rg-write{display:grid; grid-template-columns:32mm 1fr; border:1px solid #172b54; margin-top:1mm; min-height:11mm; color:#111;}
+.rg-write b{background:#dcebd6; color:#102653; text-align:center; padding:2mm; border-right:1px solid #172b54;}
+.rg-write .rg-write-lines{padding:1mm 2mm;}
+.rg-write .rg-write-lines div{height:4mm;}
+.rg-legend{text-align:center; font-size:5.5px; font-weight:700; margin:1mm 0;}
+.rg-signatures{display:flex; justify-content:space-between; margin-top:2mm; font-weight:700;}
+.rg-signatures span{width:49%; border:1px solid #172b54; background:#dcebd6; padding:1mm;}
+.rg-signature-lines{display:flex; justify-content:space-between; margin-top:3mm;}
+.rg-signature-lines span{width:49%; border-bottom:1px solid #172b54; height:6mm;}
+
 .app-footer{
   text-align: center;
   font-size: .75rem;
@@ -463,14 +506,13 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 
 /* ==================== STAMPA ==================== */
 @media print{
-  @page{ size: A4 portrait; margin: 0mm; }
-  @page :first{ margin: 0mm; }
+  @page{ size: A4 portrait; margin: 5mm; }
 
   html, body{
     margin: 0 !important; padding: 0 !important;
     background: #fff !important;
-    height: 100% !important; max-height: 100% !important;
-    overflow: hidden !important;
+    height: auto !important; max-height: none !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -484,38 +526,28 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 
   .print-wrapper{
     display: block !important; position: static !important;
-    width: 209mm !important; height: 296mm !important;
-    max-height: 296mm !important;
+    width: 200mm !important; height: auto !important;
+    max-height: none !important;
     margin: 0 !important; padding: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     page-break-after: avoid !important;
   }
 
-  #printSheet{
-    width: 209mm !important; height: 296mm !important;
-    min-height: 296mm !important; max-height: 296mm !important;
-    padding: 4mm 7mm !important; margin: 0 !important;
+  #printSheet, #bachecaSheet, #reportSheet{
+    width: 200mm !important; height: auto !important;
+    min-height: 280mm !important; max-height: none !important;
+    padding: 4mm 5mm !important; margin: 0 !important;
     border: none !important; box-shadow: none !important;
     box-sizing: border-box !important;
-    page-break-after: avoid; page-break-inside: avoid;
+    page-break-after: avoid !important; page-break-inside: avoid !important;
     display: flex !important; flex-direction: column !important;
-    overflow: hidden !important;
-  }
-
-  #bachecaSheet{
-    width: 209mm !important; height: 296mm !important;
-    min-height: 296mm !important; max-height: 296mm !important;
-    padding: 0 !important; margin: 0 !important;
-    border: none !important; box-shadow: none !important;
-    box-sizing: border-box !important;
-    page-break-after: avoid; page-break-inside: avoid;
-    display: flex !important; flex-direction: column !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   #bachecaSheet .bk-footer{ background: #111 !important; color: #fff !important; }
   #bachecaSheet .bk-brandbar{ background: #2a7ec7 !important; color: #fff !important; }
   #bachecaSheet .bk-footer .dot{ background: #2a7ec7 !important; }
+  #bachecaSheet .bk-players{overflow: visible !important;}
 
   #printSheet .ps-table{ flex: 1 1 auto !important; }
   #printSheet .ps-table tbody tr{ height: auto !important; }
@@ -526,15 +558,17 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   #printSheet .ps-footer-line .val{ min-height: 14px !important; }
   #printSheet .ps-sign-row{
     margin-top: auto !important;
-    padding-top: 18mm !important;
+    padding-top: 12mm !important;
   }
   #printSheet .ps-final-note{ margin-bottom: 3mm !important; }
 
   .app-footer{ display: none !important; }
+  #reportSheet{font-size:7.5px !important;}
 }
 
 @media(max-width:760px){
-  #printSheet, #bachecaSheet{width:100%; padding:12px;}
+  #printSheet, #bachecaSheet, #reportSheet{width:100%; padding:12px;}
+  .rg-options{flex-wrap:wrap;}
 }
 </style>
 </head>
@@ -594,6 +628,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         </div>
         <div class="field"><label>Denominazione</label><input type="text" id="g_denom" placeholder="Esordienti"></div>
         <div class="field"><label>Girone</label><input type="text" id="g_girone" placeholder="Girone A"></div>
+        <div class="field"><label>Giornata</label><input type="text" id="g_giornata" placeholder="Es. 1ª giornata"></div>
         <div class="field"><label>Squadra ospitante</label><input type="text" id="g_ospitante" placeholder="Nome squadra"></div>
         <div class="field"><label>Squadra ospite</label><input type="text" id="g_ospite" placeholder="Nome squadra"></div>
         <div class="field"><label>Data gara</label><input type="date" id="g_data"></div>
@@ -758,10 +793,13 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   </div>
 
   <div class="actions-bar">
-    <button class="primary" onclick="printSheet('printSheet')">🖨️ Stampa distinta FIGC / PDF</button>
-    <button class="primary" onclick="printSheet('bachecaSheet')">📌 Stampa PDF bacheca</button>
+    <button class="primary" onclick="printSheet('printSheet')">📄 Genera PDF distinta FIGC</button>
+    <button class="primary" onclick="printSheet('bachecaSheet')">📄 Genera PDF convocazione</button>
+    <button class="primary" id="reportPdfButton" onclick="printSheet('reportSheet')">📄 Genera PDF rapporto Pulcini</button>
+    <span id="reportHomeNotice" class="count-badge"></span>
     <button onclick="generateWhatsappList()">💬 Genera lista convocati (WhatsApp)</button>
   </div>
+  <div class="sub">Si apre la finestra di stampa: scegli “Salva come PDF” (su iPhone/iPad: Condividi, poi “Salva su File”).</div>
 
   <div class="card collapsed" id="cardWA">
     <h2 onclick="toggleCard('cardWA')"><span class="chev">▾</span> Lista convocati per WhatsApp</h2>
@@ -788,6 +826,13 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     <h2 onclick="toggleCard('cardBacheca')"><span class="chev">▾</span> Anteprima PDF bacheca</h2>
     <div class="body" style="overflow-x:auto; padding-top:4px;">
       <div id="bachecaSheet"></div>
+    </div>
+  </div>
+
+  <div class="card" id="cardReport">
+    <h2 onclick="toggleCard('cardReport')"><span class="chev">▾</span> Anteprima rapporto gara Pulcini</h2>
+    <div class="body" style="overflow-x:auto; padding-top:4px;">
+      <div id="reportSheet"></div>
     </div>
   </div>
 
@@ -1055,6 +1100,7 @@ function populateMatchFields(){
   document.getElementById('g_tipo').value = match.tipo || 'Campionato';
   document.getElementById('g_denom').value = match.denom || '';
   document.getElementById('g_girone').value = match.girone || '';
+  document.getElementById('g_giornata').value = match.giornata || '';
   document.getElementById('g_ospitante').value = match.ospitante || team.nome || '';
   document.getElementById('g_ospite').value = match.ospite || '';
   document.getElementById('g_data').value = match.data || '';
@@ -1251,7 +1297,7 @@ const DEFAULT_STAFF_ROSTER = [
 ];
 function defaultMatch(){
   return {
-    tipo:"Campionato", denom:"", girone:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", orarioConvocazione:"",
+    tipo:"Campionato", denom:"", girone:"", giornata:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", orarioConvocazione:"",
     rows: [], capitanoId:null, vcapId:null,
     staffDirigente:null, staffDirigente2:null, staffMedico:null, staffAllenatore:null, staffAllenatore2:null, staffMassaggiatore:null
   };
@@ -1299,6 +1345,7 @@ function initFields(){
   document.getElementById('g_tipo').value = match.tipo || "Campionato";
   document.getElementById('g_denom').value = match.denom || "";
   document.getElementById('g_girone').value = match.girone || "";
+  document.getElementById('g_giornata').value = match.giornata || "";
   document.getElementById('g_ospitante').value = match.ospitante || team.nome;
   document.getElementById('g_ospite').value = match.ospite || "";
   document.getElementById('g_data').value = match.data || "";
@@ -1316,7 +1363,7 @@ function initFields(){
   ['t_nome','t_matricola','t_sede'].forEach(id=>{
     document.getElementById(id).addEventListener('input', onTeamChange);
   });
-  ['g_tipo','g_denom','g_girone','g_ospitante','g_ospite','g_data','g_ora','g_orarioConvocazione','g_luogo'].forEach(id=>{
+  ['g_tipo','g_denom','g_girone','g_giornata','g_ospitante','g_ospite','g_data','g_ora','g_orarioConvocazione','g_luogo'].forEach(id=>{
     document.getElementById(id).addEventListener('input', onMatchChange);
     document.getElementById(id).addEventListener('change', onMatchChange);
   });
@@ -1340,11 +1387,13 @@ function onTeamChange(){
   cloudPush();
   renderPrint();
   renderBacheca();
+  renderReport();
 }
 function onMatchChange(){
   match.tipo = document.getElementById('g_tipo').value;
   match.denom = document.getElementById('g_denom').value;
   match.girone = document.getElementById('g_girone').value;
+  match.giornata = document.getElementById('g_giornata').value;
 
   const prevOra = match.ora || "";
   const newOra = document.getElementById('g_ora').value;
@@ -1368,6 +1417,7 @@ function onMatchChange(){
   persistMatch();
   renderPrint();
   renderBacheca();
+  renderReport();
 }
 function persistMatch(){
   saveJSON(matchStorageKey(), match);
@@ -1865,6 +1915,108 @@ function renderPrint(){
   `;
 }
 
+function isHomeMatch(){
+  const normalize = value => String(value || '').trim().toLocaleLowerCase('it');
+  const teamName = normalize(team.nome);
+  return !!teamName && normalize(match.ospitante || team.nome) === teamName;
+}
+function renderReport(){
+  const report = document.getElementById('reportSheet');
+  const isHome = isHomeMatch();
+  const button = document.getElementById('reportPdfButton');
+  const notice = document.getElementById('reportHomeNotice');
+  button.hidden = !isHome;
+  notice.textContent = isHome ? '' : 'Rapporto disponibile solo per le partite casalinghe.';
+
+  const values = [
+    ['DATA', fmtDate(match.data)],
+    ['N. GTA', match.giornata || ''],
+    ['GIRONE', match.girone || ''],
+    ['ORA', match.ora || '']
+  ];
+  const fields = values.map(([label, value]) =>
+    `<div class="rg-field"><b>${label}</b><span class="rg-fill">${escapeHtml(value)}</span></div>`
+  ).join('');
+  const exampleRows = [
+    ['N.3.T.', 'PAREGGIO IN TUTTI E TRE I TEMPI DELLA PARTITA', '3 – 3'],
+    ['N.3.T.', 'DUE TEMPI IN PAREGGIO ED UN TEMPO VINTO DA UNA DELLE DUE SQ.', '3 – 2'],
+    ['N.3.T.', 'UN TEMPO IN PAREGGIO E DUE TEMPI VINTI DA UNA DELLE DUE SQ.', '3 – 1'],
+    ['N.3.T.', 'VITTORIA DELLA STESSA SQ. IN TUTTI E TRE I TEMPI', '3 – 0'],
+    ['N.4.T.', 'UNA VITTORIA PER Q.S. E DUE PAREGGI', '3 – 3'],
+    ['N.4.T.', 'DUE VITTORIE DI UNA SQ., UN PAREGGIO ED UNA VITTORIA DELL’ALTRA', '3 – 2'],
+    ['N.4.T.', 'PAREGGIO IN TUTTI E QUATTRO I TEMPI DELLA PARTITA', '4 – 4'],
+    ['N.4.T.', 'TRE TEMPI VINTI DA UNA SQUADRA E UNO DALL’ALTRA', '3 – 1']
+  ].map(([type, description, score]) =>
+    `<tr><td>${escapeHtml(type)}</td><td class="rg-desc">${escapeHtml(description)}</td><td>${escapeHtml(score)}</td></tr>`
+  ).join('');
+
+  report.innerHTML = `
+    <div class="rg-header">
+      <img class="rg-logo" src="logo.png" alt="Campolongo">
+      <div class="rg-title">Rapporto di gara</div>
+      <img class="rg-logo" src="logo.png" alt="Campolongo">
+    </div>
+    <div class="rg-header-bands">
+      <div class="rg-band">Tornei Pulcini</div><div class="rg-band">S.S. 2026/2027</div>
+    </div>
+    <div class="rg-options">
+      <span>◯ &nbsp; 7 VS 7 · (2016) · 2° ANNO</span>
+      <span>◯ &nbsp; 7 VS 7 · (2017) · 1° ANNO</span>
+      <span>◯ &nbsp; 7 VS 7 · (2016 / 2017) · MISTI</span>
+    </div>
+    <div class="rg-instruction">OPPORTUNITÀ CONCESSA SOLO ALLE SOCIETÀ CHE DIMOSTRANO EFFETTIVA NECESSITÀ DI INSERIRE GIOVANI CALCIATORI DI ETÀ INFERIORE A QUELLA CONSENTITA PER COMPLETARE LA ROSA.</div>
+    <div class="rg-fields">${fields}
+      <div class="rg-field rg-wide"><b>LUOGO DI SVOLGIMENTO</b><span class="rg-fill">${escapeHtml(match.luogo || '')}</span></div>
+    </div>
+    <div class="rg-teams">
+      <b>SOCIETÀ OSPITANTE ➜</b><span class="rg-fill">${escapeHtml(team.nome || '')}</span>
+      <div class="rg-score-grid">
+        <span>1° T.<br>(PUNTI)</span><span>2° T.<br>(PUNTI)</span><span>3° T.<br>(PUNTI)</span><span>EV. 4° T.<br>(PUNTI)</span>
+      </div>
+      <div class="rg-total"><b>TOT. PUNTI<br>(N.3.T. e N.4.T.)</b><span></span></div>
+    </div>
+    <div class="rg-teams">
+      <b>SOCIETÀ OSPITATA ➜</b><span class="rg-fill">${escapeHtml(match.ospite || '')}</span>
+      <div class="rg-score-grid"><span></span><span></span><span></span><span></span></div>
+      <div class="rg-total"><b></b><span></span></div>
+    </div>
+    <div class="rg-cols">
+      <div><div class="rg-section-title">ATTRIBUZIONE PUNTEGGI GARA</div>
+        <div class="rg-lines">
+          <div>• VITTORIA SINGOLO TEMPO &nbsp;&nbsp; PT 3 &nbsp;&nbsp; VINCENTE</div>
+          <div>• PAREGGIO SINGOLO TEMPO &nbsp; PT 1 &nbsp;&nbsp; AD ENTRAMBE</div>
+          <div>• SCONFITTA SINGOLO TEMPO &nbsp; PT 0 &nbsp;&nbsp; PERDENTE</div>
+        </div>
+      </div>
+      <div><div class="rg-section-title">ATTIVITÀ AGGIUNTIVE (C.U. N. 3 S.G.S. NAZIONALE)</div>
+        <div class="rg-lines">
+          <div>• PROPOSTE PRE-GARA &nbsp;&nbsp; SI ◯ &nbsp;&nbsp; NO ◯</div>
+          <div>• MULTI PARTITA &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SI ◯ &nbsp;&nbsp; NO ◯</div>
+          <div>• 4° TEMPO &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SI ◯ &nbsp;&nbsp; NO ◯</div>
+        </div>
+      </div>
+    </div>
+    <div class="rg-section-title">ESEMPIO GARA</div>
+    <table class="rg-example"><tbody>
+      <tr><th>ROMA</th><th colspan="2">SOCIETÀ OSPITANTE ➜</th><th colspan="4">ROMA</th><th>TOT. PUNTI<br>(N.3.T. e N.4.T.)</th></tr>
+      <tr><td>1° T.</td><td>3 (GOL)</td><td>4 (GOL)</td><td>1</td><td>1</td><td>1</td><td>/</td><td>3</td></tr>
+      <tr><th>LAZIO</th><th colspan="2">SOCIETÀ OSPITATA ➜</th><th colspan="4">LAZIO</th><th></th></tr>
+      <tr><td>2° T.</td><td>4 (GOL)</td><td>3 (GOL)</td><td>0</td><td>0</td><td>1</td><td>/</td><td>1</td></tr>
+    </tbody></table>
+    <div class="rg-section-title">ESEMPI PUNTEGGI GARA</div>
+    <table class="rg-example"><tbody>${exampleRows}</tbody></table>
+    <div class="rg-write"><b>GIOCATORI<br>AMM./ESP.</b><span class="rg-write-lines"><div>•</div><div>•</div></span></div>
+    <div class="rg-legend">INDICARE MIN. / T. – COGNOME E NOME – N. MAGLIA – SOCIETÀ – MOTIVAZIONE</div>
+    <div class="rg-write"><b>GREEN CARD</b><span class="rg-write-lines"><div>•</div></span></div>
+    <div class="rg-legend">INDICARE MIN. / T. – COGNOME E NOME – N. MAGLIA – SOCIETÀ – MOTIVAZIONE</div>
+    <div class="rg-write"><b>COMP.<br>ALL./DIR./PUB.</b><span class="rg-write-lines"><div>•</div></span></div>
+    <div class="rg-write"><b>VARIE<br>NO RINVII/RECUPERI</b><span class="rg-write-lines"><div>•</div></span></div>
+    <div class="rg-instruction">IL PRESENTE RAPPORTO DI GARA DOVRÀ CATEGORICAMENTE ESSERE FATTO PERVENIRE, ASSIEME ALLE DISTINTE DI GARA, ALLA DEL. PROV. TRAMITE MAIL (TREVISO.ATTIVITADIBASE@FIGC.IT) ENTRO E NON OLTRE 7 GIORNI DALLA DISPUTA DELLA GARA, UNITAMENTE A COPIA DELLA DISTINTA DI GARA.</div>
+    <div class="rg-signatures"><span>DIRIGENTE RESP. SOCIETÀ OSPITANTE</span><span>DIRIGENTE RESP. SOCIETÀ OSPITATA</span></div>
+    <div class="rg-signature-lines"><span></span><span></span></div>
+  `;
+}
+
 /* ---------------- PRINT bacheca ---------------- */
 function renderBacheca(){
   const sheet = document.getElementById('bachecaSheet');
@@ -1951,30 +2103,35 @@ function printSheet(id){
   wrapper.appendChild(el);
   document.body.appendChild(wrapper);
 
-  // Forza un reflow prima di stampare (importante su iOS)
+  const previousTitle = document.title;
+  const names = {
+    printSheet: 'Distinta FIGC',
+    bachecaSheet: 'Convocazione',
+    reportSheet: 'Rapporto gara Pulcini'
+  };
+  document.title = `${names[id] || 'Documento'} - ${team.nome || 'Campolongo'}`;
+
   void wrapper.offsetHeight;
-
-  // Delay più lungo per iOS/Safari
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const delay = isIOS ? 250 : 80;
-
-  setTimeout(()=>{
-    try{
-      window.print();
-    }catch(e){
-      setTimeout(()=>window.print(), 200);
-    }
-
-    setTimeout(()=>{
-      if(nextSibling){
-        parent.insertBefore(el, nextSibling);
-      } else {
-        parent.appendChild(el);
-      }
-      wrapper.remove();
-    }, isIOS ? 1500 : 500);
-  }, delay);
+  let restored = false;
+  let fallbackTimer;
+  const restore = ()=>{
+    if(restored) return;
+    restored = true;
+    clearTimeout(fallbackTimer);
+    if(nextSibling) parent.insertBefore(el, nextSibling);
+    else parent.appendChild(el);
+    wrapper.remove();
+    document.title = previousTitle;
+  };
+  window.addEventListener('afterprint', restore, { once:true });
+  try{
+    window.print();
+  }catch(e){
+    restore();
+    alert('Impossibile aprire la finestra di stampa. Riprova dal browser.');
+    return;
+  }
+  fallbackTimer = setTimeout(restore, 60000);
 }
 
 /* ---------------- WhatsApp ---------------- */
@@ -2048,6 +2205,7 @@ function renderAll(){
   renderStaffRoster();
   renderPrint();
   renderBacheca();
+  renderReport();
   renderCloudStatus();
 }
 
