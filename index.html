@@ -451,6 +451,44 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   flex-shrink: 0;
 }
 
+/* ==================== RAPPORTO DI GARA PULCINI ==================== */
+#reportSheet{
+  width:210mm; min-height:297mm; margin:0 auto; padding:5mm 8mm;
+  background:#fff; color:#102653; border:1px solid #ccc; box-shadow:var(--shadow);
+  font-family:Arial,Helvetica,sans-serif; font-size:8px;
+}
+#reportSheet, #reportSheet *{box-sizing:border-box;}
+.rg-header{display:grid; grid-template-columns:22mm 1fr 22mm; align-items:center; text-align:center;}
+.rg-logo{width:13mm; height:13mm; object-fit:contain; justify-self:center;}
+.rg-title{font-size:12px; font-weight:800; text-transform:uppercase;}
+.rg-row{display:grid; gap:2mm; margin-top:2mm; align-items:stretch;}
+.rg-row > div{border:1px solid #172b54; min-height:7mm; padding:1mm 2mm;}
+.rg-band{background:#dcebd6; text-align:center; font-weight:800; text-transform:uppercase;}
+.rg-season{font-weight:800; text-align:center;}
+.rg-options{display:flex; justify-content:space-between; gap:4mm; margin:2mm 0; font-weight:700;}
+.rg-options span{white-space:nowrap;}
+.rg-instruction{text-align:center; font-size:6px; font-weight:700; margin:1mm 0 2mm;}
+.rg-fields{display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:2mm;}
+.rg-field{display:flex; align-items:center; gap:2mm; min-height:7mm;}
+.rg-field b{white-space:nowrap;}
+.rg-fill{border:1px solid #172b54; background:#edf0f5; min-height:7mm; flex:1; padding:1mm 2mm; color:#111;}
+.rg-wide{grid-column:1/-1;}
+.rg-teams{display:grid; grid-template-columns:24mm 1fr 54mm; gap:2mm; align-items:center; margin-top:2mm;}
+.rg-teams .rg-fill{min-height:9mm;}
+.rg-points{display:grid; grid-template-columns:repeat(4,1fr); gap:1mm; text-align:center; color:#111;}
+.rg-points span{border:1px solid #172b54; padding:1mm 0; min-height:7mm;}
+.rg-section-title{background:#dcebd6; border:1px solid #172b54; text-align:center; font-weight:800; margin-top:2mm; padding:1mm;}
+.rg-cols{display:grid; grid-template-columns:1fr 1fr; gap:3mm;}
+.rg-lines{border:1px solid #172b54; padding:1mm 2mm; min-height:14mm; color:#111;}
+.rg-lines div{min-height:4mm; border-bottom:1px dotted #999;}
+.rg-example{width:100%; border-collapse:collapse; margin-top:1mm; color:#111; font-size:6px;}
+.rg-example th,.rg-example td{border:1px solid #172b54; padding:1mm; text-align:center;}
+.rg-write{display:grid; grid-template-columns:35mm 1fr; border:1px solid #172b54; margin-top:2mm; min-height:11mm; color:#111;}
+.rg-write b{background:#dcebd6; color:#102653; text-align:center; padding:2mm; border-right:1px solid #172b54;}
+.rg-write span{padding:1mm 2mm;}
+.rg-signatures{display:flex; justify-content:space-between; margin-top:5mm; font-weight:700;}
+.rg-signatures span{width:42%; border-bottom:1px solid #172b54; padding:0 0 6mm;}
+
 .app-footer{
   text-align: center;
   font-size: .75rem;
@@ -463,14 +501,13 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 
 /* ==================== STAMPA ==================== */
 @media print{
-  @page{ size: A4 portrait; margin: 0mm; }
-  @page :first{ margin: 0mm; }
+  @page{ size: A4 portrait; margin: 5mm; }
 
   html, body{
     margin: 0 !important; padding: 0 !important;
     background: #fff !important;
-    height: 100% !important; max-height: 100% !important;
-    overflow: hidden !important;
+    height: auto !important; max-height: none !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -484,33 +521,22 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 
   .print-wrapper{
     display: block !important; position: static !important;
-    width: 209mm !important; height: 296mm !important;
-    max-height: 296mm !important;
+    width: 200mm !important; height: auto !important;
+    max-height: none !important;
     margin: 0 !important; padding: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     page-break-after: avoid !important;
   }
 
-  #printSheet{
-    width: 209mm !important; height: 296mm !important;
-    min-height: 296mm !important; max-height: 296mm !important;
-    padding: 4mm 7mm !important; margin: 0 !important;
+  #printSheet, #bachecaSheet, #reportSheet{
+    width: 200mm !important; height: auto !important;
+    min-height: 287mm !important; max-height: none !important;
+    padding: 4mm 5mm !important; margin: 0 !important;
     border: none !important; box-shadow: none !important;
     box-sizing: border-box !important;
-    page-break-after: avoid; page-break-inside: avoid;
+    page-break-after: avoid !important; page-break-inside: avoid !important;
     display: flex !important; flex-direction: column !important;
-    overflow: hidden !important;
-  }
-
-  #bachecaSheet{
-    width: 209mm !important; height: 296mm !important;
-    min-height: 296mm !important; max-height: 296mm !important;
-    padding: 0 !important; margin: 0 !important;
-    border: none !important; box-shadow: none !important;
-    box-sizing: border-box !important;
-    page-break-after: avoid; page-break-inside: avoid;
-    display: flex !important; flex-direction: column !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   #bachecaSheet .bk-footer{ background: #111 !important; color: #fff !important; }
@@ -526,15 +552,17 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   #printSheet .ps-footer-line .val{ min-height: 14px !important; }
   #printSheet .ps-sign-row{
     margin-top: auto !important;
-    padding-top: 18mm !important;
+    padding-top: 12mm !important;
   }
   #printSheet .ps-final-note{ margin-bottom: 3mm !important; }
 
   .app-footer{ display: none !important; }
+  #reportSheet{font-size:7.5px !important;}
 }
 
 @media(max-width:760px){
-  #printSheet, #bachecaSheet{width:100%; padding:12px;}
+  #printSheet, #bachecaSheet, #reportSheet{width:100%; padding:12px;}
+  .rg-options{flex-wrap:wrap;}
 }
 </style>
 </head>
@@ -758,8 +786,10 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   </div>
 
   <div class="actions-bar">
-    <button class="primary" onclick="printSheet('printSheet')">🖨️ Stampa distinta FIGC / PDF</button>
-    <button class="primary" onclick="printSheet('bachecaSheet')">📌 Stampa PDF bacheca</button>
+    <button class="primary" onclick="printSheet('printSheet')">📄 Genera PDF distinta FIGC</button>
+    <button class="primary" onclick="printSheet('bachecaSheet')">📄 Genera PDF convocazione</button>
+    <button class="primary" id="reportPdfButton" onclick="printSheet('reportSheet')">📄 Genera PDF rapporto Pulcini</button>
+    <span id="reportHomeNotice" class="count-badge"></span>
     <button onclick="generateWhatsappList()">💬 Genera lista convocati (WhatsApp)</button>
   </div>
 
@@ -788,6 +818,13 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     <h2 onclick="toggleCard('cardBacheca')"><span class="chev">▾</span> Anteprima PDF bacheca</h2>
     <div class="body" style="overflow-x:auto; padding-top:4px;">
       <div id="bachecaSheet"></div>
+    </div>
+  </div>
+
+  <div class="card" id="cardReport">
+    <h2 onclick="toggleCard('cardReport')"><span class="chev">▾</span> Anteprima rapporto gara Pulcini</h2>
+    <div class="body" style="overflow-x:auto; padding-top:4px;">
+      <div id="reportSheet"></div>
     </div>
   </div>
 
