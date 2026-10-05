@@ -212,6 +212,7 @@ table.roster select{ width:100%; min-width:0; }
 .ps-titlebar .tb-label{ flex: 0 0 auto; font-weight: 400; }
 .ps-titlebar .tb-denom{ flex: 1; font-weight: 700; text-align: center; text-transform: uppercase; color: var(--ps-blue); }
 .ps-titlebar .tb-dash{ flex: 0 0 auto; padding: 4px 4px; }
+.ps-titlebar .tb-giornata{ flex: 0 0 auto; font-size: 9px; font-weight: 700; text-align: center; color: var(--ps-blue); }
 .ps-titlebar .tb-match{ flex: 2; font-weight: 700; text-align: center; text-transform: uppercase; color: var(--ps-blue); }
 .ps-note-right{
   font-size: 7.5px; text-align:right; font-style:italic; color:#000;
@@ -453,30 +454,37 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 
 /* ==================== RAPPORTO DI GARA PULCINI ==================== */
 #reportSheet{
-  width:210mm; min-height:297mm; margin:0 auto; padding:3mm 8mm;
+  width:210mm; min-height:297mm; margin:0 auto; padding:5mm 9mm;
   background:#fff; color:#102653; border:1px solid #ccc; box-shadow:var(--shadow);
-  font-family:Arial,Helvetica,sans-serif; font-size:7px;
+  font-family:Arial,Helvetica,sans-serif; font-size:7px; line-height:1.15;
+  display:flex; flex-direction:column;
 }
 #reportSheet, #reportSheet *{box-sizing:border-box;}
+#reportSheet > *{flex-shrink:0;}
 .rg-header{display:grid; grid-template-columns:16mm 1fr 16mm; align-items:center; text-align:center;}
-.rg-logo{width:10mm; height:10mm; object-fit:contain; justify-self:center;}
+.rg-logo{width:10mm; height:10mm; object-fit:contain; justify-self:center; border:1px solid #0876bd; border-radius:50%; padding:1mm;}
 .rg-title{font-size:9px; font-weight:800; text-transform:uppercase;}
 .rg-header-bands{display:grid; grid-template-columns:1fr 1fr; gap:2mm; margin-top:1mm;}
-.rg-band{border:1px solid #dcebd6; background:#dcebd6; text-align:center; font-weight:800; text-transform:uppercase; padding:1mm;}
-.rg-options{display:flex; justify-content:space-between; gap:2mm; margin:1mm 0; font-weight:700; font-size:6px;}
-.rg-options span{white-space:nowrap;}
+.rg-band{border:1px solid #172b54; background:#dcebd6; text-align:center; font-weight:800; text-transform:uppercase; padding:1mm;}
+.rg-options{display:grid; grid-template-columns:repeat(3,1fr); gap:2mm; margin:1mm 0; font-weight:700; font-size:6px;}
+.rg-options span{white-space:nowrap; border:1px solid #172b54; background:#e5efdf; padding:1mm; text-align:center;}
 .rg-instruction{text-align:center; font-size:5px; font-weight:700; margin:1mm 0;}
-.rg-fields{display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:1mm 2mm;}
-.rg-field{display:flex; align-items:center; gap:2mm; min-height:6mm;}
-.rg-field b{white-space:nowrap; font-size:6px;}
-.rg-fill{border:1px solid #172b54; background:#e9edf3; min-height:6mm; flex:1; padding:1mm 2mm; color:#111;}
+.rg-fields{display:grid; grid-template-columns:repeat(4,1fr); gap:1mm 2mm;}
+.rg-field{display:flex; flex-direction:column; gap:.5mm; min-height:9mm;}
+.rg-field b{white-space:nowrap; font-size:6px; text-align:center; border:1px solid #172b54; background:#dcebd6; padding:.7mm;}
+.rg-fill{border:1px solid #172b54; background:#e9edf3; min-height:5mm; flex:1; padding:1mm 2mm; color:#111;}
 .rg-wide{grid-column:1/-1;}
-.rg-teams{display:grid; grid-template-columns:38mm 1fr 54mm 35mm; gap:1mm; align-items:center; margin-top:1mm;}
-.rg-teams .rg-fill{min-height:8mm;}
+.rg-teams-head,.rg-team-row{display:grid; grid-template-columns:38mm 1fr 54mm 30mm; gap:1mm; align-items:center;}
+.rg-teams-head{margin-top:1mm;}
+.rg-teams-head .rg-score-grid{display:grid; grid-template-columns:repeat(4,1fr); color:#102653;}
+.rg-teams-head .rg-score-grid span,.rg-teams-head .rg-total{border:1px solid #172b54; background:#e5efdf; text-align:center; min-height:7mm; padding:1mm .5mm; font-size:5px; font-weight:700;}
+.rg-teams-head .rg-total{display:flex; align-items:center; justify-content:center;}
+.rg-team-row{min-height:9mm; color:#102653;}
+.rg-team-row>b{font-size:6px; white-space:nowrap;}
+.rg-team-row .rg-fill{min-height:8mm;}
 .rg-score-grid{display:grid; grid-template-columns:repeat(4,1fr); color:#111;}
 .rg-score-grid span{border:1px solid #172b54; text-align:center; min-height:8mm; padding:1mm .5mm;}
-.rg-total{display:grid; grid-template-rows:1fr 1fr; text-align:center; color:#111;}
-.rg-total b,.rg-total span{border:1px solid #172b54; padding:1mm; font-size:5px;}
+.rg-total{border:1px solid #172b54; text-align:center; min-height:8mm; background:#f8e7dd;}
 .rg-section-title{background:#dcebd6; border:1px solid #172b54; text-align:center; font-weight:800; margin-top:1mm; padding:1mm;}
 .rg-cols{display:grid; grid-template-columns:1fr 1fr; gap:2mm;}
 .rg-lines{border:1px solid #172b54; padding:1mm 2mm; min-height:13mm; color:#111; font-size:6px;}
@@ -489,7 +497,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 .rg-write .rg-write-lines{padding:1mm 2mm;}
 .rg-write .rg-write-lines div{height:4mm;}
 .rg-legend{text-align:center; font-size:5.5px; font-weight:700; margin:1mm 0;}
-.rg-signatures{display:flex; justify-content:space-between; margin-top:2mm; font-weight:700;}
+.rg-signatures{display:flex; justify-content:space-between; margin-top:auto; padding-top:2mm; font-weight:700;}
 .rg-signatures span{width:49%; border:1px solid #172b54; background:#dcebd6; padding:1mm;}
 .rg-signature-lines{display:flex; justify-content:space-between; margin-top:3mm;}
 .rg-signature-lines span{width:49%; border-bottom:1px solid #172b54; height:6mm;}
@@ -543,6 +551,11 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     display: flex !important; flex-direction: column !important;
     overflow: visible !important;
   }
+  #reportSheet{
+    display:flex !important; flex-direction:column !important; height:auto !important;
+    min-height:280mm !important; padding:4mm 5mm !important;
+    font-size:7px !important;
+  }
 
   #bachecaSheet .bk-footer{ background: #111 !important; color: #fff !important; }
   #bachecaSheet .bk-brandbar{ background: #2a7ec7 !important; color: #fff !important; }
@@ -563,7 +576,6 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   #printSheet .ps-final-note{ margin-bottom: 3mm !important; }
 
   .app-footer{ display: none !important; }
-  #reportSheet{font-size:7.5px !important;}
 }
 
 @media(max-width:760px){
@@ -628,7 +640,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         </div>
         <div class="field"><label>Denominazione</label><input type="text" id="g_denom" placeholder="Esordienti"></div>
         <div class="field"><label>Girone</label><input type="text" id="g_girone" placeholder="Girone A"></div>
-        <div class="field"><label>Giornata</label><input type="text" id="g_giornata" placeholder="Es. 1ª giornata"></div>
+        <div class="field"><label>Numero giornata</label><input type="text" id="g_giornata" placeholder="Es. 1ª"></div>
         <div class="field"><label>Squadra ospitante</label><input type="text" id="g_ospitante" placeholder="Nome squadra"></div>
         <div class="field"><label>Squadra ospite</label><input type="text" id="g_ospite" placeholder="Nome squadra"></div>
         <div class="field"><label>Data gara</label><input type="date" id="g_data"></div>
@@ -1816,6 +1828,7 @@ function renderPrint(){
       <div class="tb-label">Distinta dei giocatori partecipanti alla gara</div>
       <div class="tb-denom">${escapeHtml(denomLine)}</div>
       <div class="tb-dash">-</div>
+      <div class="tb-giornata">Giornata ${escapeHtml(match.giornata||'')}</div>
       <div class="tb-match">${matchLineHTML}</div>
     </div>
     <div class="ps-note-right">(scrivere prima la ospitante)</div>
@@ -1957,7 +1970,7 @@ function renderReport(){
       <img class="rg-logo" src="logo.png" alt="Campolongo">
     </div>
     <div class="rg-header-bands">
-      <div class="rg-band">Tornei Pulcini</div><div class="rg-band">S.S. 2026/2027</div>
+      <div class="rg-band">Tornei Pulcini</div><div class="rg-band">S.S. 2025/2026</div>
     </div>
     <div class="rg-options">
       <span>◯ &nbsp; 7 VS 7 · (2016) · 2° ANNO</span>
@@ -1968,17 +1981,22 @@ function renderReport(){
     <div class="rg-fields">${fields}
       <div class="rg-field rg-wide"><b>LUOGO DI SVOLGIMENTO</b><span class="rg-fill">${escapeHtml(match.luogo || '')}</span></div>
     </div>
-    <div class="rg-teams">
-      <b>SOCIETÀ OSPITANTE ➜</b><span class="rg-fill">${escapeHtml(team.nome || '')}</span>
+    <div class="rg-teams-head">
+      <span></span><span></span>
       <div class="rg-score-grid">
         <span>1° T.<br>(PUNTI)</span><span>2° T.<br>(PUNTI)</span><span>3° T.<br>(PUNTI)</span><span>EV. 4° T.<br>(PUNTI)</span>
       </div>
-      <div class="rg-total"><b>TOT. PUNTI<br>(N.3.T. e N.4.T.)</b><span></span></div>
+      <div class="rg-total">TOT. PUNTI<br>(N.3.T. e N.4.T.)</div>
     </div>
-    <div class="rg-teams">
+    <div class="rg-team-row">
+      <b>SOCIETÀ OSPITANTE ➜</b><span class="rg-fill">${escapeHtml(match.ospitante || team.nome || '')}</span>
+      <div class="rg-score-grid"><span></span><span></span><span></span><span></span></div>
+      <div class="rg-total"></div>
+    </div>
+    <div class="rg-team-row">
       <b>SOCIETÀ OSPITATA ➜</b><span class="rg-fill">${escapeHtml(match.ospite || '')}</span>
       <div class="rg-score-grid"><span></span><span></span><span></span><span></span></div>
-      <div class="rg-total"><b></b><span></span></div>
+      <div class="rg-total"></div>
     </div>
     <div class="rg-cols">
       <div><div class="rg-section-title">ATTRIBUZIONE PUNTEGGI GARA</div>
