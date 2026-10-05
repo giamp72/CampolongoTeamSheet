@@ -461,7 +461,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 }
 #reportSheet, #reportSheet *{box-sizing:border-box;}
 #reportSheet > *{flex-shrink:0;}
-.rg-header{display:grid; grid-template-columns:16mm 1fr 16mm; align-items:center; text-align:center;}
+.rg-header{display:grid; grid-template-columns:42mm 1fr 42mm; align-items:center; text-align:center;}
 .rg-logo{width:10mm; height:10mm; object-fit:contain; justify-self:center; border:1px solid #0876bd; border-radius:50%; padding:1mm;}
 .rg-title{font-size:9px; font-weight:800; text-transform:uppercase;}
 .rg-header-bands{display:grid; grid-template-columns:1fr 1fr; gap:2mm; margin-top:1mm;}
@@ -470,17 +470,17 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 .rg-options span{white-space:nowrap; border:1px solid #172b54; background:#e5efdf; padding:1mm; text-align:center;}
 .rg-instruction{text-align:center; font-size:5px; font-weight:700; margin:1mm 0;}
 .rg-fields{display:grid; grid-template-columns:repeat(4,1fr); gap:1mm 2mm;}
-.rg-field{display:flex; flex-direction:column; gap:.5mm; min-height:9mm;}
-.rg-field b{white-space:nowrap; font-size:6px; text-align:center; border:1px solid #172b54; background:#dcebd6; padding:.7mm;}
-.rg-fill{border:1px solid #172b54; background:#e9edf3; min-height:5mm; flex:1; padding:1mm 2mm; color:#111;}
+.rg-field{display:flex; flex-direction:column-reverse; gap:.5mm; height:9mm;}
+.rg-field b{white-space:nowrap; font-size:6px; text-align:center;}
+.rg-fill{border:1px solid #172b54; background:#e9edf3; min-height:5mm; flex:1; padding:1mm 2mm; color:#111; font-size:8px;}
 .rg-wide{grid-column:1/-1;}
-.rg-teams-head,.rg-team-row{display:grid; grid-template-columns:38mm 1fr 54mm 30mm; gap:1mm; align-items:center;}
+.rg-teams-head,.rg-team-row{display:grid; grid-template-columns:38mm 53mm 57mm 31mm; justify-content:space-between; align-items:center;}
 .rg-teams-head{margin-top:1mm;}
 .rg-teams-head .rg-score-grid{display:grid; grid-template-columns:repeat(4,1fr); color:#102653;}
 .rg-teams-head .rg-score-grid span,.rg-teams-head .rg-total{border:1px solid #172b54; background:#e5efdf; text-align:center; min-height:7mm; padding:1mm .5mm; font-size:5px; font-weight:700;}
 .rg-teams-head .rg-total{display:flex; align-items:center; justify-content:center;}
 .rg-team-row{min-height:9mm; color:#102653;}
-.rg-team-row>b{font-size:6px; white-space:nowrap;}
+.rg-team-row>b{font-size:6px; white-space:nowrap; text-align:center;}
 .rg-team-row .rg-fill{min-height:8mm;}
 .rg-score-grid{display:grid; grid-template-columns:repeat(4,1fr); color:#111;}
 .rg-score-grid span{border:1px solid #172b54; text-align:center; min-height:8mm; padding:1mm .5mm;}
@@ -553,8 +553,8 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   }
   #reportSheet{
     display:flex !important; flex-direction:column !important; height:auto !important;
-    min-height:280mm !important; padding:4mm 5mm !important;
-    font-size:7px !important;
+    min-height:287mm !important; padding:4mm 5mm !important;
+    font-size:8px !important;
   }
 
   #bachecaSheet .bk-footer{ background: #111 !important; color: #fff !important; }
