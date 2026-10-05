@@ -530,7 +530,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 
   #printSheet, #bachecaSheet, #reportSheet{
     width: 200mm !important; height: auto !important;
-    min-height: 287mm !important; max-height: none !important;
+    min-height: 280mm !important; max-height: none !important;
     padding: 4mm 5mm !important; margin: 0 !important;
     border: none !important; box-shadow: none !important;
     box-sizing: border-box !important;
@@ -542,6 +542,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   #bachecaSheet .bk-footer{ background: #111 !important; color: #fff !important; }
   #bachecaSheet .bk-brandbar{ background: #2a7ec7 !important; color: #fff !important; }
   #bachecaSheet .bk-footer .dot{ background: #2a7ec7 !important; }
+  #bachecaSheet .bk-players{overflow: visible !important;}
 
   #printSheet .ps-table{ flex: 1 1 auto !important; }
   #printSheet .ps-table tbody tr{ height: auto !important; }
@@ -1381,6 +1382,7 @@ function onTeamChange(){
   cloudPush();
   renderPrint();
   renderBacheca();
+  renderReport();
 }
 function onMatchChange(){
   match.tipo = document.getElementById('g_tipo').value;
@@ -1410,6 +1412,7 @@ function onMatchChange(){
   persistMatch();
   renderPrint();
   renderBacheca();
+  renderReport();
 }
 function persistMatch(){
   saveJSON(matchStorageKey(), match);
@@ -1909,7 +1912,8 @@ function renderPrint(){
 
 function isHomeMatch(){
   const normalize = value => String(value || '').trim().toLocaleLowerCase('it');
-  return normalize(match.ospitante || team.nome) === normalize(team.nome);
+  const teamName = normalize(team.nome);
+  return !!teamName && normalize(match.ospitante || team.nome) === teamName;
 }
 function renderReport(){
   const report = document.getElementById('reportSheet');
@@ -1954,7 +1958,7 @@ function renderReport(){
       <span>◯ &nbsp; 7 VS 7 · (2017) · 1° ANNO</span>
       <span>◯ &nbsp; 7 VS 7 · (2016 / 2017) · MISTI</span>
     </div>
-    <div class="rg-instruction">★ MAX N. 3 NATI NEL 2015 E MAX N. 3 NATI NEL 2017 ★ &nbsp;&nbsp; ★ MAX N. 10 NATI NEL 2017 ★ &nbsp;&nbsp; ★ MAX N. 10 NATI NEL 2017 ★</div>
+    <div class="rg-instruction">OPPORTUNITÀ CONCESSA SOLO ALLE SOCIETÀ CHE DIMOSTRANO EFFETTIVA NECESSITÀ DI INSERIRE GIOVANI CALCIATORI DI ETÀ INFERIORE A QUELLA CONSENTITA PER COMPLETARE LA ROSA.</div>
     <div class="rg-fields">${fields}
       <div class="rg-field rg-wide"><b>LUOGO DI SVOLGIMENTO</b><span class="rg-fill">${escapeHtml(match.luogo || '')}</span></div>
     </div>
