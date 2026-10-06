@@ -7,6 +7,12 @@
 <meta name="format-detection" content="telephone=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" type="image/png" href="logo.png">
+<script>
+try{
+  const savedTheme = localStorage.getItem('campolongo_theme');
+  if(savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
+}catch(e){}
+</script>
 <style>
 :root{
   --bg:#f4f5f7; --panel:#ffffff; --ink:#1c2230; --muted:#6b7280; --border:#d8dbe2;
@@ -46,6 +52,7 @@ h1{font-size:1.2rem; margin:0 0 4px;}
 .app-user{display:flex; align-items:center; gap:8px; margin-left:auto; flex:0 0 auto;}
 .app-user[hidden]{display:none;}
 .app-user-name{max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.82rem; color:var(--muted);}
+button.theme-toggle{padding:6px 8px; line-height:1.2;}
 @media(max-width:520px){
   .app-header{flex-wrap:wrap;}
   .app-header .logo{width:44px; height:44px;}
@@ -69,11 +76,11 @@ h1{font-size:1.2rem; margin:0 0 4px;}
 .grid{display:grid; grid-template-columns: repeat(2,1fr); gap:12px;}
 @media(max-width:640px){.grid{grid-template-columns:1fr;}}
 label{font-size:.78rem; color:var(--muted); display:block; margin-bottom:4px;}
-input[type=text],input[type=date],input[type=time],input[type=number],select{
+input[type=text],input[type=date],input[type=time],input[type=number],select,textarea{
   width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border);
-  background:var(--field-bg); color:var(--ink); font-size:16px;
+  background:var(--field-bg); color:var(--ink); font-size:16px; font-family:inherit;
 }
-input:focus,select:focus{outline:2px solid var(--accent); outline-offset:1px;}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent); outline-offset:1px;}
 .field{margin-bottom:10px;}
 .row-inline{display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;}
 .row-inline > div{flex:1; min-width:140px;}
@@ -548,6 +555,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     </div>
     <div class="app-user" id="appUser" hidden>
       <span class="app-user-name" id="appUserName"></span>
+      <button class="small theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Passa alla modalità scura" title="Passa alla modalità scura" aria-pressed="false">🌙</button>
       <button class="small" type="button" onclick="logout()">Esci</button>
     </div>
   </div>
@@ -589,7 +597,9 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         <div class="field"><label>Data gara</label><input type="date" id="g_data"></div>
         <div class="field"><label>Ora gara</label><input type="time" id="g_ora"></div>
         <div class="field"><label>Orario convocazione (auto = -45 min)</label><input type="time" id="g_orarioConvocazione"></div>
-        <div class="field" style="grid-column:1/-1"><label>Luogo</label><input type="text" id="g_luogo" placeholder="Nome del campo / città"></div>
+        <div class="field"><label>Luogo</label><input type="text" id="g_luogo" placeholder="Nome del campo / città"></div>
+        <div class="field"><label>Ritrovo</label><input type="text" id="g_ritrovo" placeholder="Dove si ritrova il gruppo squadra"></div>
+        <div class="field" style="grid-column:1/-1"><label>Note Distinta Bacheca</label><textarea id="g_noteBacheca" rows="2"></textarea></div>
       </div>
     </div>
   </div>
@@ -676,6 +686,38 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     </div>
   </div>
 
+  <div class="card" id="cardStaffAssignments">
+    <h2>Staff convocato</h2>
+    <div class="body">
+      <div class="grid">
+        <div class="field">
+          <label>Dirigente accompagnatore ufficiale</label>
+          <select id="s_dirigente"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Dirigente addetto ufficiali di gara</label>
+          <select id="s_dirigente2"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Medico sociale</label>
+          <select id="s_medico"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Allenatore</label>
+          <select id="s_allenatore"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Allenatore in seconda</label>
+          <select id="s_allenatore2"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Dirigente / Massaggiatore</label>
+          <select id="s_massaggiatore"><option value="">—</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="card collapsed" id="cardStaff">
     <h2 onclick="toggleCard('cardStaff')"><span class="chev">▾</span> Dirigenti / Staff</h2>
     <div class="body">
@@ -716,33 +758,6 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         <input type="date" id="ns_dataRilascio" style="max-width:140px">
         <select id="ns_enteRilascio" style="max-width:120px"></select>
         <button onclick="addStaff()">+ Aggiungi alla lista</button>
-      </div>
-
-      <div class="grid" style="margin-top:16px;">
-        <div class="field">
-          <label>Dirigente accompagnatore ufficiale</label>
-          <select id="s_dirigente"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Dirigente addetto ufficiali di gara</label>
-          <select id="s_dirigente2"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Medico sociale</label>
-          <select id="s_medico"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Allenatore</label>
-          <select id="s_allenatore"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Allenatore in seconda</label>
-          <select id="s_allenatore2"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Dirigente / Massaggiatore</label>
-          <select id="s_massaggiatore"><option value="">—</option></select>
-        </div>
       </div>
     </div>
   </div>
@@ -814,6 +829,25 @@ let matchCloudRevision = 0;
 let matchCloudPushTimer = null;
 let matchCloudWriteInFlight = false;
 
+function isDarkTheme(){
+  const theme = document.documentElement.dataset.theme;
+  return theme ? theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function renderThemeToggle(){
+  const toggle = document.getElementById('themeToggle');
+  if(!toggle) return;
+  const isDark = isDarkTheme();
+  toggle.textContent = isDark ? '☀️' : '🌙';
+  toggle.setAttribute('aria-label', isDark ? 'Passa alla modalità chiara' : 'Passa alla modalità scura');
+  toggle.title = isDark ? 'Passa alla modalità chiara' : 'Passa alla modalità scura';
+  toggle.setAttribute('aria-pressed', String(isDark));
+}
+function toggleTheme(){
+  const theme = isDarkTheme() ? 'light' : 'dark';
+  document.documentElement.dataset.theme = theme;
+  try{ localStorage.setItem('campolongo_theme', theme); }catch(e){}
+  renderThemeToggle();
+}
 function showAuthPanel(){
   const needsLogin = CLOUD_ENABLED && !authSession;
   const waitingForData = CLOUD_ENABLED && authSession && !cloudInitialized;
@@ -1052,6 +1086,9 @@ function populateMatchFields(){
   document.getElementById('g_ora').value = match.ora || '';
   document.getElementById('g_orarioConvocazione').value = match.orarioConvocazione || '';
   document.getElementById('g_luogo').value = match.luogo || '';
+  if(ensureBachecaNote()) persistMatch();
+  document.getElementById('g_ritrovo').value = match.ritrovo || '';
+  document.getElementById('g_noteBacheca').value = match.noteBacheca;
 }
 async function matchCloudRefresh(showLoading, discardLocal){
   if(!CLOUD_ENABLED || !authSession) return;
@@ -1242,7 +1279,7 @@ const DEFAULT_STAFF_ROSTER = [
 ];
 function defaultMatch(){
   return {
-    tipo:"Campionato", denom:"", girone:"", giornata:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", orarioConvocazione:"",
+    tipo:"Campionato", denom:"", girone:"", giornata:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", ritrovo:"", orarioConvocazione:"",
     rows: [], capitanoId:null, vcapId:null,
     staffDirigente:null, staffDirigente2:null, staffMedico:null, staffAllenatore:null, staffAllenatore2:null, staffMassaggiatore:null
   };
@@ -1297,6 +1334,9 @@ function initFields(){
   document.getElementById('g_ora').value = match.ora || "";
   document.getElementById('g_orarioConvocazione').value = match.orarioConvocazione || "";
   document.getElementById('g_luogo').value = match.luogo || "";
+  if(ensureBachecaNote()) persistMatch();
+  document.getElementById('g_ritrovo').value = match.ritrovo || "";
+  document.getElementById('g_noteBacheca').value = match.noteBacheca;
 
   document.getElementById('s_dirigente').addEventListener('change', ()=>{ match.staffDirigente = document.getElementById('s_dirigente').value||null; persistMatch(); renderPrint(); renderBacheca(); });
   document.getElementById('s_dirigente2').addEventListener('change', ()=>{ match.staffDirigente2 = document.getElementById('s_dirigente2').value||null; persistMatch(); renderPrint(); renderBacheca(); });
@@ -1308,10 +1348,11 @@ function initFields(){
   ['t_nome','t_matricola','t_sede'].forEach(id=>{
     document.getElementById(id).addEventListener('input', onTeamChange);
   });
-  ['g_tipo','g_denom','g_girone','g_giornata','g_ospitante','g_ospite','g_data','g_ora','g_orarioConvocazione','g_luogo'].forEach(id=>{
+  ['g_tipo','g_denom','g_girone','g_giornata','g_ospitante','g_ospite','g_data','g_ora','g_orarioConvocazione','g_luogo','g_ritrovo'].forEach(id=>{
     document.getElementById(id).addEventListener('input', onMatchChange);
     document.getElementById(id).addEventListener('change', onMatchChange);
   });
+  document.getElementById('g_noteBacheca').oninput = onBachecaNoteChange;
   document.getElementById('capSel').addEventListener('change', ()=>{
     match.capitanoId = document.getElementById('capSel').value || null;
     if(match.capitanoId && match.capitanoId == match.vcapId) match.vcapId = null;
@@ -1334,6 +1375,9 @@ function onTeamChange(){
   renderBacheca();
 }
 function onMatchChange(){
+  const previousAutoNote = buildBachecaNote();
+  const shouldUpdateBachecaNote = typeof match.noteBacheca !== 'string' ||
+    match.noteBacheca === previousAutoNote || match.noteBacheca === buildLegacyBachecaNote();
   match.tipo = document.getElementById('g_tipo').value;
   match.denom = document.getElementById('g_denom').value;
   match.girone = document.getElementById('g_girone').value;
@@ -1358,9 +1402,40 @@ function onMatchChange(){
   match.ospite = document.getElementById('g_ospite').value;
   match.data = document.getElementById('g_data').value;
   match.luogo = document.getElementById('g_luogo').value;
+  match.ritrovo = document.getElementById('g_ritrovo').value;
+  if(shouldUpdateBachecaNote){
+    match.noteBacheca = buildBachecaNote();
+    document.getElementById('g_noteBacheca').value = match.noteBacheca;
+  }
   persistMatch();
   renderPrint();
   renderBacheca();
+}
+function onBachecaNoteChange(){
+  match.noteBacheca = document.getElementById('g_noteBacheca').value;
+  persistMatch();
+  renderBacheca();
+}
+function buildBachecaNote(){
+  const ritrovoStr = match.orarioConvocazione || (match.ora ? minusMinutes(match.ora, 45) : '');
+  const ritrovoLine = ritrovoStr && match.ritrovo
+    ? `ENTRO LE ORE ${ritrovoStr} C/O ${match.ritrovo.toUpperCase()}`
+    : (ritrovoStr ? `ENTRO LE ORE ${ritrovoStr}` : 'RITROVO DA CONFERMARE');
+  return `${ritrovoLine}\nRICORDARSI DI PORTARE SEMPRE CON VOI IL DOCUMENTO DI IDENTITÀ`;
+}
+function buildLegacyBachecaNote(){
+  const ritrovoStr = match.orarioConvocazione || (match.ora ? minusMinutes(match.ora, 45) : '');
+  const ritrovoLine = ritrovoStr && match.luogo
+    ? `ENTRO LE ORE ${ritrovoStr} C/O ${match.luogo.toUpperCase()}`
+    : (ritrovoStr ? `ENTRO LE ORE ${ritrovoStr}` : 'RITROVO DA CONFERMARE');
+  return `${ritrovoLine}\nRICORDARSI DI PORTARE SEMPRE CON VOI IL DOCUMENTO DI IDENTITÀ`;
+}
+function ensureBachecaNote(){
+  if(typeof match.noteBacheca !== 'string' || match.noteBacheca === buildLegacyBachecaNote()){
+    match.noteBacheca = buildBachecaNote();
+    return true;
+  }
+  return false;
 }
 function persistMatch(){
   saveJSON(matchStorageKey(), match);
@@ -1888,10 +1963,7 @@ function renderBacheca(){
   const competizione = [match.tipo, match.denom].filter(Boolean).join(' · ').toUpperCase();
   const dataStr = fmtDate(match.data) || '';
   const oraStr = match.ora || '';
-  const ritrovoStr = match.orarioConvocazione || (match.ora ? minusMinutes(match.ora, 45) : '');
-  const ritrovoLine = ritrovoStr && match.luogo
-    ? `ENTRO LE ORE ${ritrovoStr} C/O ${escapeHtml(match.luogo).toUpperCase()}`
-    : (ritrovoStr ? `ENTRO LE ORE ${ritrovoStr}` : 'RITROVO DA CONFERMARE');
+  const footerNoteLines = (match.noteBacheca ?? buildBachecaNote()).split('\n');
 
   sheet.innerHTML = `
     <div class="bk-header">
@@ -1920,8 +1992,7 @@ function renderBacheca(){
     <div class="bk-footer">
       <div class="dot"></div>
       <div class="bk-footer-text">
-        <div>${ritrovoLine}</div>
-        <div class="hint">RICORDARSI DI PORTARE SEMPRE CON VOI IL DOCUMENTO DI IDENTITÀ</div>
+        ${footerNoteLines.map((line, index)=>`<div${index ? ' class="hint"' : ''}>${escapeHtml(line)}</div>`).join('')}
       </div>
     </div>
 
@@ -2037,6 +2108,7 @@ function resetMatch(){
   match = { ...defaultMatch(), ...staffSelections };
   persistMatch();
   initFields();
+  renderThemeToggle();
   renderAll();
 }
 
