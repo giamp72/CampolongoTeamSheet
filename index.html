@@ -589,7 +589,8 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         <div class="field"><label>Data gara</label><input type="date" id="g_data"></div>
         <div class="field"><label>Ora gara</label><input type="time" id="g_ora"></div>
         <div class="field"><label>Orario convocazione (auto = -45 min)</label><input type="time" id="g_orarioConvocazione"></div>
-        <div class="field" style="grid-column:1/-1"><label>Luogo</label><input type="text" id="g_luogo" placeholder="Nome del campo / città"></div>
+        <div class="field"><label>Luogo</label><input type="text" id="g_luogo" placeholder="Nome del campo / città"></div>
+        <div class="field"><label>Ritrovo</label><input type="text" id="g_ritrovo" placeholder="Dove si ritrova il gruppo squadra"></div>
         <div class="field" style="grid-column:1/-1"><label>Note Distinta Bacheca</label><textarea id="g_noteBacheca" rows="2"></textarea></div>
       </div>
     </div>
@@ -1053,7 +1054,8 @@ function populateMatchFields(){
   document.getElementById('g_ora').value = match.ora || '';
   document.getElementById('g_orarioConvocazione').value = match.orarioConvocazione || '';
   document.getElementById('g_luogo').value = match.luogo || '';
-  if(typeof match.noteBacheca !== 'string') match.noteBacheca = buildBachecaNote();
+  if(ensureBachecaNote()) persistMatch();
+  document.getElementById('g_ritrovo').value = match.ritrovo || '';
   document.getElementById('g_noteBacheca').value = match.noteBacheca;
 }
 async function matchCloudRefresh(showLoading, discardLocal){
@@ -1245,7 +1247,7 @@ const DEFAULT_STAFF_ROSTER = [
 ];
 function defaultMatch(){
   return {
-    tipo:"Campionato", denom:"", girone:"", giornata:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", orarioConvocazione:"",
+    tipo:"Campionato", denom:"", girone:"", giornata:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", ritrovo:"", orarioConvocazione:"",
     rows: [], capitanoId:null, vcapId:null,
     staffDirigente:null, staffDirigente2:null, staffMedico:null, staffAllenatore:null, staffAllenatore2:null, staffMassaggiatore:null
   };
@@ -1300,7 +1302,8 @@ function initFields(){
   document.getElementById('g_ora').value = match.ora || "";
   document.getElementById('g_orarioConvocazione').value = match.orarioConvocazione || "";
   document.getElementById('g_luogo').value = match.luogo || "";
-  if(typeof match.noteBacheca !== 'string') match.noteBacheca = buildBachecaNote();
+  if(ensureBachecaNote()) persistMatch();
+  document.getElementById('g_ritrovo').value = match.ritrovo || "";
   document.getElementById('g_noteBacheca').value = match.noteBacheca;
 
   document.getElementById('s_dirigente').addEventListener('change', ()=>{ match.staffDirigente = document.getElementById('s_dirigente').value||null; persistMatch(); renderPrint(); renderBacheca(); });
@@ -1313,7 +1316,7 @@ function initFields(){
   ['t_nome','t_matricola','t_sede'].forEach(id=>{
     document.getElementById(id).addEventListener('input', onTeamChange);
   });
-  ['g_tipo','g_denom','g_girone','g_giornata','g_ospitante','g_ospite','g_data','g_ora','g_orarioConvocazione','g_luogo'].forEach(id=>{
+  ['g_tipo','g_denom','g_girone','g_giornata','g_ospitante','g_ospite','g_data','g_ora','g_orarioConvocazione','g_luogo','g_ritrovo'].forEach(id=>{
     document.getElementById(id).addEventListener('input', onMatchChange);
     document.getElementById(id).addEventListener('change', onMatchChange);
   });
@@ -1341,7 +1344,8 @@ function onTeamChange(){
 }
 function onMatchChange(){
   const previousAutoNote = buildBachecaNote();
-  const shouldUpdateBachecaNote = typeof match.noteBacheca !== 'string' || match.noteBacheca === previousAutoNote;
+  const shouldUpdateBachecaNote = typeof match.noteBacheca !== 'string' ||
+    match.noteBacheca === previousAutoNote || match.noteBacheca === buildLegacyBachecaNote();
   match.tipo = document.getElementById('g_tipo').value;
   match.denom = document.getElementById('g_denom').value;
   match.girone = document.getElementById('g_girone').value;
@@ -1366,6 +1370,7 @@ function onMatchChange(){
   match.ospite = document.getElementById('g_ospite').value;
   match.data = document.getElementById('g_data').value;
   match.luogo = document.getElementById('g_luogo').value;
+  match.ritrovo = document.getElementById('g_ritrovo').value;
   if(shouldUpdateBachecaNote){
     match.noteBacheca = buildBachecaNote();
     document.getElementById('g_noteBacheca').value = match.noteBacheca;
@@ -1381,10 +1386,24 @@ function onBachecaNoteChange(){
 }
 function buildBachecaNote(){
   const ritrovoStr = match.orarioConvocazione || (match.ora ? minusMinutes(match.ora, 45) : '');
+  const ritrovoLine = ritrovoStr && match.ritrovo
+    ? `ENTRO LE ORE ${ritrovoStr} C/O ${match.ritrovo.toUpperCase()}`
+    : (ritrovoStr ? `ENTRO LE ORE ${ritrovoStr}` : 'RITROVO DA CONFERMARE');
+  return `${ritrovoLine}\nRICORDARSI DI PORTARE SEMPRE CON VOI IL DOCUMENTO DI IDENTITÀ`;
+}
+function buildLegacyBachecaNote(){
+  const ritrovoStr = match.orarioConvocazione || (match.ora ? minusMinutes(match.ora, 45) : '');
   const ritrovoLine = ritrovoStr && match.luogo
     ? `ENTRO LE ORE ${ritrovoStr} C/O ${match.luogo.toUpperCase()}`
     : (ritrovoStr ? `ENTRO LE ORE ${ritrovoStr}` : 'RITROVO DA CONFERMARE');
   return `${ritrovoLine}\nRICORDARSI DI PORTARE SEMPRE CON VOI IL DOCUMENTO DI IDENTITÀ`;
+}
+function ensureBachecaNote(){
+  if(typeof match.noteBacheca !== 'string' || match.noteBacheca === buildLegacyBachecaNote()){
+    match.noteBacheca = buildBachecaNote();
+    return true;
+  }
+  return false;
 }
 function persistMatch(){
   saveJSON(matchStorageKey(), match);
