@@ -69,11 +69,11 @@ h1{font-size:1.2rem; margin:0 0 4px;}
 .grid{display:grid; grid-template-columns: repeat(2,1fr); gap:12px;}
 @media(max-width:640px){.grid{grid-template-columns:1fr;}}
 label{font-size:.78rem; color:var(--muted); display:block; margin-bottom:4px;}
-input[type=text],input[type=date],input[type=time],input[type=number],select{
+input[type=text],input[type=date],input[type=time],input[type=number],select,textarea{
   width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border);
-  background:var(--field-bg); color:var(--ink); font-size:16px;
+  background:var(--field-bg); color:var(--ink); font-size:16px; font-family:inherit;
 }
-input:focus,select:focus{outline:2px solid var(--accent); outline-offset:1px;}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent); outline-offset:1px;}
 .field{margin-bottom:10px;}
 .row-inline{display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;}
 .row-inline > div{flex:1; min-width:140px;}
@@ -590,6 +590,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         <div class="field"><label>Ora gara</label><input type="time" id="g_ora"></div>
         <div class="field"><label>Orario convocazione (auto = -45 min)</label><input type="time" id="g_orarioConvocazione"></div>
         <div class="field" style="grid-column:1/-1"><label>Luogo</label><input type="text" id="g_luogo" placeholder="Nome del campo / città"></div>
+        <div class="field" style="grid-column:1/-1"><label>Note Distinta Bacheca</label><textarea id="g_noteBacheca" rows="2"></textarea></div>
       </div>
     </div>
   </div>
@@ -1052,6 +1053,8 @@ function populateMatchFields(){
   document.getElementById('g_ora').value = match.ora || '';
   document.getElementById('g_orarioConvocazione').value = match.orarioConvocazione || '';
   document.getElementById('g_luogo').value = match.luogo || '';
+  if(typeof match.noteBacheca !== 'string') match.noteBacheca = buildBachecaNote();
+  document.getElementById('g_noteBacheca').value = match.noteBacheca;
 }
 async function matchCloudRefresh(showLoading, discardLocal){
   if(!CLOUD_ENABLED || !authSession) return;
@@ -1297,6 +1300,8 @@ function initFields(){
   document.getElementById('g_ora').value = match.ora || "";
   document.getElementById('g_orarioConvocazione').value = match.orarioConvocazione || "";
   document.getElementById('g_luogo').value = match.luogo || "";
+  if(typeof match.noteBacheca !== 'string') match.noteBacheca = buildBachecaNote();
+  document.getElementById('g_noteBacheca').value = match.noteBacheca;
 
   document.getElementById('s_dirigente').addEventListener('change', ()=>{ match.staffDirigente = document.getElementById('s_dirigente').value||null; persistMatch(); renderPrint(); renderBacheca(); });
   document.getElementById('s_dirigente2').addEventListener('change', ()=>{ match.staffDirigente2 = document.getElementById('s_dirigente2').value||null; persistMatch(); renderPrint(); renderBacheca(); });
@@ -1312,6 +1317,7 @@ function initFields(){
     document.getElementById(id).addEventListener('input', onMatchChange);
     document.getElementById(id).addEventListener('change', onMatchChange);
   });
+  document.getElementById('g_noteBacheca').oninput = onBachecaNoteChange;
   document.getElementById('capSel').addEventListener('change', ()=>{
     match.capitanoId = document.getElementById('capSel').value || null;
     if(match.capitanoId && match.capitanoId == match.vcapId) match.vcapId = null;
@@ -1334,6 +1340,8 @@ function onTeamChange(){
   renderBacheca();
 }
 function onMatchChange(){
+  const previousAutoNote = buildBachecaNote();
+  const shouldUpdateBachecaNote = typeof match.noteBacheca !== 'string' || match.noteBacheca === previousAutoNote;
   match.tipo = document.getElementById('g_tipo').value;
   match.denom = document.getElementById('g_denom').value;
   match.girone = document.getElementById('g_girone').value;
@@ -1358,9 +1366,25 @@ function onMatchChange(){
   match.ospite = document.getElementById('g_ospite').value;
   match.data = document.getElementById('g_data').value;
   match.luogo = document.getElementById('g_luogo').value;
+  if(shouldUpdateBachecaNote){
+    match.noteBacheca = buildBachecaNote();
+    document.getElementById('g_noteBacheca').value = match.noteBacheca;
+  }
   persistMatch();
   renderPrint();
   renderBacheca();
+}
+function onBachecaNoteChange(){
+  match.noteBacheca = document.getElementById('g_noteBacheca').value;
+  persistMatch();
+  renderBacheca();
+}
+function buildBachecaNote(){
+  const ritrovoStr = match.orarioConvocazione || (match.ora ? minusMinutes(match.ora, 45) : '');
+  const ritrovoLine = ritrovoStr && match.luogo
+    ? `ENTRO LE ORE ${ritrovoStr} C/O ${match.luogo.toUpperCase()}`
+    : (ritrovoStr ? `ENTRO LE ORE ${ritrovoStr}` : 'RITROVO DA CONFERMARE');
+  return `${ritrovoLine}\nRICORDARSI DI PORTARE SEMPRE CON VOI IL DOCUMENTO DI IDENTITÀ`;
 }
 function persistMatch(){
   saveJSON(matchStorageKey(), match);
@@ -1888,10 +1912,7 @@ function renderBacheca(){
   const competizione = [match.tipo, match.denom].filter(Boolean).join(' · ').toUpperCase();
   const dataStr = fmtDate(match.data) || '';
   const oraStr = match.ora || '';
-  const ritrovoStr = match.orarioConvocazione || (match.ora ? minusMinutes(match.ora, 45) : '');
-  const ritrovoLine = ritrovoStr && match.luogo
-    ? `ENTRO LE ORE ${ritrovoStr} C/O ${escapeHtml(match.luogo).toUpperCase()}`
-    : (ritrovoStr ? `ENTRO LE ORE ${ritrovoStr}` : 'RITROVO DA CONFERMARE');
+  const footerNoteLines = (match.noteBacheca ?? buildBachecaNote()).split('\n');
 
   sheet.innerHTML = `
     <div class="bk-header">
@@ -1920,8 +1941,7 @@ function renderBacheca(){
     <div class="bk-footer">
       <div class="dot"></div>
       <div class="bk-footer-text">
-        <div>${ritrovoLine}</div>
-        <div class="hint">RICORDARSI DI PORTARE SEMPRE CON VOI IL DOCUMENTO DI IDENTITÀ</div>
+        ${footerNoteLines.map((line, index)=>`<div${index ? ' class="hint"' : ''}>${escapeHtml(line)}</div>`).join('')}
       </div>
     </div>
 
