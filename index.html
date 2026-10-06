@@ -678,6 +678,38 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     </div>
   </div>
 
+  <div class="card" id="cardStaffAssignments">
+    <h2>Staff convocato</h2>
+    <div class="body">
+      <div class="grid">
+        <div class="field">
+          <label>Dirigente accompagnatore ufficiale</label>
+          <select id="s_dirigente"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Dirigente addetto ufficiali di gara</label>
+          <select id="s_dirigente2"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Medico sociale</label>
+          <select id="s_medico"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Allenatore</label>
+          <select id="s_allenatore"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Allenatore in seconda</label>
+          <select id="s_allenatore2"><option value="">—</option></select>
+        </div>
+        <div class="field">
+          <label>Dirigente / Massaggiatore</label>
+          <select id="s_massaggiatore"><option value="">—</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="card collapsed" id="cardStaff">
     <h2 onclick="toggleCard('cardStaff')"><span class="chev">▾</span> Dirigenti / Staff</h2>
     <div class="body">
@@ -718,33 +750,6 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         <input type="date" id="ns_dataRilascio" style="max-width:140px">
         <select id="ns_enteRilascio" style="max-width:120px"></select>
         <button onclick="addStaff()">+ Aggiungi alla lista</button>
-      </div>
-
-      <div class="grid" style="margin-top:16px;">
-        <div class="field">
-          <label>Dirigente accompagnatore ufficiale</label>
-          <select id="s_dirigente"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Dirigente addetto ufficiali di gara</label>
-          <select id="s_dirigente2"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Medico sociale</label>
-          <select id="s_medico"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Allenatore</label>
-          <select id="s_allenatore"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Allenatore in seconda</label>
-          <select id="s_allenatore2"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Dirigente / Massaggiatore</label>
-          <select id="s_massaggiatore"><option value="">—</option></select>
-        </div>
       </div>
     </div>
   </div>
