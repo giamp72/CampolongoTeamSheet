@@ -555,7 +555,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     </div>
     <div class="app-user" id="appUser" hidden>
       <span class="app-user-name" id="appUserName"></span>
-      <button class="small theme-toggle" id="themeToggle" type="button" aria-label="Passa alla modalità scura" title="Passa alla modalità scura" aria-pressed="false">🌙</button>
+      <button class="small theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Passa alla modalità scura" title="Passa alla modalità scura" aria-pressed="false">🌙</button>
       <button class="small" type="button" onclick="logout()">Esci</button>
     </div>
   </div>
@@ -2108,7 +2108,6 @@ function resetMatch(){
   match = { ...defaultMatch(), ...staffSelections };
   persistMatch();
   initFields();
-  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
   renderThemeToggle();
   renderAll();
 }
