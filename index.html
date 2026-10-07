@@ -1794,7 +1794,7 @@ function renderPrint(){
     const capVal = p ? (match.capitanoId==p.id ? 'C' : (match.vcapId==p.id ? 'V.C.' : '')) : '';
     rows.push(`
       <tr>
-        <td class="rolenum">${match.assegnaNumeri === 'NO' ? '' : i+1}</td>
+        <td class="rolenum">${match.assegnaNumeri === 'NO' ? '&nbsp;' : i+1}</td>
         <td>${p?pad2(p.g):''}</td>
         <td>${p?pad2(p.m):''}</td>
         <td>${p?(p.a||''):''}</td>
