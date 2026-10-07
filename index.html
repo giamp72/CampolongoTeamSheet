@@ -591,6 +591,9 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         </div>
         <div class="field"><label>Denominazione</label><input type="text" id="g_denom" placeholder="Esordienti"></div>
         <div class="field"><label>Girone</label><input type="text" id="g_girone" placeholder="Girone A"></div>
+        <div class="field"><label>Assegna numeri</label>
+          <select id="g_assegnaNumeri"><option value="SI">SI</option><option value="NO">NO</option></select>
+        </div>
         <div class="field"><label>Numero giornata</label><input type="text" id="g_giornata" placeholder="Es. 1ª"></div>
         <div class="field"><label>Squadra ospitante</label><input type="text" id="g_ospitante" placeholder="Nome squadra"></div>
         <div class="field"><label>Squadra ospite</label><input type="text" id="g_ospite" placeholder="Nome squadra"></div>
@@ -1080,6 +1083,7 @@ function populateMatchFields(){
   document.getElementById('g_denom').value = match.denom || '';
   document.getElementById('g_girone').value = match.girone || '';
   document.getElementById('g_giornata').value = match.giornata || '';
+  document.getElementById('g_assegnaNumeri').value = match.assegnaNumeri === 'NO' ? 'NO' : 'SI';
   document.getElementById('g_ospitante').value = match.ospitante || team.nome || '';
   document.getElementById('g_ospite').value = match.ospite || '';
   document.getElementById('g_data').value = match.data || '';
@@ -1280,7 +1284,7 @@ const DEFAULT_STAFF_ROSTER = [
 function defaultMatch(){
   return {
     tipo:"Campionato", denom:"", girone:"", giornata:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", ritrovo:"", orarioConvocazione:"",
-    rows: [], capitanoId:null, vcapId:null,
+    rows: [], assegnaNumeri:"SI", capitanoId:null, vcapId:null,
     staffDirigente:null, staffDirigente2:null, staffMedico:null, staffAllenatore:null, staffAllenatore2:null, staffMassaggiatore:null
   };
 }
@@ -1328,6 +1332,7 @@ function initFields(){
   document.getElementById('g_denom').value = match.denom || "";
   document.getElementById('g_girone').value = match.girone || "";
   document.getElementById('g_giornata').value = match.giornata || "";
+  document.getElementById('g_assegnaNumeri').value = match.assegnaNumeri === "NO" ? "NO" : "SI";
   document.getElementById('g_ospitante').value = match.ospitante || team.nome;
   document.getElementById('g_ospite').value = match.ospite || "";
   document.getElementById('g_data').value = match.data || "";
@@ -1348,7 +1353,7 @@ function initFields(){
   ['t_nome','t_matricola','t_sede'].forEach(id=>{
     document.getElementById(id).addEventListener('input', onTeamChange);
   });
-  ['g_tipo','g_denom','g_girone','g_giornata','g_ospitante','g_ospite','g_data','g_ora','g_orarioConvocazione','g_luogo','g_ritrovo'].forEach(id=>{
+  ['g_tipo','g_denom','g_girone','g_giornata','g_assegnaNumeri','g_ospitante','g_ospite','g_data','g_ora','g_orarioConvocazione','g_luogo','g_ritrovo'].forEach(id=>{
     document.getElementById(id).addEventListener('input', onMatchChange);
     document.getElementById(id).addEventListener('change', onMatchChange);
   });
@@ -1382,6 +1387,7 @@ function onMatchChange(){
   match.denom = document.getElementById('g_denom').value;
   match.girone = document.getElementById('g_girone').value;
   match.giornata = document.getElementById('g_giornata').value;
+  match.assegnaNumeri = document.getElementById('g_assegnaNumeri').value;
 
   const prevOra = match.ora || "";
   const newOra = document.getElementById('g_ora').value;
@@ -1788,7 +1794,7 @@ function renderPrint(){
     const capVal = p ? (match.capitanoId==p.id ? 'C' : (match.vcapId==p.id ? 'V.C.' : '')) : '';
     rows.push(`
       <tr>
-        <td class="rolenum">${i+1}</td>
+        <td class="rolenum">${match.assegnaNumeri === 'NO' ? '' : i+1}</td>
         <td>${p?pad2(p.g):''}</td>
         <td>${p?pad2(p.m):''}</td>
         <td>${p?(p.a||''):''}</td>
@@ -2134,4 +2140,4 @@ if(CLOUD_ENABLED){
 }
 </script>
 </body>
-</html>
+</html>
