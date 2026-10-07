@@ -262,11 +262,14 @@ table.ps-table th, table.ps-table td{
   vertical-align: middle; height: auto;
 }
 table.ps-table tbody tr{ height: auto; }
+table.ps-table tbody tr.ps-player-row,
+table.ps-table tbody tr.ps-player-row td{ height: 24px; }
 table.ps-table thead th{
   font-size: 8px; font-weight: 700; color:#000; background:#f2f4fa;
   line-height: 1.1;
 }
-table.ps-table td.rolenum{ font-weight: 700; color:#000; width: 22px; }
+table.ps-table th.ps-role-col, table.ps-table td.rolenum{ font-weight: 700; color:#000; width: 28px; }
+table.ps-table th.ps-cap-col, table.ps-table td.cap-cell{ width: 38px; }
 table.ps-table td.name-cell{
   text-align:left; font-size: 10px; white-space:nowrap; padding-left:4px;
   font-weight: 600;
@@ -514,9 +517,9 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   #bachecaSheet .bk-players{overflow: visible !important;}
 
   #printSheet .ps-table{ flex: 1 1 auto !important; }
-  #printSheet .ps-table tbody tr{ height: auto !important; }
+  #printSheet .ps-table tbody tr.ps-player-row,
+  #printSheet .ps-table tbody tr.ps-player-row td{ height: 24px !important; }
   #printSheet .ps-table tbody tr td{
-    height: auto !important;
     padding: 3px 4px !important;
   }
   #printSheet .ps-footer-line .val{ min-height: 14px !important; }
@@ -1793,7 +1796,7 @@ function renderPrint(){
     const p = id ? roster.find(x=>x.id===id) : null;
     const capVal = p ? (match.capitanoId==p.id ? 'C' : (match.vcapId==p.id ? 'V.C.' : '')) : '';
     rows.push(`
-      <tr>
+      <tr class="ps-player-row">
         <td class="rolenum">${match.assegnaNumeri === 'NO' ? '&nbsp;' : i+1}</td>
         <td>${p?pad2(p.g):''}</td>
         <td>${p?pad2(p.m):''}</td>
@@ -1862,10 +1865,10 @@ function renderPrint(){
     <table class="ps-table">
       <thead>
         <tr>
-          <th rowspan="2">N&deg; del<br>Ruolo</th>
+          <th rowspan="2" class="ps-role-col">N&deg; del<br>Ruolo</th>
           <th colspan="3">Data di nascita</th>
           <th rowspan="2">Cognome e nome</th>
-          <th rowspan="2">Capitano<br>V. Cap.</th>
+          <th rowspan="2" class="ps-cap-col">Capitano<br>V. Cap.</th>
           <th rowspan="2">N. Matricola<br>F.I.G.C.</th>
           <th colspan="3">Documento di identificazione</th>
           <th rowspan="2">Espulsi</th>
