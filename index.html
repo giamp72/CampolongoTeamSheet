@@ -848,6 +848,8 @@ function renderThemeToggle(){
   toggle.title = isDark ? 'Passa alla modalità chiara' : 'Passa alla modalità scura';
   toggle.setAttribute('aria-pressed', String(isDark));
 }
+renderThemeToggle();
+if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', renderThemeToggle);
 function toggleTheme(){
   const theme = isDarkTheme() ? 'light' : 'dark';
   document.documentElement.dataset.theme = theme;
