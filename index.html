@@ -51,6 +51,9 @@ h1{font-size:1.2rem; margin:0 0 4px;}
 .app-header .sub{margin:2px 0 0;}
 .app-user{display:flex; align-items:center; gap:8px; margin-left:auto; flex:0 0 auto;}
 .app-user[hidden]{display:none;}
+.settings-menu{position:relative;}
+.settings-dropdown{position:absolute; right:0; top:100%; margin-top:4px; z-index:50; display:flex; flex-direction:column; gap:6px; padding:8px; background:var(--panel); border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,.2); white-space:nowrap;}
+.settings-dropdown[hidden]{display:none;}
 .app-user-name{max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.82rem; color:var(--muted);}
 button.theme-toggle{padding:6px 8px; line-height:1.2;}
 @media(max-width:520px){
@@ -559,6 +562,14 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     <div class="app-user" id="appUser" hidden>
       <span class="app-user-name" id="appUserName"></span>
       <button class="small theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Passa alla modalità scura" title="Passa alla modalità scura" aria-pressed="false">🌙</button>
+      <div class="settings-menu" id="settingsMenu">
+        <button class="small" type="button" id="settingsToggle" onclick="toggleSettingsMenu(event)" aria-label="Impostazioni" title="Impostazioni" aria-haspopup="true" aria-expanded="false">⚙️</button>
+        <div class="settings-dropdown" id="settingsDropdown" hidden>
+          <button type="button" class="small" onclick="downloadData()">⬇️ Download Dati</button>
+          <button type="button" class="small" onclick="uploadDataClick()">⬆️ Upload Dati</button>
+        </div>
+        <input type="file" id="uploadDataInput" accept="application/json,.json" hidden onchange="uploadDataFile(this)">
+      </div>
       <button class="small" type="button" onclick="logout()">Esci</button>
     </div>
   </div>
@@ -855,6 +866,75 @@ function toggleTheme(){
   document.documentElement.dataset.theme = theme;
   try{ localStorage.setItem('campolongo_theme', theme); }catch(e){}
   renderThemeToggle();
+}
+function closeSettingsMenu(){
+  const d = document.getElementById('settingsDropdown');
+  if(d) d.hidden = true;
+  const t = document.getElementById('settingsToggle');
+  if(t) t.setAttribute('aria-expanded', 'false');
+}
+function toggleSettingsMenu(ev){
+  ev.stopPropagation();
+  const d = document.getElementById('settingsDropdown');
+  d.hidden = !d.hidden;
+  document.getElementById('settingsToggle').setAttribute('aria-expanded', String(!d.hidden));
+}
+document.addEventListener('click', e => {
+  if(!e.target.closest || !e.target.closest('#settingsMenu')) closeSettingsMenu();
+});
+async function downloadData(){
+  closeSettingsMenu();
+  try{
+    let payload;
+    if(CLOUD_ENABLED && authSession){
+      const record = await cloudFetch();
+      payload = record ? record.payload : cloudPayload();
+    } else {
+      payload = cloudPayload();
+    }
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const stamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+    const blob = new Blob([JSON.stringify({ app: 'campolongo-team-sheet', exportedAt: d.toISOString(), payload }, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `campolongo_dati_${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }catch(e){
+    alert('Download dati non riuscito. Riprova.');
+  }
+}
+function uploadDataClick(){
+  closeSettingsMenu();
+  document.getElementById('uploadDataInput').click();
+}
+function uploadDataFile(input){
+  const file = input.files && input.files[0];
+  input.value = '';
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onerror = () => alert('Impossibile leggere il file.');
+  reader.onload = () => {
+    let payload;
+    try{
+      const data = JSON.parse(reader.result);
+      payload = data && data.payload ? data.payload : data;
+      if(!payload || typeof payload !== 'object' || !Array.isArray(payload.roster) || !Array.isArray(payload.staffRoster) || !payload.team || typeof payload.team !== 'object') throw new Error('invalid');
+    }catch(e){
+      alert('File non valido: seleziona un JSON esportato con "Download Dati".');
+      return;
+    }
+    if(!confirm('Stai ripristinando i dati con il file di upload.\n\nI dati attuali (rosa, staff, dati società) verranno sostituiti e perderai le eventuali modifiche effettuate dopo il download del file.\n\nVuoi continuare?')) return;
+    applyCloudPayload(payload);
+    cloudPush();
+    renderAll();
+    alert('Dati ripristinati dal file.');
+  };
+  reader.readAsText(file);
 }
 function showAuthPanel(){
   const needsLogin = CLOUD_ENABLED && !authSession;
