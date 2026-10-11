@@ -965,12 +965,24 @@ async function authRequest(path, body){
   if(!res.ok) throw new Error(data.msg || data.message || 'Accesso non riuscito.');
   return data;
 }
+let refreshPromise = null;
 async function accessToken(){
   if(!authSession) throw new Error('Sessione scaduta. Accedi di nuovo.');
   if(authSession.expires_at && authSession.expires_at > Date.now() + 60000) return authSession.access_token;
-  const refreshed = await authRequest('token?grant_type=refresh_token', { refresh_token: authSession.refresh_token });
-  authSession = { ...refreshed, expires_at: Date.now() + refreshed.expires_in * 1000 };
-  saveJSON('campolongo_supabase_session', authSession);
+  if(!refreshPromise){
+    const refreshToken = authSession.refresh_token;
+    refreshPromise = authRequest('token?grant_type=refresh_token', { refresh_token: refreshToken })
+      .then(refreshed => {
+        authSession = { ...refreshed, expires_at: Date.now() + refreshed.expires_in * 1000 };
+        saveJSON('campolongo_supabase_session', authSession);
+      })
+      .catch(e => {
+        handleAuthFailure();
+        throw new Error('Sessione scaduta. Accedi di nuovo.');
+      })
+      .finally(() => { refreshPromise = null; });
+  }
+  await refreshPromise;
   return authSession.access_token;
 }
 function handleAuthFailure(){
