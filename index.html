@@ -789,6 +789,8 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   <div class="card collapsed" id="cardWA">
     <h2 onclick="toggleCard('cardWA')"><span class="chev">▾</span> Lista convocati per WhatsApp</h2>
     <div class="body">
+      <label>Frase finale del messaggio (viene ricordata)</label>
+      <input type="text" id="waClosing" oninput="saveWaClosing()" style="width:100%; margin-bottom:10px;">
       <label>Testo generato (modificabile prima di copiare/inviare)</label>
       <textarea id="waText" rows="14" style="width:100%; font-family:inherit; font-size:.88rem; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--field-bg); color:var(--ink);"></textarea>
       <div class="actions-bar">
@@ -965,12 +967,24 @@ async function authRequest(path, body){
   if(!res.ok) throw new Error(data.msg || data.message || 'Accesso non riuscito.');
   return data;
 }
+let refreshPromise = null;
 async function accessToken(){
   if(!authSession) throw new Error('Sessione scaduta. Accedi di nuovo.');
   if(authSession.expires_at && authSession.expires_at > Date.now() + 60000) return authSession.access_token;
-  const refreshed = await authRequest('token?grant_type=refresh_token', { refresh_token: authSession.refresh_token });
-  authSession = { ...refreshed, expires_at: Date.now() + refreshed.expires_in * 1000 };
-  saveJSON('campolongo_supabase_session', authSession);
+  if(!refreshPromise){
+    const refreshToken = authSession.refresh_token;
+    refreshPromise = authRequest('token?grant_type=refresh_token', { refresh_token: refreshToken })
+      .then(refreshed => {
+        authSession = { ...refreshed, expires_at: Date.now() + refreshed.expires_in * 1000 };
+        saveJSON('campolongo_supabase_session', authSession);
+      })
+      .catch(e => {
+        handleAuthFailure();
+        throw new Error('Sessione scaduta. Accedi di nuovo.');
+      })
+      .finally(() => { refreshPromise = null; });
+  }
+  await refreshPromise;
   return authSession.access_token;
 }
 function handleAuthFailure(){
@@ -2138,6 +2152,17 @@ function printSheet(id){
 }
 
 /* ---------------- WhatsApp ---------------- */
+const WA_CLOSING_KEY = 'campolongo_wa_closing';
+const WA_CLOSING_DEFAULT = 'Mi raccomando puntualità 💪';
+function getWaClosing(){
+  try{ const v = localStorage.getItem(WA_CLOSING_KEY); return v === null ? WA_CLOSING_DEFAULT : v; }catch(e){ return WA_CLOSING_DEFAULT; }
+}
+function saveWaClosing(){
+  try{ localStorage.setItem(WA_CLOSING_KEY, document.getElementById('waClosing').value); }catch(e){}
+  const text = buildWaText();
+  document.getElementById('waText').value = text;
+  document.getElementById('waShareLink').href = 'https://wa.me/?text=' + encodeURIComponent(text);
+}
 function buildWaText(){
   const titolo = [match.tipo, match.denom].filter(Boolean).join(' - ') || 'Convocazione';
   const dataStr = fmtDate(match.data) || '—';
@@ -2164,10 +2189,11 @@ function buildWaText(){
     lines.push('(nessun giocatore convocato)');
   }
   lines.push('');
-  lines.push('Mi raccomando puntualità 💪');
+  lines.push(getWaClosing());
   return lines.join('\n');
 }
 function generateWhatsappList(){
+  document.getElementById('waClosing').value = getWaClosing();
   const text = buildWaText();
   document.getElementById('waText').value = text;
   document.getElementById('waShareLink').href = 'https://wa.me/?text=' + encodeURIComponent(text);
