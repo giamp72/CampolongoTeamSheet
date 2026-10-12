@@ -2178,6 +2178,8 @@ function buildWaText(){
 
   let lines = [];
   lines.push(`📋 CONVOCAZIONE — ${titolo}`);
+  const partita = [match.ospitante || team.nome, match.ospite || '—'].filter(Boolean).join(' - ');
+  lines.push(`⚽ ${partita}   giornata ${match.giornata || '—'}`);
   lines.push(`🗓️ Data: ${dataStr}`);
   lines.push(`⏰ Ritrovo: ${ritrovoStr}  (inizio gara ore ${oraStr})`);
   lines.push(`📍 Luogo: ${luogoStr}`);
