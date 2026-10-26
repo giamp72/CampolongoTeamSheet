@@ -1004,6 +1004,7 @@ async function login(event){
     authSession = { ...session, expires_at: Date.now() + session.expires_in * 1000 };
     saveJSON('campolongo_supabase_session', authSession);
     document.getElementById('loginPassword').value = '';
+    newSessionId();
     cloudInitialized = false;
     match = loadJSON(matchStorageKey(), defaultMatch());
     if(!Array.isArray(match.rows)) match.rows = [];
@@ -1019,11 +1020,17 @@ async function login(event){
     cloudInitialized = true;
     showAuthPanel();
     renderAll();
+    startSessionHeartbeat();
   }catch(e){
     error.textContent = e.message;
   }
 }
 async function logout(){
+  clearInterval(sessionHeartbeatTimer);
+  otherSessions = [];
+  try{
+    await sessionRpc('end_user_session', { p_session_id: currentSessionId() });
+  }catch(e){}
   try{
     const token = await accessToken();
     await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
@@ -1200,6 +1207,11 @@ async function matchCloudRefresh(showLoading, discardLocal){
   if(showLoading){ matchCloudStatus = 'connecting'; renderCloudStatus(); }
   try{
     const record = await matchCloudFetch();
+    // Primo caricamento: la convocazione salvata sul server prevale sulla cache locale
+    if(record && matchCloudVersion === null){
+      matchCloudDirty = false;
+      discardLocal = true;
+    }
     if(!record){
       matchCloudVersion = 0;
       if(matchCloudDirty){
@@ -1245,6 +1257,88 @@ async function matchCloudRefresh(showLoading, discardLocal){
     matchCloudStatus = 'error';
     renderCloudStatus();
   }
+}
+async function matchCloudForceSave(){
+  if(!CLOUD_ENABLED || !authSession) return;
+  if(!confirm('Salvare la convocazione di questa sessione sovrascrivendo quella salvata (anche da altri browser)?')) return;
+  matchCloudStatus = 'connecting';
+  renderCloudStatus();
+  try{
+    const record = await matchCloudFetch();
+    matchCloudVersion = record ? record.version : 0;
+    matchCloudDirty = true;
+    matchCloudRevision++;
+    matchCloudWriteInFlight = false;
+    await flushMatchCloudPush();
+  }catch(e){
+    matchCloudStatus = 'error';
+    renderCloudStatus();
+  }
+}
+/* ---- Sessioni dello stesso utente ---- */
+let otherSessions = [];
+let sessionHeartbeatTimer = null;
+function currentSessionId(){
+  let id = loadJSON('campolongo_session_id', null);
+  if(!id){
+    id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+    saveJSON('campolongo_session_id', id);
+  }
+  return id;
+}
+function newSessionId(){
+  saveJSON('campolongo_session_id', null);
+  return currentSessionId();
+}
+function deviceLabel(){
+  const ua = navigator.userAgent;
+  const browser = /Edg\//.test(ua) ? 'Edge' : /Chrome\//.test(ua) ? 'Chrome' : /Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : 'Browser';
+  const os = /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Windows/.test(ua) ? 'Windows' : /Mac/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : '';
+  return (browser + ' ' + os).trim();
+}
+async function sessionRpc(name, body){
+  const token = await accessToken();
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if(!res.ok) throw new Error(name + ' failed');
+  return res.json();
+}
+async function sessionHeartbeat(){
+  if(!CLOUD_ENABLED || !authSession) return;
+  try{
+    const r = await sessionRpc('heartbeat_user_session', { p_session_id: currentSessionId(), p_device: deviceLabel() });
+    if(r && r.revoked){
+      handleAuthFailure();
+      cloudStatus = 'off';
+      matchCloudStatus = 'off';
+      document.getElementById('authError').textContent = 'Sessione chiusa: hai effettuato l’accesso da un altro dispositivo.';
+      return;
+    }
+    otherSessions = (r && r.others) || [];
+  }catch(e){
+    if(e.message.includes('Sessione scaduta')) return;
+  }
+  renderCloudStatus();
+}
+function startSessionHeartbeat(){
+  clearInterval(sessionHeartbeatTimer);
+  sessionHeartbeat();
+  sessionHeartbeatTimer = setInterval(sessionHeartbeat, 30000);
+}
+async function kickOtherSessions(){
+  if(!confirm('Disconnettere tutte le altre sessioni aperte con il tuo account?')) return;
+  try{
+    await sessionRpc('kick_other_sessions', { p_session_id: currentSessionId() });
+    const token = await accessToken();
+    fetch(`${SUPABASE_URL}/auth/v1/logout?scope=others`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token }
+    }).catch(()=>{});
+  }catch(e){}
+  await sessionHeartbeat();
 }
 async function cloudRefresh(showLoading, discardLocal){
   if(!CLOUD_ENABLED || !authSession) return;
@@ -1311,6 +1405,13 @@ async function refreshCloudData(){
   await matchCloudRefresh(true);
 }
 function renderCloudStatus(){
+  renderCloudStatusMain();
+  const el = document.getElementById('cloudStatus');
+  if(!el || !CLOUD_ENABLED || !authSession || !otherSessions.length) return;
+  const names = otherSessions.map(x => escapeHtml(x.device || 'Altro dispositivo')).join(', ');
+  el.innerHTML += `<br>👥 ${otherSessions.length} altra/e sessione/i attiva/e con il tuo account (${names}). <button class="link" onclick="matchCloudForceSave()" style="font-size:.78rem;">Forza salvataggio convocazione</button> <button class="link" onclick="kickOtherSessions()" style="font-size:.78rem;">Disconnetti le altre sessioni</button>`;
+}
+function renderCloudStatusMain(){
   const el = document.getElementById('cloudStatus');
   if(!el) return;
   if(!CLOUD_ENABLED){
@@ -1318,7 +1419,7 @@ function renderCloudStatus(){
     return;
   }
   if(cloudStatus==='conflict') el.innerHTML = '⚠️ Modifica simultanea della rosa rilevata: modifiche locali conservate. <button class="link" onclick="cloudRefresh(true,true)" style="font-size:.78rem;">Ricarica rosa condivisa</button>';
-  else if(matchCloudStatus==='conflict') el.innerHTML = '⚠️ Modifica simultanea della tua convocazione rilevata: modifiche locali conservate. <button class="link" onclick="matchCloudRefresh(true,true)" style="font-size:.78rem;">Ricarica la mia convocazione</button>';
+  else if(matchCloudStatus==='conflict') el.innerHTML = '⚠️ Modifica simultanea della tua convocazione rilevata: modifiche locali conservate. <button class="link" onclick="matchCloudRefresh(true,true)" style="font-size:.78rem;">Ricarica la mia convocazione</button> <button class="link" onclick="matchCloudForceSave()" style="font-size:.78rem;">Salva questa e sovrascrivi</button>';
   else if(cloudStatus==='remote-updated') el.innerHTML = 'ℹ️ È disponibile una rosa condivisa più recente. <button class="link" onclick="cloudRefresh(true,true)" style="font-size:.78rem;">Ricarica rosa</button>';
   else if(matchCloudStatus==='remote-updated') el.innerHTML = 'ℹ️ È disponibile una convocazione più recente per il tuo account. <button class="link" onclick="matchCloudRefresh(true,true)" style="font-size:.78rem;">Ricarica convocazione</button>';
   else if(cloudStatus==='error' || matchCloudStatus==='error') el.innerHTML = '⚠️ Sincronizzazione non riuscita. Le modifiche locali sono conservate. <button class="link" onclick="refreshCloudData()" style="font-size:.78rem;">Riprova</button> <button class="link" onclick="logout()" style="font-size:.78rem;">Esci</button>';
@@ -2250,6 +2351,7 @@ if(CLOUD_ENABLED){
     cloudInitialized = true;
     showAuthPanel();
     renderAll();
+    startSessionHeartbeat();
   });
 }
 </script>
