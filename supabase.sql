@@ -114,3 +114,94 @@ $$;
 
 revoke all on function public.save_user_match(bigint, jsonb) from public, anon;
 grant execute on function public.save_user_match(bigint, jsonb) to authenticated;
+
+-- Sessioni attive per utente (presenza e chiusura forzata delle altre sessioni)
+create table if not exists public.user_sessions (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  session_id text not null,
+  device text,
+  last_seen timestamptz not null default now(),
+  revoked boolean not null default false,
+  primary key (user_id, session_id)
+);
+
+alter table public.user_sessions enable row level security;
+revoke all on public.user_sessions from anon, authenticated;
+
+create or replace function public.heartbeat_user_session(p_session_id text, p_device text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  is_revoked boolean;
+begin
+  if uid is null then
+    raise exception 'Authentication required';
+  end if;
+
+  delete from public.user_sessions
+  where user_id = uid and last_seen < now() - interval '1 day';
+
+  select revoked into is_revoked
+  from public.user_sessions where user_id = uid and session_id = p_session_id;
+
+  if coalesce(is_revoked, false) then
+    return jsonb_build_object('revoked', true);
+  end if;
+
+  insert into public.user_sessions (user_id, session_id, device, last_seen)
+  values (uid, p_session_id, left(p_device, 80), now())
+  on conflict (user_id, session_id)
+  do update set last_seen = now(), device = excluded.device;
+
+  return jsonb_build_object(
+    'revoked', false,
+    'others', coalesce((
+      select jsonb_agg(jsonb_build_object('device', device, 'last_seen', last_seen))
+      from public.user_sessions
+      where user_id = uid and session_id <> p_session_id
+        and not revoked and last_seen > now() - interval '90 seconds'
+    ), '[]'::jsonb)
+  );
+end;
+$$;
+
+create or replace function public.kick_other_sessions(p_session_id text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Authentication required';
+  end if;
+  update public.user_sessions set revoked = true
+  where user_id = auth.uid() and session_id <> p_session_id;
+end;
+$$;
+
+create or replace function public.end_user_session(p_session_id text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Authentication required';
+  end if;
+  delete from public.user_sessions
+  where user_id = auth.uid() and session_id = p_session_id;
+end;
+$$;
+
+revoke all on function public.heartbeat_user_session(text, text) from public, anon;
+revoke all on function public.kick_other_sessions(text) from public, anon;
+revoke all on function public.end_user_session(text) from public, anon;
+grant execute on function public.heartbeat_user_session(text, text) to authenticated;
+grant execute on function public.kick_other_sessions(text) to authenticated;
+grant execute on function public.end_user_session(text) to authenticated;
