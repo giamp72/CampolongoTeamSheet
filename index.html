@@ -303,12 +303,12 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 }
 .ps-declaration.b{border-top:none; padding-top:1px;}
 .ps-sign-row{
-  display:flex; justify-content:space-between;
+  display:flex; justify-content:space-between; gap:4px;
   margin-top:auto; padding-top:20mm; margin-bottom:4mm;
-  font-size:9.5px; font-weight:700;
+  font-size:8.5px; font-weight:700;
   flex: 0 0 auto;
 }
-.ps-sign-row div{text-align:center; width:44%;}
+.ps-sign-row div{text-align:center; width:33.333%;}
 .ps-final-note{
   font-size:7.3px; margin-top:6px; margin-bottom:2mm;
   text-align:justify; color:#111;
@@ -2029,8 +2029,9 @@ function renderPrint(){
     </div>
 
     <div class="ps-sign-row">
-      <div>L'ARBITRO</div>
-      <div>IL DIRIGENTE ACCOMPAGNATORE UFFICIALE</div>
+      <div>FIRMA DIR. ACC. OSPITANTE</div>
+      <div>DIR. ARBITRO</div>
+      <div>FIRMA DIR. ACC. OSPITATO</div>
     </div>
 
     <div class="ps-final-note">
