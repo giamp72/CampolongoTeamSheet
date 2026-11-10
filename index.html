@@ -704,7 +704,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         <input type="text" id="np_tessera" placeholder="N. Tessera" style="max-width:110px">
         <input type="date" id="np_dataRilascio" style="max-width:140px">
         <select id="np_enteRilascio" style="max-width:120px"></select>
-        <div><label for="np_scadenzaCertificato">Scadenza certificato medico</label><input type="date" id="np_scadenzaCertificato"></div>
+        <div><label for="np_scadenzaCertificato">Scadenza certificato medico</label><input type="date" id="np_scadenzaCertificato" min="1900-01-01" max="2100-12-31"></div>
         <button onclick="addPlayer()">+ Aggiungi alla rosa</button>
       </div>
 
@@ -1874,7 +1874,7 @@ function renderRoster(){
       <td><input type="text" value="${escapeAttr(p.tessera||'')}" onchange="editPlayer(${p.id},'tessera',this.value)"></td>
       <td><input type="date" value="${escapeAttr(p.dataRilascio||'')}" onchange="editPlayer(${p.id},'dataRilascio',this.value)"></td>
       <td><select onchange="editPlayer(${p.id},'enteRilascio',this.value)">${enteRilascioOptions(p.enteRilascio||'')}</select></td>
-      <td><input type="date" aria-label="Scadenza certificato medico" value="${escapeAttr(p.scadenzaCertificato||'')}" onchange="editPlayer(${p.id},'scadenzaCertificato',this.value)"></td>
+      <td><input type="date" min="1900-01-01" max="2100-12-31" aria-label="Scadenza certificato medico" value="${escapeAttr(p.scadenzaCertificato||'')}" onchange="editPlayer(${p.id},'scadenzaCertificato',this.value)"></td>
       <td><button class="link danger small" onclick="removePlayer(${p.id})" title="Rimuovi dalla rosa">✕</button></td>
     `;
     body.appendChild(tr);
@@ -1927,6 +1927,8 @@ function addPlayer(){
 function editPlayer(id, field, value){
   const p = roster.find(x=>x.id===id);
   if(!p) return;
+  // Mentre si digita l'anno il browser emette date parziali (es. 0002): le ignoro per non interrompere la digitazione
+  if(field==='scadenzaCertificato' && value && Number(value.slice(0,4)) < 1900) return;
   if(field==='g'||field==='m'||field==='a') p[field] = parseInt(value)||null;
   else if(field==='nome') p[field] = value.toUpperCase();
   else p[field] = value;
