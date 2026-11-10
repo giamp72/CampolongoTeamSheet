@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 const html = fs.readFileSync('index.html', 'utf8');
-const script = html.slice(html.indexOf('function isCertificateExpiring('), html.indexOf('function renderRoster()'));
+const script = html.slice(html.indexOf('function certificateStatus('), html.indexOf('function renderRoster()'));
 const elements = { certificateBody: {}, certificateEmpty: {} };
 const context = vm.createContext({
   document: { getElementById: id => elements[id] },
@@ -13,13 +13,14 @@ const context = vm.createContext({
 });
 vm.runInContext(script, context);
 
-test('scadenze entro 60 giorni inclusi, senza date trascorse o non valide', () => {
+test('certificati scaduti, in scadenza e date non valide', () => {
   const today = new Date(2024, 1, 28, 23, 30);
   for (const [date, expected] of [
-    ['2024-02-27', false], ['2024-02-28', true], ['2024-04-28', true],
-    ['2024-04-29', false], ['', false], ['2024-02-30', false], ['2024-2-29', false]
+    ['2023-01-01', 'expired'], ['2024-02-27', 'expired'], ['2024-02-28', 'warning'],
+    ['2024-04-28', 'warning'], ['2024-04-29', ''], ['', ''],
+    ['2024-02-30', ''], ['2024-2-29', '']
   ]) {
-    assert.equal(context.isCertificateExpiring(date, today), expected, date);
+    assert.equal(context.certificateStatus(date, today), expected, date);
   }
 });
 
@@ -38,7 +39,10 @@ test('lista ordinata per scadenza, con nomi protetti e stato vuoto', () => {
   context.renderCertificates();
   assert.match(elements.certificateBody.innerHTML, /&lt;PRIMO>/);
   assert.ok(elements.certificateBody.innerHTML.indexOf('&lt;PRIMO>') < elements.certificateBody.innerHTML.indexOf('ULTIMO'));
-  assert.doesNotMatch(elements.certificateBody.innerHTML, /SCADUTO|OLTRE/);
+  assert.ok(elements.certificateBody.innerHTML.indexOf('SCADUTO') < elements.certificateBody.innerHTML.indexOf('&lt;PRIMO>'));
+  assert.match(elements.certificateBody.innerHTML, /class="certificate-expired"><td>SCADUTO<\/td>.*<td>Scaduto<\/td>/);
+  assert.match(elements.certificateBody.innerHTML, /class="certificate-warning"><td>&lt;PRIMO><\/td>.*<td>In scadenza<\/td>/);
+  assert.doesNotMatch(elements.certificateBody.innerHTML, /OLTRE/);
   assert.equal(elements.certificateEmpty.hidden, true);
   context.roster = [];
   context.renderCertificates();
