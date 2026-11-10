@@ -12,3 +12,7 @@ Static webpage for the Campolongo team sheet, hosted on GitHub Pages. Shared dat
 The first signed-in user can initialize an empty shared roster record from that browser. Existing users receive a copy of the previously shared match as the starting point for their own private match. Later sessions load each user's match from Supabase. If two users edit the shared roster concurrently, or one user's match from multiple devices, a stale write is refused and local changes are retained. Data is also cached in that browser's local storage, but GitHub Pages cannot write a JSON backup file beside `index.html`.
 
 If Supabase is not configured, the app remains in local-only mode.
+
+## Certificati medici
+
+Nella rosa inserire la scadenza del certificato medico di ciascun giocatore, separatamente dalla data di rilascio del documento. Le scadenze sono condivise insieme alla rosa e incluse nei backup dei dati. I nomi sono evidenziati in rosso nella rosa e nella convocazione quando la scadenza è compresa tra oggi e i 60 giorni successivi, estremi inclusi; date già trascorse e date mancanti non rientrano nell'elenco. Il pulsante **Certificati in scadenza** mostra la lista ordinata per data e permette di stamparla.

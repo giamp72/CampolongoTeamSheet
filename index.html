@@ -31,6 +31,11 @@ try{
   --accent:#3ea679; --accent-ink:#0b1410; --field-bg:#22262e;
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.35);
 }
+:root{ --certificate-warning:#b3261e; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --certificate-warning:#ff8a80; }
+}
+:root[data-theme="dark"]{ --certificate-warning:#ff8a80; }
 *{box-sizing:border-box;}
 body{
   margin:0; background:var(--bg); color:var(--ink);
@@ -112,6 +117,7 @@ table.roster input[type=text],table.roster input[type=number],table.roster input
 }
 .sel-row .num{width:22px; text-align:center; font-weight:700; color:var(--accent);}
 .sel-row .name{flex:1;}
+.certificate-warning, input.certificate-warning{color:var(--certificate-warning); font-weight:700;}
 .sel-row .tag{font-size:.7rem; padding:2px 6px; border-radius:5px; background:var(--accent); color:var(--accent-ink); font-weight:700;}
 .sel-row .btns{display:flex; gap:2px;}
 .empty-hint{color:var(--muted); font-size:.85rem; font-style:italic; padding:8px 0;}
@@ -134,6 +140,16 @@ table.roster th:nth-child(8),  table.roster td:nth-child(8)  { min-width: 130px;
 table.roster th:nth-child(9),  table.roster td:nth-child(9)  { min-width: 150px; }
 table.roster th:nth-child(10), table.roster td:nth-child(10) { min-width: 130px; }
 table.roster th:nth-child(11), table.roster td:nth-child(11) { min-width: 50px;  }
+#rosterBody td:nth-child(11){min-width:150px;}
+
+dialog{
+  width:min(600px, calc(100% - 32px)); max-height:85vh; overflow:auto;
+  background:var(--panel); color:var(--ink); border:1px solid var(--border);
+  border-radius:12px; padding:20px; box-shadow:var(--shadow);
+}
+dialog::backdrop{background:rgba(0,0,0,.55);}
+#certificateSheet table{width:100%; border-collapse:collapse; text-align:left;}
+#certificateSheet th, #certificateSheet td{padding:8px; border-bottom:1px solid var(--border);}
 
 .table-wrap{ overflow-x: auto; -webkit-overflow-scrolling: touch; }
 table.roster{ min-width: 1280px; }
@@ -417,6 +433,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.bk-player .certificate-warning{color:#b3261e;}
 .bk-player::before{
   content:"";
   position:absolute; left:0; top: 3.5mm; bottom: 3.5mm;
@@ -520,6 +537,9 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   #bachecaSheet .bk-brandbar{ background: #2a7ec7 !important; color: #fff !important; }
   #bachecaSheet .bk-footer .dot{ background: #2a7ec7 !important; }
   #bachecaSheet .bk-players{overflow: visible !important;}
+  #certificateSheet{color:#000; background:#fff;}
+  #certificateSheet th, #certificateSheet td{border-bottom:1px solid #999;}
+  #certificateSheet tr{break-inside:avoid;}
 
   #printSheet .ps-table{ flex: 1 1 auto !important; }
   #printSheet .ps-table tbody tr.ps-player-row,
@@ -628,6 +648,9 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     <div class="body">
       <div class="count-badge" id="countBadge"></div>
       <div class="count-badge" id="cloudStatus" style="margin-bottom:6px;"></div>
+      <div class="actions-bar">
+        <button type="button" onclick="openCertificates()">Certificati in scadenza</button>
+      </div>
 
       <div class="row-inline" style="margin-bottom:10px;">
         <div style="max-width:200px;">
@@ -662,6 +685,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
               <th>N. Tessera</th>
               <th>Data Rilascio</th>
               <th>Ente Rilascio</th>
+              <th>Scadenza certificato medico</th>
               <th class="tiny-col"></th>
             </tr>
           </thead>
@@ -680,6 +704,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         <input type="text" id="np_tessera" placeholder="N. Tessera" style="max-width:110px">
         <input type="date" id="np_dataRilascio" style="max-width:140px">
         <select id="np_enteRilascio" style="max-width:120px"></select>
+        <div><label for="np_scadenzaCertificato">Scadenza certificato medico</label><input type="date" id="np_scadenzaCertificato"></div>
         <button onclick="addPlayer()">+ Aggiungi alla rosa</button>
       </div>
 
@@ -704,6 +729,22 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
       </div>
     </div>
   </div>
+
+  <dialog id="certificateDialog" aria-labelledby="certificateTitle">
+    <div id="certificateSheet">
+      <h2 id="certificateTitle">Certificati in scadenza</h2>
+      <p>Scadenze da oggi ai prossimi 60 giorni inclusi.</p>
+      <table>
+        <thead><tr><th>Giocatore</th><th>Scadenza</th></tr></thead>
+        <tbody id="certificateBody"></tbody>
+      </table>
+      <p id="certificateEmpty" hidden>Nessun certificato in scadenza nei prossimi 60 giorni.</p>
+    </div>
+    <div class="actions-bar">
+      <button type="button" onclick="printCertificates()">Stampa lista</button>
+      <button type="button" onclick="document.getElementById('certificateDialog').close()">Chiudi</button>
+    </div>
+  </dialog>
 
   <div class="card" id="cardStaffAssignments">
     <h2>Staff convocato</h2>
@@ -1759,6 +1800,33 @@ function removeStaff(id){
 function getStaffById(id){ return id ? staffRoster.find(s=>s.id==id) : null; }
 
 /* ---------------- Roster ---------------- */
+function isCertificateExpiring(date, today = new Date()){
+  if(typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+  const [year, month, day] = date.split('-').map(Number);
+  const expiry = new Date(year, month - 1, day);
+  if(expiry.getFullYear() !== year || expiry.getMonth() !== month - 1 || expiry.getDate() !== day) return false;
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const end = new Date(start);
+  end.setDate(end.getDate() + 60);
+  return expiry >= start && expiry <= end;
+}
+function renderCertificates(){
+  const today = new Date();
+  const expiring = roster.filter(p=>isCertificateExpiring(p.scadenzaCertificato, today))
+    .sort((a,b)=>a.scadenzaCertificato.localeCompare(b.scadenzaCertificato) || a.nome.localeCompare(b.nome, 'it'));
+  document.getElementById('certificateBody').innerHTML = expiring.map(p=>
+    `<tr><td>${escapeHtml(p.nome)}</td><td>${fmtDate(p.scadenzaCertificato)}</td></tr>`
+  ).join('');
+  document.getElementById('certificateEmpty').hidden = expiring.length > 0;
+}
+function openCertificates(){
+  renderCertificates();
+  document.getElementById('certificateDialog').showModal();
+}
+function printCertificates(){
+  renderCertificates();
+  printSheet('certificateSheet');
+}
 function renderRoster(){
   const body = document.getElementById('rosterBody');
   const yearSel = document.getElementById('rosterYearFilter');
@@ -1797,7 +1865,7 @@ function renderRoster(){
     const disabled = !checked && !canSelectMore ? 'disabled' : '';
     tr.innerHTML = `
       <td style="text-align:center"><input type="checkbox" class="chk" ${checked?'checked':''} ${disabled} onchange="toggleSelect(${p.id}, this.checked)"></td>
-      <td><input type="text" value="${escapeAttr(p.nome)}" onchange="editPlayer(${p.id},'nome',this.value)"></td>
+      <td><input type="text" ${isCertificateExpiring(p.scadenzaCertificato)?'class="certificate-warning"':''} value="${escapeAttr(p.nome)}" onchange="editPlayer(${p.id},'nome',this.value)"></td>
       <td><select onchange="editPlayer(${p.id},'categoria',this.value)">${categoriaOptions(p.categoria||'')}</select></td>
       <td><input type="number" value="${p.g??''}" style="width:52px" onchange="editPlayer(${p.id},'g',this.value)"></td>
       <td><input type="number" value="${p.m??''}" style="width:52px" onchange="editPlayer(${p.id},'m',this.value)"></td>
@@ -1806,6 +1874,7 @@ function renderRoster(){
       <td><input type="text" value="${escapeAttr(p.tessera||'')}" onchange="editPlayer(${p.id},'tessera',this.value)"></td>
       <td><input type="date" value="${escapeAttr(p.dataRilascio||'')}" onchange="editPlayer(${p.id},'dataRilascio',this.value)"></td>
       <td><select onchange="editPlayer(${p.id},'enteRilascio',this.value)">${enteRilascioOptions(p.enteRilascio||'')}</select></td>
+      <td><input type="date" aria-label="Scadenza certificato medico" value="${escapeAttr(p.scadenzaCertificato||'')}" onchange="editPlayer(${p.id},'scadenzaCertificato',this.value)"></td>
       <td><button class="link danger small" onclick="removePlayer(${p.id})" title="Rimuovi dalla rosa">✕</button></td>
     `;
     body.appendChild(tr);
@@ -1844,11 +1913,12 @@ function addPlayer(){
     mat: document.getElementById('np_mat').value.trim(),
     tessera: document.getElementById('np_tessera').value.trim(),
     dataRilascio: document.getElementById('np_dataRilascio').value || "",
-    enteRilascio: document.getElementById('np_enteRilascio').value || ""
+    enteRilascio: document.getElementById('np_enteRilascio').value || "",
+    scadenzaCertificato: document.getElementById('np_scadenzaCertificato').value || ""
   };
   roster.push(p);
   saveJSON('campolongo_roster', roster);
-  ['np_nome','np_g','np_m','np_a','np_mat','np_tessera','np_dataRilascio'].forEach(id=>document.getElementById(id).value='');
+  ['np_nome','np_g','np_m','np_a','np_mat','np_tessera','np_dataRilascio','np_scadenzaCertificato'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('np_cat').value = '';
   document.getElementById('np_enteRilascio').value = '';
   renderAll();
@@ -1861,6 +1931,10 @@ function editPlayer(id, field, value){
   else if(field==='nome') p[field] = value.toUpperCase();
   else p[field] = value;
   saveJSON('campolongo_roster', roster);
+  if(field==='scadenzaCertificato'){
+    renderRoster();
+    renderSelectedList();
+  }
   renderPrint();
   renderBacheca();
   cloudPush();
@@ -1952,7 +2026,7 @@ function renderSelectedList(){
       const tag = (match.capitanoId==row.id) ? '<span class="tag">C</span>' : (match.vcapId==row.id ? '<span class="tag">VC</span>' : '');
       el.innerHTML = `
         <div class="num">${i+1}</div>
-        <div class="name">${escapeHtml(p.nome)}</div>
+        <div class="name${isCertificateExpiring(p.scadenzaCertificato)?' certificate-warning':''}">${escapeHtml(p.nome)}</div>
         ${tag}
         <div class="btns">
           <button class="small" onclick="moveRow(${i},-1)" ${i===0?'disabled':''}>↑</button>
@@ -2184,7 +2258,7 @@ function renderBacheca(){
     if(!p) return '';
     const tag = (match.capitanoId==id) ? '<span class="tag">· C</span>' : (match.vcapId==id ? '<span class="tag">· VC</span>' : '');
     const anno = p.a ? `<span class="yr">· ${p.a}</span>` : '';
-    return `<div class="bk-player">${escapeHtml(p.nome)} ${anno}${tag}</div>`;
+    return `<div class="bk-player"><span${isCertificateExpiring(p.scadenzaCertificato)?' class="certificate-warning"':''}>${escapeHtml(p.nome)}</span> ${anno}${tag}</div>`;
   }).join('');
 
   const osp = match.ospitante || team.nome;
@@ -2252,7 +2326,8 @@ function printSheet(id){
   const previousTitle = document.title;
   const names = {
     printSheet: 'Distinta FIGC',
-    bachecaSheet: 'Convocazione'
+    bachecaSheet: 'Convocazione',
+    certificateSheet: 'Certificati in scadenza'
   };
   document.title = `${names[id] || 'Documento'} - ${team.nome || 'Campolongo'}`;
 
