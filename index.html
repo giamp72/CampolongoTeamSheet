@@ -34,6 +34,11 @@ try{
   --accent:#3ea679; --accent-ink:#0b1410; --field-bg:#22262e;
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.35);
 }
+:root{ --certificate-warning:#a64b00; --certificate-expired:#b3261e; }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --certificate-warning:#ffb74d; --certificate-expired:#ff8a80; }
+}
+:root[data-theme="dark"]{ --certificate-warning:#ffb74d; --certificate-expired:#ff8a80; }
 *{box-sizing:border-box;}
 body{
   margin:0; background:var(--bg); color:var(--ink);
@@ -134,6 +139,8 @@ table.roster input[type=text],table.roster input[type=number],table.roster input
 }
 .sel-row .num{width:22px; text-align:center; font-weight:700; color:var(--accent);}
 .sel-row .name{flex:1;}
+.certificate-warning, input.certificate-warning{color:var(--certificate-warning); font-weight:700;}
+.certificate-expired, input.certificate-expired{color:var(--certificate-expired); font-weight:700;}
 .sel-row .tag{font-size:.7rem; padding:2px 6px; border-radius:5px; background:var(--accent); color:var(--accent-ink); font-weight:700;}
 .sel-row .btns{display:flex; gap:2px;}
 .empty-hint{color:var(--muted); font-size:.85rem; font-style:italic; padding:8px 0;}
@@ -156,6 +163,16 @@ table.roster th:nth-child(8),  table.roster td:nth-child(8)  { min-width: 130px;
 table.roster th:nth-child(9),  table.roster td:nth-child(9)  { min-width: 150px; }
 table.roster th:nth-child(10), table.roster td:nth-child(10) { min-width: 130px; }
 table.roster th:nth-child(11), table.roster td:nth-child(11) { min-width: 50px;  }
+#rosterBody td:nth-child(11){min-width:150px;}
+
+dialog{
+  width:min(600px, calc(100% - 32px)); max-height:85vh; overflow:auto;
+  background:var(--panel); color:var(--ink); border:1px solid var(--border);
+  border-radius:12px; padding:20px; box-shadow:var(--shadow);
+}
+dialog::backdrop{background:rgba(0,0,0,.55);}
+#certificateSheet table{width:100%; border-collapse:collapse; text-align:left;}
+#certificateSheet th, #certificateSheet td{padding:8px; border-bottom:1px solid var(--border);}
 
 .table-wrap{ overflow-x: auto; -webkit-overflow-scrolling: touch; }
 table.roster{ min-width: 1280px; }
@@ -439,6 +456,8 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.bk-player .certificate-warning{color:#a64b00;}
+.bk-player .certificate-expired{color:#b3261e;}
 .bk-player::before{
   content:"";
   position:absolute; left:0; top: 3.5mm; bottom: 3.5mm;
@@ -542,6 +561,11 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   #bachecaSheet .bk-brandbar{ background: #2a7ec7 !important; color: #fff !important; }
   #bachecaSheet .bk-footer .dot{ background: #2a7ec7 !important; }
   #bachecaSheet .bk-players{overflow: visible !important;}
+  #certificateSheet{color:#000; background:#fff;}
+  #certificateSheet th, #certificateSheet td{border-bottom:1px solid #999;}
+  #certificateSheet tr{break-inside:avoid;}
+  #certificateSheet .certificate-warning{color:#a64b00;}
+  #certificateSheet .certificate-expired{color:#b3261e;}
 
   #printSheet .ps-table{ flex: 1 1 auto !important; }
   #printSheet .ps-table tbody tr.ps-player-row,
@@ -588,6 +612,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     <ul>
       <li><a href="#help-start">Primo utilizzo e dati della società</a></li>
       <li><a href="#help-players">Inserire un giocatore e creare la convocazione</a></li>
+      <li><a href="#help-certificates">Certificati medici</a></li>
       <li><a href="#help-match">Dati gara e PDF</a></li>
       <li><a href="#help-staff">Dirigenti e staff</a></li>
       <li><a href="#help-whatsapp">Inviare la lista su WhatsApp</a></li>
@@ -607,6 +632,9 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
       <li>L’elenco <b>Ordine convocati in distinta</b> stabilisce l’ordine sul documento: usa <b>↑</b> e <b>↓</b> per riordinare e <b>✕</b> per togliere un convocato. <b>+ Riga vuota in distinta</b> aggiunge una riga senza giocatore e occupa uno dei 20 posti.</li>
       <li>Seleziona capitano e vice capitano dai giocatori convocati.</li>
     </ul>
+
+    <h3 id="help-certificates">Certificati medici</h3>
+    <p>Inserisci la scadenza del certificato medico nei dati del giocatore. I nomi sono evidenziati in arancione quando il certificato scade entro 60 giorni e in rosso quando è già scaduto. Premi <b>Certificati in scadenza</b> per vedere e stampare l’elenco, che comprende anche i certificati scaduti.</p>
 
     <h3 id="help-match">Dati gara e PDF</h3>
     <p>In <b>Dati gara</b> imposta tipo, competizione, girone, giornata, squadre, data, ora e luogo. L’orario di convocazione viene proposto 45 minuti prima della gara se non ne inserisci uno; puoi modificarlo. Compila ritrovo e note per la bacheca quando servono.</p>
@@ -699,6 +727,9 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     <div class="body">
       <div class="count-badge" id="countBadge"></div>
       <div class="count-badge" id="cloudStatus" style="margin-bottom:6px;"></div>
+      <div class="actions-bar">
+        <button type="button" onclick="openCertificates()">Certificati in scadenza</button>
+      </div>
 
       <div class="row-inline" style="margin-bottom:10px;">
         <div style="max-width:200px;">
@@ -733,6 +764,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
               <th>N. Tessera</th>
               <th>Data Rilascio</th>
               <th>Ente Rilascio</th>
+              <th>Scadenza certificato medico</th>
               <th class="tiny-col"></th>
             </tr>
           </thead>
@@ -751,6 +783,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         <input type="text" id="np_tessera" placeholder="N. Tessera" style="max-width:110px">
         <input type="date" id="np_dataRilascio" style="max-width:140px">
         <select id="np_enteRilascio" style="max-width:120px"></select>
+        <div><label for="np_scadenzaCertificato">Scadenza certificato medico</label><input type="date" id="np_scadenzaCertificato" min="1900-01-01" max="2100-12-31"></div>
         <button onclick="addPlayer()">+ Aggiungi alla rosa</button>
       </div>
 
@@ -775,6 +808,22 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
       </div>
     </div>
   </div>
+
+  <dialog id="certificateDialog" aria-labelledby="certificateTitle">
+    <div id="certificateSheet">
+      <h2 id="certificateTitle">Certificati scaduti e in scadenza</h2>
+      <p>Certificati scaduti o in scadenza entro i prossimi 60 giorni inclusi.</p>
+      <table>
+        <thead><tr><th>Giocatore</th><th>Scadenza</th><th>Stato</th></tr></thead>
+        <tbody id="certificateBody"></tbody>
+      </table>
+      <p id="certificateEmpty" hidden>Nessun certificato scaduto o in scadenza nei prossimi 60 giorni.</p>
+    </div>
+    <div class="actions-bar">
+      <button type="button" onclick="printCertificates()">Stampa lista</button>
+      <button type="button" onclick="document.getElementById('certificateDialog').close()">Chiudi</button>
+    </div>
+  </dialog>
 
   <div class="card" id="cardStaffAssignments">
     <h2>Staff convocato</h2>
@@ -1838,6 +1887,35 @@ function removeStaff(id){
 function getStaffById(id){ return id ? staffRoster.find(s=>s.id==id) : null; }
 
 /* ---------------- Roster ---------------- */
+function certificateStatus(date, today = new Date()){
+  if(typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return '';
+  const [year, month, day] = date.split('-').map(Number);
+  const expiry = new Date(year, month - 1, day);
+  if(expiry.getFullYear() !== year || expiry.getMonth() !== month - 1 || expiry.getDate() !== day) return '';
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  if(expiry < start) return 'expired';
+  const end = new Date(start);
+  end.setDate(end.getDate() + 60);
+  return expiry <= end ? 'warning' : '';
+}
+function renderCertificates(){
+  const today = new Date();
+  const expiring = roster.filter(p=>certificateStatus(p.scadenzaCertificato, today))
+    .sort((a,b)=>a.scadenzaCertificato.localeCompare(b.scadenzaCertificato) || a.nome.localeCompare(b.nome, 'it'));
+  document.getElementById('certificateBody').innerHTML = expiring.map(p=>{
+    const status = certificateStatus(p.scadenzaCertificato, today);
+    return `<tr class="certificate-${status}"><td>${escapeHtml(p.nome)}</td><td>${fmtDate(p.scadenzaCertificato)}</td><td>${status === 'expired' ? 'Scaduto' : 'In scadenza'}</td></tr>`;
+  }).join('');
+  document.getElementById('certificateEmpty').hidden = expiring.length > 0;
+}
+function openCertificates(){
+  renderCertificates();
+  document.getElementById('certificateDialog').showModal();
+}
+function printCertificates(){
+  renderCertificates();
+  printSheet('certificateSheet');
+}
 function renderRoster(){
   const body = document.getElementById('rosterBody');
   const yearSel = document.getElementById('rosterYearFilter');
@@ -1874,9 +1952,10 @@ function renderRoster(){
     const tr = document.createElement('tr');
     const checked = isPlayerInRows(p.id);
     const disabled = !checked && !canSelectMore ? 'disabled' : '';
+    const certificate = certificateStatus(p.scadenzaCertificato);
     tr.innerHTML = `
       <td style="text-align:center"><input type="checkbox" class="chk" ${checked?'checked':''} ${disabled} onchange="toggleSelect(${p.id}, this.checked)"></td>
-      <td><input type="text" value="${escapeAttr(p.nome)}" onchange="editPlayer(${p.id},'nome',this.value)"></td>
+      <td><input type="text" ${certificate?`class="certificate-${certificate}" title="Certificato ${certificate === 'expired' ? 'scaduto' : 'in scadenza'}"`:''} value="${escapeAttr(p.nome)}" onchange="editPlayer(${p.id},'nome',this.value)"></td>
       <td><select onchange="editPlayer(${p.id},'categoria',this.value)">${categoriaOptions(p.categoria||'')}</select></td>
       <td><input type="number" value="${p.g??''}" style="width:52px" onchange="editPlayer(${p.id},'g',this.value)"></td>
       <td><input type="number" value="${p.m??''}" style="width:52px" onchange="editPlayer(${p.id},'m',this.value)"></td>
@@ -1885,6 +1964,7 @@ function renderRoster(){
       <td><input type="text" value="${escapeAttr(p.tessera||'')}" onchange="editPlayer(${p.id},'tessera',this.value)"></td>
       <td><input type="date" value="${escapeAttr(p.dataRilascio||'')}" onchange="editPlayer(${p.id},'dataRilascio',this.value)"></td>
       <td><select onchange="editPlayer(${p.id},'enteRilascio',this.value)">${enteRilascioOptions(p.enteRilascio||'')}</select></td>
+      <td><input type="date" min="1900-01-01" max="2100-12-31" aria-label="Scadenza certificato medico" value="${escapeAttr(p.scadenzaCertificato||'')}" onchange="editPlayer(${p.id},'scadenzaCertificato',this.value)"></td>
       <td><button class="link danger small" onclick="removePlayer(${p.id})" title="Rimuovi dalla rosa">✕</button></td>
     `;
     body.appendChild(tr);
@@ -1923,11 +2003,12 @@ function addPlayer(){
     mat: document.getElementById('np_mat').value.trim(),
     tessera: document.getElementById('np_tessera').value.trim(),
     dataRilascio: document.getElementById('np_dataRilascio').value || "",
-    enteRilascio: document.getElementById('np_enteRilascio').value || ""
+    enteRilascio: document.getElementById('np_enteRilascio').value || "",
+    scadenzaCertificato: document.getElementById('np_scadenzaCertificato').value || ""
   };
   roster.push(p);
   saveJSON('campolongo_roster', roster);
-  ['np_nome','np_g','np_m','np_a','np_mat','np_tessera','np_dataRilascio'].forEach(id=>document.getElementById(id).value='');
+  ['np_nome','np_g','np_m','np_a','np_mat','np_tessera','np_dataRilascio','np_scadenzaCertificato'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('np_cat').value = '';
   document.getElementById('np_enteRilascio').value = '';
   renderAll();
@@ -1936,10 +2017,16 @@ function addPlayer(){
 function editPlayer(id, field, value){
   const p = roster.find(x=>x.id===id);
   if(!p) return;
+  // Mentre si digita l'anno il browser emette date parziali (es. 0002): le ignoro per non interrompere la digitazione
+  if(field==='scadenzaCertificato' && value && Number(value.slice(0,4)) < 1900) return;
   if(field==='g'||field==='m'||field==='a') p[field] = parseInt(value)||null;
   else if(field==='nome') p[field] = value.toUpperCase();
   else p[field] = value;
   saveJSON('campolongo_roster', roster);
+  if(field==='scadenzaCertificato'){
+    renderRoster();
+    renderSelectedList();
+  }
   renderPrint();
   renderBacheca();
   cloudPush();
@@ -2029,9 +2116,10 @@ function renderSelectedList(){
         return;
       }
       const tag = (match.capitanoId==row.id) ? '<span class="tag">C</span>' : (match.vcapId==row.id ? '<span class="tag">VC</span>' : '');
+      const certificate = certificateStatus(p.scadenzaCertificato);
       el.innerHTML = `
         <div class="num">${i+1}</div>
-        <div class="name">${escapeHtml(p.nome)}</div>
+        <div class="name${certificate?` certificate-${certificate}`:''}"${certificate?` title="Certificato ${certificate === 'expired' ? 'scaduto' : 'in scadenza'}"`:''}>${escapeHtml(p.nome)}</div>
         ${tag}
         <div class="btns">
           <button class="small" onclick="moveRow(${i},-1)" ${i===0?'disabled':''}>↑</button>
@@ -2263,7 +2351,8 @@ function renderBacheca(){
     if(!p) return '';
     const tag = (match.capitanoId==id) ? '<span class="tag">· C</span>' : (match.vcapId==id ? '<span class="tag">· VC</span>' : '');
     const anno = p.a ? `<span class="yr">· ${p.a}</span>` : '';
-    return `<div class="bk-player">${escapeHtml(p.nome)} ${anno}${tag}</div>`;
+    const certificate = certificateStatus(p.scadenzaCertificato);
+    return `<div class="bk-player"><span${certificate?` class="certificate-${certificate}"`:''}>${escapeHtml(p.nome)}</span> ${anno}${tag}</div>`;
   }).join('');
 
   const osp = match.ospitante || team.nome;
@@ -2331,11 +2420,14 @@ function printSheet(id){
   const previousTitle = document.title;
   const names = {
     printSheet: 'DistintaGara',
-    bachecaSheet: 'DistintaBacheca'
+    bachecaSheet: 'DistintaBacheca',
+    certificateSheet: 'Certificati scaduti e in scadenza'
   };
   const dateParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(match.data || '');
   const dateStamp = dateParts ? `${dateParts[3]}${dateParts[2]}${dateParts[1].slice(-2)}` : '';
-  document.title = `${names[id] || 'Documento'}${dateStamp ? `_${dateStamp}` : ''}`;
+  document.title = id === 'certificateSheet'
+    ? `${names[id]} - ${team.nome || 'Campolongo'}`
+    : `${names[id] || 'Documento'}${dateStamp ? `_${dateStamp}` : ''}`;
 
   void wrapper.offsetHeight;
   let restored = false;

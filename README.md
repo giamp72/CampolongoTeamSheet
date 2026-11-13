@@ -16,3 +16,7 @@ If Supabase is not configured, the app remains in local-only mode.
 ## Install as an app
 
 On Android, open the published site in Chrome and choose **Install app** (or **Add to Home screen**) from the browser menu. The app shell and images are cached for offline opening; signing in and synchronizing with Supabase still require an internet connection. Printing uses the browser's print dialog: choose **Save as PDF** on Android.
+
+## Certificati medici
+
+Nella rosa inserire la scadenza del certificato medico di ciascun giocatore, separatamente dalla data di rilascio del documento. Le scadenze sono condivise insieme alla rosa e incluse nei backup dei dati. I nomi sono evidenziati in arancione nella rosa e nella convocazione quando la scadenza è compresa tra oggi e i 60 giorni successivi, estremi inclusi, e in rosso quando è già trascorsa. Le date mancanti non sono segnalate. Il pulsante **Certificati in scadenza** mostra anche i certificati scaduti, ordinati per data, e permette di stampare la lista.
