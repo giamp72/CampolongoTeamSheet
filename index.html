@@ -6,7 +6,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d5c3f">
 <link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.webmanifest">
 <script>
 try{
   const savedTheme = localStorage.getItem('campolongo_theme');
@@ -56,6 +59,25 @@ h1{font-size:1.2rem; margin:0 0 4px;}
 .settings-dropdown[hidden]{display:none;}
 .app-user-name{max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.82rem; color:var(--muted);}
 button.theme-toggle{padding:6px 8px; line-height:1.2;}
+.auth-heading{display:flex; justify-content:space-between; align-items:flex-start; gap:12px;}
+.auth-heading h1{margin:0 0 8px;}
+.help-dialog{
+  width:min(720px, calc(100% - 24px)); max-width:none; max-height:88vh; margin:auto;
+  padding:0; border:1px solid var(--border); border-radius:12px;
+  background:var(--panel); color:var(--ink); box-shadow:0 12px 40px rgba(0,0,0,.3);
+}
+.help-dialog[open]{display:flex; flex-direction:column;}
+.help-dialog::backdrop{background:rgba(0,0,0,.62);}
+.help-header{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 18px; border-bottom:1px solid var(--border);
+}
+.help-header h2{font-size:1.05rem; margin:0;}
+.help-content{overflow-y:auto; padding:10px 20px 20px; line-height:1.5;}
+.help-content h3{font-size:.96rem; margin:16px 0 5px;}
+.help-content p{margin:6px 0;}
+.help-content ul{margin:6px 0; padding-left:22px;}
+.help-content a{color:var(--accent);}
 @media(max-width:520px){
   .app-header{flex-wrap:wrap;}
   .app-header .logo{width:44px; height:44px;}
@@ -537,14 +559,17 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   .app-footer{ display: none !important; }
 }
 
-@media(max-width:760px){
+@media screen and (max-width:760px){
   #printSheet, #bachecaSheet{width:100%; padding:12px;}
 }
 </style>
 </head>
 <body>
 <div id="authPanel" class="card" style="display:none; max-width:440px; margin:40px auto;">
-  <h1>Accesso ai dati condivisi</h1>
+  <div class="auth-heading">
+    <h1>Accesso ai dati condivisi</h1>
+    <button class="small" type="button" onclick="openHelp()">❔ Help</button>
+  </div>
   <p>Accedi con l’account creato per te dall’amministratore.</p>
   <form id="loginForm">
     <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required></div>
@@ -553,6 +578,51 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     <div id="authError" role="alert" style="margin-top:10px;color:var(--danger);"></div>
   </form>
 </div>
+<dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle" onclick="if(event.target===this) closeHelp()">
+  <div class="help-header">
+    <h2 id="helpTitle">Guida all’app Distinta Gara</h2>
+    <button class="small" type="button" onclick="closeHelp()">Chiudi</button>
+  </div>
+  <div class="help-content">
+    <p>Usa questa guida per gestire i dati della società, preparare i convocati e stampare i documenti della partita.</p>
+    <ul>
+      <li><a href="#help-start">Primo utilizzo e dati della società</a></li>
+      <li><a href="#help-players">Inserire un giocatore e creare la convocazione</a></li>
+      <li><a href="#help-match">Dati gara e PDF</a></li>
+      <li><a href="#help-staff">Dirigenti e staff</a></li>
+      <li><a href="#help-whatsapp">Inviare la lista su WhatsApp</a></li>
+      <li><a href="#help-data">Salvataggio, backup e nuova gara</a></li>
+    </ul>
+
+    <h3 id="help-start">Primo utilizzo e dati della società</h3>
+    <p>Se viene richiesto l’accesso, entra con le credenziali fornite dall’amministratore. Apri <b>Dati società</b> e inserisci nome squadra, matricola FIGC e sede/contatti: questi dati vengono usati nei documenti.</p>
+    <p>Le intestazioni delle schede permettono di espanderle o richiuderle. Su telefono, le tabelle ampie si scorrono orizzontalmente.</p>
+
+    <h3 id="help-players">Inserire un giocatore e creare la convocazione</h3>
+    <ul>
+      <li>In <b>Rosa giocatori e convocati</b>, compila i campi sotto la tabella: cognome e nome, categoria, data di nascita (giorno, mese, anno) e gli eventuali dati FIGC. Premi <b>+ Aggiungi alla rosa</b>. Il nome viene salvato in maiuscolo.</li>
+      <li>Per correggere i dati, modifica direttamente le celle della riga. Il pulsante <b>✕</b> elimina il giocatore dalla rosa.</li>
+      <li>Usa anno, categoria e ricerca per trovare un giocatore; questi filtri non cambiano la rosa.</li>
+      <li>Per convocare un giocatore, seleziona la casella nella colonna <b>Conv.</b>. Puoi inserire al massimo 20 righe complessive nella distinta.</li>
+      <li>L’elenco <b>Ordine convocati in distinta</b> stabilisce l’ordine sul documento: usa <b>↑</b> e <b>↓</b> per riordinare e <b>✕</b> per togliere un convocato. <b>+ Riga vuota in distinta</b> aggiunge una riga senza giocatore e occupa uno dei 20 posti.</li>
+      <li>Seleziona capitano e vice capitano dai giocatori convocati.</li>
+    </ul>
+
+    <h3 id="help-match">Dati gara e PDF</h3>
+    <p>In <b>Dati gara</b> imposta tipo, competizione, girone, giornata, squadre, data, ora e luogo. L’orario di convocazione viene proposto 45 minuti prima della gara se non ne inserisci uno; puoi modificarlo. Compila ritrovo e note per la bacheca quando servono.</p>
+    <p>Usa <b>Genera PDF distinta FIGC</b> per il modulo gara e <b>Genera PDF convocazione</b> per il foglio da esporre. Si apre la stampa del browser: scegli <b>Salva come PDF</b> (su Android, nel menu di stampa). Controlla l’anteprima prima di stampare.</p>
+
+    <h3 id="help-staff">Dirigenti e staff</h3>
+    <p>Aggiungi i componenti in <b>Dirigenti / Staff</b>, compilando nome e, se necessario, categoria e dati tessera. Poi selezionali nei ruoli della scheda <b>Staff convocato</b>: dirigente accompagnatore, dirigente addetto agli ufficiali di gara, medico, allenatore e altri ruoli disponibili.</p>
+
+    <h3 id="help-whatsapp">Inviare la lista su WhatsApp</h3>
+    <p>Premi <b>Genera lista convocati (WhatsApp)</b>, verifica il testo e personalizza la frase finale. Puoi copiarlo oppure premere <b>Apri in WhatsApp</b> per condividerlo.</p>
+
+    <h3 id="help-data">Salvataggio, backup e nuova gara</h3>
+    <p>Le modifiche vengono salvate automaticamente. Con Supabase configurato, rosa, staff e dati società sono condivisi; la convocazione è privata per ciascun account. Senza Supabase, i dati restano nel browser in uso. Per sicurezza, apri <b>⚙️ Impostazioni</b> e usa <b>Download Dati</b> per creare una copia JSON; <b>Upload Dati</b> ripristina una copia e sostituisce rosa, staff e dati società correnti.</p>
+    <p><b>Nuova gara (pulisci convocazione)</b> azzera i dati della partita e i convocati, ma mantiene la rosa, i dati della società e l’anagrafica staff.</p>
+  </div>
+</dialog>
 <div class="wrap" id="appRoot">
 
   <div class="app-header">
@@ -561,6 +631,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
       <h1>Distinta Gara — A.S.D. Campolongo</h1>
       <div class="sub">Compila i dati, seleziona i convocati, poi stampa la distinta o il PDF da bacheca.</div>
     </div>
+    <button class="small" type="button" onclick="openHelp()" aria-haspopup="dialog">❔ Help</button>
     <div class="app-user" id="appUser" hidden>
       <span class="app-user-name" id="appUserName"></span>
       <button class="small theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Passa alla modalità scura" title="Passa alla modalità scura" aria-pressed="false">🌙</button>
@@ -786,7 +857,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     <button class="primary" onclick="printSheet('bachecaSheet')">📄 Genera PDF convocazione</button>
     <button onclick="generateWhatsappList()">💬 Genera lista convocati (WhatsApp)</button>
   </div>
-  <div class="sub">Si apre la finestra di stampa: scegli “Salva come PDF” (su iPhone/iPad: Condividi, poi “Salva su File”).</div>
+  <div class="sub">Si apre la finestra di stampa: scegli “Salva come PDF” (su Android, nel menu di stampa; su iPhone/iPad: Condividi, poi “Salva su File”).</div>
 
   <div class="card collapsed" id="cardWA">
     <h2 onclick="toggleCard('cardWA')"><span class="chev">▾</span> Lista convocati per WhatsApp</h2>
@@ -862,6 +933,14 @@ function renderThemeToggle(){
   toggle.setAttribute('aria-label', isDark ? 'Passa alla modalità chiara' : 'Passa alla modalità scura');
   toggle.title = isDark ? 'Passa alla modalità chiara' : 'Passa alla modalità scura';
   toggle.setAttribute('aria-pressed', String(isDark));
+}
+function openHelp(){
+  const dialog = document.getElementById('helpDialog');
+  if(!dialog.open) dialog.showModal();
+}
+function closeHelp(){
+  const dialog = document.getElementById('helpDialog');
+  if(dialog.open) dialog.close();
 }
 renderThemeToggle();
 if(window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', renderThemeToggle);
@@ -2251,10 +2330,12 @@ function printSheet(id){
 
   const previousTitle = document.title;
   const names = {
-    printSheet: 'Distinta FIGC',
-    bachecaSheet: 'Convocazione'
+    printSheet: 'DistintaGara',
+    bachecaSheet: 'DistintaBacheca'
   };
-  document.title = `${names[id] || 'Documento'} - ${team.nome || 'Campolongo'}`;
+  const dateParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(match.data || '');
+  const dateStamp = dateParts ? `${dateParts[3]}${dateParts[2]}${dateParts[1].slice(-2)}` : '';
+  document.title = `${names[id] || 'Documento'}${dateStamp ? `_${dateStamp}` : ''}`;
 
   void wrapper.offsetHeight;
   let restored = false;
@@ -2378,6 +2459,15 @@ if(CLOUD_ENABLED){
     showAuthPanel();
     renderAll();
     startSessionHeartbeat();
+  });
+}
+</script>
+<script>
+if('serviceWorker' in navigator && window.isSecureContext){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('./sw.js').catch(error=>{
+      console.error('Registrazione PWA non riuscita:', error);
+    });
   });
 }
 </script>

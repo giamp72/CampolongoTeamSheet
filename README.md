@@ -12,3 +12,7 @@ Static webpage for the Campolongo team sheet, hosted on GitHub Pages. Shared dat
 The first signed-in user can initialize an empty shared roster record from that browser. Existing users receive a copy of the previously shared match as the starting point for their own private match. Later sessions load each user's match from Supabase. If two users edit the shared roster concurrently, or one user's match from multiple devices, a stale write is refused and local changes are retained. Data is also cached in that browser's local storage, but GitHub Pages cannot write a JSON backup file beside `index.html`.
 
 If Supabase is not configured, the app remains in local-only mode.
+
+## Install as an app
+
+On Android, open the published site in Chrome and choose **Install app** (or **Add to Home screen**) from the browser menu. The app shell and images are cached for offline opening; signing in and synchronizing with Supabase still require an internet connection. Printing uses the browser's print dialog: choose **Save as PDF** on Android.
