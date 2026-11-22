@@ -3,10 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <title>Distinta Gara - A.S.D. Campolongo</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="format-detection" content="telephone=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0d5c3f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Campolongo">
+<meta name="theme-color" content="#f9f9f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161618" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -17,185 +21,326 @@ try{
 }catch(e){}
 </script>
 <style>
+/* ==================== TEMA (stile iOS) ==================== */
 :root{
-  --bg:#f4f5f7; --panel:#ffffff; --ink:#1c2230; --muted:#6b7280; --border:#d8dbe2;
-  --accent:#0d5c3f; --accent-ink:#ffffff; --danger:#b3261e; --field-bg:#fbfbfc;
+  color-scheme: light;
+  --bg:#f2f2f7; --panel:#ffffff; --panel-2:#f2f2f7; --fill:rgba(118,118,128,.12);
+  --ink:#1c1c1e; --muted:#8a8a8e; --separator:rgba(60,60,67,.22);
+  --tint:#1b6ec2; --tint-ink:#ffffff; --tint-soft:rgba(27,110,194,.12);
+  --danger:#e5342a; --success:#2a9d4b;
+  --bar-bg:rgba(249,249,249,.94);
+  --certificate-warning:#c25b00; --certificate-expired:#e5342a;
+  --radius:12px;
   --shadow: 0 1px 2px rgba(20,20,30,.06), 0 4px 14px rgba(20,20,30,.05);
+  --accent:var(--tint); --accent-ink:var(--tint-ink); --border:var(--separator); --field-bg:var(--fill);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#14161b; --panel:#1c1f26; --ink:#eef0f3; --muted:#9aa1ad; --border:#333844;
-    --accent:#3ea679; --accent-ink:#0b1410; --field-bg:#22262e;
+    color-scheme: dark;
+    --bg:#000000; --panel:#1c1c1e; --panel-2:#2c2c2e; --fill:rgba(118,118,128,.24);
+    --ink:#ffffff; --muted:#8e8e93; --separator:rgba(84,84,88,.6);
+    --tint:#4b9ef0; --tint-ink:#ffffff; --tint-soft:rgba(75,158,240,.18);
+    --danger:#ff453a; --success:#32d74b;
+    --bar-bg:rgba(22,22,24,.94);
+    --certificate-warning:#ff9f0a; --certificate-expired:#ff453a;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.35);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#14161b; --panel:#1c1f26; --ink:#eef0f3; --muted:#9aa1ad; --border:#333844;
-  --accent:#3ea679; --accent-ink:#0b1410; --field-bg:#22262e;
+  color-scheme: dark;
+  --bg:#000000; --panel:#1c1c1e; --panel-2:#2c2c2e; --fill:rgba(118,118,128,.24);
+  --ink:#ffffff; --muted:#8e8e93; --separator:rgba(84,84,88,.6);
+  --tint:#4b9ef0; --tint-ink:#ffffff; --tint-soft:rgba(75,158,240,.18);
+  --danger:#ff453a; --success:#32d74b;
+  --bar-bg:rgba(22,22,24,.94);
+  --certificate-warning:#ff9f0a; --certificate-expired:#ff453a;
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 14px rgba(0,0,0,.35);
 }
-:root{ --certificate-warning:#a64b00; --certificate-expired:#b3261e; }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){ --certificate-warning:#ffb74d; --certificate-expired:#ff8a80; }
-}
-:root[data-theme="dark"]{ --certificate-warning:#ffb74d; --certificate-expired:#ff8a80; }
+
 *{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
 body{
   margin:0; background:var(--bg); color:var(--ink);
-  font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  padding: 16px;
-}
-.wrap{max-width: 100%; margin: 0 auto; padding: 0 20px;}
-h1{font-size:1.2rem; margin:0 0 4px;}
-.sub{color:var(--muted); font-size:.85rem; margin-bottom:14px;}
-.app-header{
-  display:flex; align-items:center; gap:12px; margin-bottom:14px;
-  background:var(--panel); border:1px solid var(--border); border-radius:12px;
-  padding:12px 16px; box-shadow: var(--shadow);
-}
-.app-header .logo{width:56px; height:56px; object-fit:contain; flex:0 0 auto;}
-.app-header .titles{flex:1; min-width:0;}
-.app-header h1{margin:0;}
-.app-header .sub{margin:2px 0 0;}
-.app-user{display:flex; align-items:center; gap:8px; margin-left:auto; flex:0 0 auto;}
-.app-user[hidden]{display:none;}
-.settings-menu{position:relative;}
-.settings-dropdown{position:absolute; right:0; top:100%; margin-top:4px; z-index:50; display:flex; flex-direction:column; gap:6px; padding:8px; background:var(--panel); border:1px solid var(--border); border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,.2); white-space:nowrap;}
-.settings-dropdown[hidden]{display:none;}
-.app-user-name{max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.82rem; color:var(--muted);}
-button.theme-toggle{padding:6px 8px; line-height:1.2;}
-.auth-heading{display:flex; justify-content:space-between; align-items:flex-start; gap:12px;}
-.auth-heading h1{margin:0 0 8px;}
-.help-dialog{
-  width:min(720px, calc(100% - 24px)); max-width:none; max-height:88vh; margin:auto;
-  padding:0; border:1px solid var(--border); border-radius:12px;
-  background:var(--panel); color:var(--ink); box-shadow:0 12px 40px rgba(0,0,0,.3);
-}
-.help-dialog[open]{display:flex; flex-direction:column;}
-.help-dialog::backdrop{background:rgba(0,0,0,.62);}
-.help-header{
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding:14px 18px; border-bottom:1px solid var(--border);
-}
-.help-header h2{font-size:1.05rem; margin:0;}
-.help-content{overflow-y:auto; padding:10px 20px 20px; line-height:1.5;}
-.help-content h3{font-size:.96rem; margin:16px 0 5px;}
-.help-content p{margin:6px 0;}
-.help-content ul{margin:6px 0; padding-left:22px;}
-.help-content a{color:var(--accent);}
-@media(max-width:520px){
-  .app-header{flex-wrap:wrap;}
-  .app-header .logo{width:44px; height:44px;}
-  .app-header h1{font-size:1.02rem;}
-  .app-header .sub{font-size:.78rem;}
-  .app-user{margin-left:auto;}
-  .app-user-name{max-width:130px;}
-}
-.card{
-  background:var(--panel); border:1px solid var(--border); border-radius:12px;
-  box-shadow: var(--shadow); padding:14px 16px; margin-bottom:14px;
-}
-.card h2{
-  font-size:.98rem; margin:0 0 12px; display:flex; align-items:center; gap:8px;
-  cursor:pointer; user-select:none;
-}
-.card h2 .chev{transition: transform .15s; font-size:.75rem; color:var(--muted);}
-.card.collapsed h2 .chev{transform: rotate(-90deg);}
-.card .body{display:block;}
-.card.collapsed .body{display:none;}
-.grid{display:grid; grid-template-columns: repeat(2,1fr); gap:12px;}
-@media(max-width:640px){.grid{grid-template-columns:1fr;}}
-label{font-size:.78rem; color:var(--muted); display:block; margin-bottom:4px;}
-input[type=text],input[type=date],input[type=time],input[type=number],select,textarea{
-  width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border);
-  background:var(--field-bg); color:var(--ink); font-size:16px; font-family:inherit;
-}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--accent); outline-offset:1px;}
-.field{margin-bottom:10px;}
-.row-inline{display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;}
-.row-inline > div{flex:1; min-width:140px;}
-button{
-  border:none; border-radius:8px; padding:9px 14px; font-size:.88rem; cursor:pointer;
-  background:var(--field-bg); color:var(--ink); border:1px solid var(--border);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size:17px; line-height:1.3; -webkit-font-smoothing:antialiased;
   -webkit-tap-highlight-color: transparent;
 }
-button:hover{filter:brightness(1.05);}
-button.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600;}
-button.small{padding:6px 10px; font-size:.8rem;}
-button.link{background:transparent; border:none; color:var(--accent); padding:4px 6px;}
-button.danger{color:var(--danger); border-color:var(--danger);}
-table.roster{width:100%; border-collapse:collapse; font-size:.85rem;}
-table.roster th, table.roster td{border-bottom:1px solid var(--border); padding:6px 6px; text-align:left; vertical-align:middle;}
-table.roster th{color:var(--muted); font-weight:600; font-size:.72rem; text-transform:uppercase; letter-spacing:.02em;}
-table.roster input[type=text],table.roster input[type=number],table.roster input[type=date],table.roster select{padding:6px 8px; font-size:.85rem;}
-.chk{width:22px; height:22px;}
-.tiny-col{width:56px;}
-.rosterhead-add{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
-.rosterhead-add input, .rosterhead-add select{flex:1; min-width:110px;}
-.selected-list{display:flex; flex-direction:column; gap:4px; margin-top:4px;}
-.sel-row{
-  display:flex; align-items:center; gap:8px; background:var(--field-bg); border:1px solid var(--border);
-  border-radius:8px; padding:6px 10px; font-size:.86rem;
+button{font:inherit; color:inherit; -webkit-tap-highlight-color:transparent;}
+button:disabled{opacity:.35; cursor:default;}
+a{color:var(--tint);}
+
+/* ==================== BARRE ==================== */
+.nav-bar{
+  position:fixed; top:0; left:0; right:0; z-index:40;
+  padding-top:env(safe-area-inset-top);
+  background:var(--bar-bg); -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:.5px solid var(--separator);
 }
-.sel-row .num{width:22px; text-align:center; font-weight:700; color:var(--accent);}
-.sel-row .name{flex:1;}
-.certificate-warning, input.certificate-warning{color:var(--certificate-warning); font-weight:700;}
-.certificate-expired, input.certificate-expired{color:var(--certificate-expired); font-weight:700;}
-.sel-row .tag{font-size:.7rem; padding:2px 6px; border-radius:5px; background:var(--accent); color:var(--accent-ink); font-weight:700;}
-.sel-row .btns{display:flex; gap:2px;}
-.empty-hint{color:var(--muted); font-size:.85rem; font-style:italic; padding:8px 0;}
-.actions-bar{display:flex; gap:10px; flex-wrap:wrap; margin: 10px 0 4px;}
-.count-badge{font-size:.78rem; color:var(--muted);}
-.count-badge b{color:var(--ink);}
-.cloud-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
-.cloud-actions button{font-size:.82rem;}
-body.read-only #appRoot [data-ro-disabled]{opacity:.6; cursor:not-allowed;}
-.table-wrap{overflow-x:auto; -webkit-overflow-scrolling: touch;}
-.scroll-hint{display:none; text-align:center; font-size:.72rem; color:var(--muted); font-style:italic; margin-top:4px;}
+.nav-inner{max-width:820px; margin:0 auto; height:48px; display:flex; align-items:center; gap:8px; padding:0 12px;}
+.nav-logo{width:30px; height:30px; object-fit:contain;}
+.nav-title{flex:1; text-align:center; font-weight:600; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.nav-side{display:flex; align-items:center; gap:4px; min-width:76px;}
+.nav-side.right{justify-content:flex-end;}
+.icon-btn{
+  border:none; background:transparent; color:var(--tint); padding:6px; min-width:36px; height:36px;
+  border-radius:18px; font-size:20px; line-height:1; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;
+}
+.icon-btn:active{background:var(--fill);}
+.avatar{
+  width:30px; height:30px; border-radius:50%; background:var(--tint); color:var(--tint-ink);
+  font-size:13px; font-weight:700; display:inline-flex; align-items:center; justify-content:center;
+}
 
-table.roster th:nth-child(1),  table.roster td:nth-child(1)  { min-width: 60px; }
-table.roster th:nth-child(2),  table.roster td:nth-child(2)  { min-width: 220px; }
-table.roster th:nth-child(3),  table.roster td:nth-child(3)  { min-width: 150px; }
-table.roster th:nth-child(4),  table.roster td:nth-child(4)  { min-width: 60px; }
-table.roster th:nth-child(5),  table.roster td:nth-child(5)  { min-width: 60px; }
-table.roster th:nth-child(6),  table.roster td:nth-child(6)  { min-width: 80px; }
-table.roster th:nth-child(7),  table.roster td:nth-child(7)  { min-width: 130px; }
-table.roster th:nth-child(8),  table.roster td:nth-child(8)  { min-width: 130px; }
-table.roster th:nth-child(9),  table.roster td:nth-child(9)  { min-width: 150px; }
-table.roster th:nth-child(10), table.roster td:nth-child(10) { min-width: 130px; }
-table.roster th:nth-child(11), table.roster td:nth-child(11) { min-width: 50px;  }
-#rosterBody td:nth-child(11){min-width:150px;}
+.tab-bar{
+  position:fixed; left:0; right:0; bottom:0; z-index:40;
+  padding-bottom:env(safe-area-inset-bottom);
+  background:var(--bar-bg); -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px);
+  border-top:.5px solid var(--separator);
+}
+.tab-inner{max-width:820px; margin:0 auto; display:flex;}
+.tab-btn{
+  flex:1; border:none; background:transparent; color:var(--muted); cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 2px 5px; font-size:10.5px; font-weight:500;
+}
+.tab-btn svg{width:26px; height:26px;}
+.tab-btn[aria-selected="true"]{color:var(--tint);}
 
+/* ==================== CONTENUTO ==================== */
+.content{
+  max-width:820px; margin:0 auto;
+  padding: calc(48px + env(safe-area-inset-top) + 8px) 16px calc(70px + env(safe-area-inset-bottom));
+}
+.tab-panel[hidden]{display:none;}
+.large-title-row{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin:6px 4px 14px;}
+.large-title{font-size:34px; font-weight:700; letter-spacing:.2px; margin:0; line-height:1.1;}
+.large-sub{color:var(--muted); font-size:15px; margin-top:4px;}
+.title-action{
+  border:none; background:var(--tint-soft); color:var(--tint); font-weight:600; font-size:15px;
+  border-radius:16px; padding:7px 14px; cursor:pointer; white-space:nowrap;
+}
+
+#cloudStatus{
+  font-size:13px; color:var(--muted); margin:0 4px 14px; line-height:1.45;
+}
+#cloudStatus:empty{display:none;}
+#cloudStatus button.link{background:none; border:none; color:var(--tint); padding:0 4px; cursor:pointer; font-size:13px;}
+#cloudStatus .cloud-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
+#cloudStatus .cloud-actions button:not(.link){font-size:14px;}
+
+/* Gruppi in stile "inset grouped" */
+.group-title{font-size:13px; text-transform:uppercase; letter-spacing:.3px; color:var(--muted); margin:22px 16px 7px;}
+.group-title:first-child{margin-top:4px;}
+.group-footer{font-size:13px; color:var(--muted); margin:7px 16px 0; line-height:1.4;}
+.group{background:var(--panel); border-radius:var(--radius); overflow:hidden;}
+.row{
+  position:relative; display:flex; align-items:center; gap:12px; min-height:46px; padding:6px 16px;
+}
+.row + .row::before, .group > * + .row::before, .list-row + .list-row::before{
+  content:""; position:absolute; top:0; left:16px; right:0; border-top:.5px solid var(--separator);
+}
+.row > label, .row-label{flex:0 0 auto; max-width:48%; color:var(--ink); font-size:17px;}
+.row > input, .row > select, .row > .control{flex:1; min-width:0;}
+.row.stacked{flex-direction:column; align-items:stretch; gap:6px; padding:10px 16px;}
+.row.stacked > label{max-width:none; font-size:13px; color:var(--muted);}
+
+input[type=text],input[type=email],input[type=password],input[type=date],input[type=time],input[type=number],input[type=search],select,textarea{
+  font:inherit; font-size:17px; color:var(--ink); background:transparent; border:none; outline:none;
+  padding:6px 0; text-align:right; width:100%; min-width:0; border-radius:0;
+}
+input::placeholder, textarea::placeholder{color:var(--muted); opacity:.8;}
+input[type=date], input[type=time]{min-height:34px; -webkit-appearance:none; appearance:none; display:flex; justify-content:flex-end;}
+input[type=date]::-webkit-date-and-time-value, input[type=time]::-webkit-date-and-time-value{text-align:right;}
+select{
+  -webkit-appearance:none; appearance:none; cursor:pointer; color:var(--muted);
+  padding-right:18px; text-align-last:right;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='16' viewBox='0 0 10 16'%3E%3Cpath d='M1 6l4-4 4 4M1 10l4 4 4-4' fill='none' stroke='%238e8e93' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right center; background-size:9px 14px;
+}
+select option{color:#000;}
+textarea{text-align:left; resize:vertical; line-height:1.35;}
+.row.stacked > input, .row.stacked > textarea, .row.stacked > select{text-align:left; text-align-last:left;}
+input:focus-visible, select:focus-visible, textarea:focus-visible{outline:none;}
+.row:focus-within{background:var(--tint-soft);}
+input:disabled, select:disabled, textarea:disabled{opacity:1; -webkit-text-fill-color:var(--muted); color:var(--muted);}
+
+/* Pulsanti a riga intera */
+.row-btn{
+  width:100%; border:none; background:transparent; text-align:left; cursor:pointer;
+  color:var(--tint); font-size:17px; min-height:46px; padding:6px 16px; display:flex; align-items:center; gap:12px; position:relative;
+}
+.row-btn:active{background:var(--fill);}
+.row-btn.destructive{color:var(--danger);}
+.row-btn .ico{width:29px; height:29px; border-radius:7px; display:inline-flex; align-items:center; justify-content:center; font-size:16px; flex:0 0 auto;}
+.row-btn .lbl{flex:1; color:var(--ink);}
+.row-btn.plain .lbl{color:inherit;}
+.row-btn .chev, .list-row .chev{color:var(--muted); opacity:.6; font-size:20px; flex:0 0 auto;}
+.group > * + .row-btn::before{content:""; position:absolute; top:0; left:16px; right:0; border-top:.5px solid var(--separator);}
+.ico.blue{background:#1b6ec2; color:#fff;} .ico.green{background:#34c759; color:#fff;} .ico.orange{background:#ff9500; color:#fff;}
+.ico.red{background:#ff3b30; color:#fff;} .ico.gray{background:#8e8e93; color:#fff;} .ico.indigo{background:#5856d6; color:#fff;} .ico.teal{background:#30b0c7; color:#fff;}
+
+.btn{
+  border:none; border-radius:12px; padding:13px 18px; font-size:17px; font-weight:600; cursor:pointer;
+  background:var(--fill); color:var(--tint);
+}
+.btn.primary, button.primary{background:var(--tint); color:var(--tint-ink); border:none; border-radius:12px; padding:10px 16px; font-weight:600; cursor:pointer;}
+.btn.block{width:100%;}
+button.danger{color:var(--danger); background:var(--fill); border:none; border-radius:12px; padding:10px 16px; cursor:pointer;}
+
+/* Ricerca e filtri */
+.search{
+  display:flex; align-items:center; gap:6px; background:var(--fill); border-radius:10px; padding:0 10px; height:38px; margin:0 0 10px;
+}
+.search svg{width:16px; height:16px; color:var(--muted); flex:0 0 auto;}
+.search input{text-align:left; padding:0; font-size:17px;}
+.chips{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px;}
+.chip{
+  background:var(--panel); border-radius:16px; padding:5px 26px 5px 12px; font-size:15px; color:var(--ink);
+  text-align:left; text-align-last:left; width:auto; flex:0 0 auto; background-position:right 9px center;
+}
+.chip-btn{border:none; background:var(--panel); color:var(--tint); border-radius:16px; padding:6px 12px; font-size:15px; cursor:pointer;}
+
+/* Liste di giocatori e staff */
+.list-row{position:relative; display:flex; align-items:center; gap:12px; min-height:56px; padding:6px 12px 6px 14px;}
+.list-row .row-main{flex:1; min-width:0; cursor:pointer; padding:4px 0;}
+.list-row .row-title{font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.list-row .row-sub{font-size:13px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.list-row:active{background:var(--fill);}
+.list-row + .list-row::before{left:56px;}
+.staff-list .list-row + .list-row::before{left:16px;}
+.badge{font-size:12px; font-weight:600; border-radius:6px; padding:2px 7px; flex:0 0 auto; white-space:nowrap;}
+.badge.expired{background:rgba(255,59,48,.14); color:var(--certificate-expired);}
+.badge.warning{background:rgba(255,149,0,.16); color:var(--certificate-warning);}
+.badge.cap{background:var(--tint); color:var(--tint-ink);}
+.empty-hint{color:var(--muted); font-size:15px; text-align:center; padding:22px 16px;}
+.empty-hint[style*="none"]{display:none;}
+
+/* Cerchio di selezione (convocazione) */
+.check{position:relative; width:28px; height:28px; flex:0 0 auto; cursor:pointer;}
+.check input{position:absolute; inset:0; opacity:0; margin:0; width:100%; height:100%; cursor:pointer;}
+.check span{
+  position:absolute; inset:2px; border-radius:50%; border:1.6px solid var(--muted); opacity:.7;
+  display:flex; align-items:center; justify-content:center; transition:background .15s, border-color .15s;
+}
+.check input:checked + span{background:var(--tint); border-color:var(--tint); opacity:1;}
+.check input:checked + span::after{
+  content:""; width:6px; height:11px; border:solid #fff; border-width:0 2.2px 2.2px 0; transform:rotate(45deg) translate(-1px,-1px);
+}
+.check input:disabled + span{opacity:.25;}
+.check input:checked:disabled + span{opacity:.5;}
+
+/* Ordine convocati */
+.selected-list{display:flex; flex-direction:column;}
+.sel-row{position:relative; display:flex; align-items:center; gap:10px; min-height:50px; padding:4px 8px 4px 14px;}
+.sel-row + .sel-row::before{content:""; position:absolute; top:0; left:48px; right:0; border-top:.5px solid var(--separator);}
+.sel-row .num{width:24px; text-align:center; font-weight:600; color:var(--tint); font-variant-numeric:tabular-nums; flex:0 0 auto;}
+.sel-row .name{flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.sel-row .name.blank{color:var(--muted); font-style:italic;}
+.sel-row .tag{font-size:12px; font-weight:700; padding:2px 7px; border-radius:6px; background:var(--tint); color:var(--tint-ink);}
+.sel-row .btns{display:flex; gap:0; flex:0 0 auto;}
+.sel-row .btns button{border:none; background:transparent; color:var(--tint); width:38px; height:38px; border-radius:19px; font-size:17px; cursor:pointer;}
+.sel-row .btns button:active{background:var(--fill);}
+.sel-row .btns button.danger{color:var(--danger); padding:0;}
+.certificate-warning, .row-title.certificate-warning, .sel-row .name.certificate-warning{color:var(--certificate-warning); font-weight:700;}
+.certificate-expired, .row-title.certificate-expired, .sel-row .name.certificate-expired{color:var(--certificate-expired); font-weight:700;}
+
+/* Controllo segmentato */
+.segmented{display:flex; background:var(--fill); border-radius:9px; padding:2px; margin:0 0 12px;}
+.segmented button{flex:1; border:none; background:transparent; border-radius:7px; padding:6px 8px; font-size:14px; font-weight:500; color:var(--ink); cursor:pointer;}
+.segmented button[aria-selected="true"]{background:var(--panel); box-shadow:0 1px 3px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.04); font-weight:600;}
+
+/* Anteprime A4 in scala */
+.preview-frame{position:relative; overflow:hidden; border-radius:var(--radius); background:var(--panel);}
+.preview-scale{transform-origin:top left; width:210mm;}
+.preview-frame #printSheet, .preview-frame #bachecaSheet{border:none; box-shadow:none; margin:0;}
+.preview-frame[hidden]{display:none;}
+
+/* WhatsApp */
+#cardWA.collapsed{display:none;}
+#waText{text-align:left; font-size:15px; min-height:260px;}
+
+/* Menu account (popover) */
+.settings-menu{position:relative;}
+.settings-dropdown{
+  position:absolute; right:0; top:calc(100% + 8px); z-index:60; width:270px; overflow:hidden;
+  background:var(--panel); border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,.22), 0 0 0 .5px var(--separator);
+}
+.settings-dropdown[hidden]{display:none;}
+.settings-dropdown .menu-head{padding:12px 16px; font-size:13px; color:var(--muted); border-bottom:.5px solid var(--separator);}
+.settings-dropdown .menu-head b{display:block; color:var(--ink); font-size:15px; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.settings-dropdown .row-btn{min-height:44px; font-size:16px; color:var(--ink);}
+.settings-dropdown .row-btn.destructive{color:var(--danger);}
+.settings-dropdown .row-btn .trail{margin-left:auto; color:var(--muted); font-size:18px;}
+.settings-dropdown .row-btn + .row-btn::before{left:0;}
+.app-user[hidden]{display:none;}
+button.theme-toggle{border:none; background:var(--fill); border-radius:14px; padding:3px 9px; font-size:15px; cursor:pointer;}
+
+/* Fogli (dialog) in stile iOS */
 dialog{
-  width:min(600px, calc(100% - 32px)); max-height:85vh; overflow:auto;
-  background:var(--panel); color:var(--ink); border:1px solid var(--border);
-  border-radius:12px; padding:20px; box-shadow:var(--shadow);
+  border:none; padding:0; color:var(--ink); background:var(--bg);
+  width:min(600px, 100%); max-width:100%; max-height:92vh; border-radius:14px; overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
 }
-dialog::backdrop{background:rgba(0,0,0,.55);}
+dialog[open]{display:flex; flex-direction:column;}
+dialog::backdrop{background:rgba(0,0,0,.4);}
+.sheet-head{
+  display:flex; align-items:center; gap:8px; padding:12px 16px; background:var(--bar-bg);
+  border-bottom:.5px solid var(--separator); flex:0 0 auto;
+}
+.sheet-head h2{flex:1; text-align:center; font-size:17px; font-weight:600; margin:0;}
+.sheet-head .head-btn{border:none; background:none; color:var(--tint); font-size:17px; cursor:pointer; min-width:70px; padding:4px 0;}
+.sheet-head .head-btn.left{text-align:left;}
+.sheet-head .head-btn.right{text-align:right; font-weight:600;}
+.sheet-head .head-btn:focus, .row-btn:focus:not(:focus-visible){outline:none;}
+.sheet-body{overflow-y:auto; padding:16px; -webkit-overflow-scrolling:touch;}
+.sheet-body .group + .group-title{margin-top:22px;}
+.dob{display:flex; gap:6px; justify-content:flex-end;}
+.dob input{width:58px; flex:0 0 auto; text-align:center; background:var(--fill); border-radius:8px; padding:5px 4px;}
+.dob input.year{width:74px;}
+@media (max-width:640px){
+  dialog{
+    position:fixed; margin:0; top:auto; bottom:0; left:0; right:0; width:100%;
+    max-height:94vh; border-radius:14px 14px 0 0; padding-bottom:env(safe-area-inset-bottom);
+  }
+  dialog[open]{animation:sheet-up .28s cubic-bezier(.2,.8,.2,1);}
+}
+@keyframes sheet-up{from{transform:translateY(100%);} to{transform:translateY(0);}}
+
+/* Guida */
+.help-content{line-height:1.5; font-size:16px;}
+.help-content h3{font-size:17px; margin:20px 0 6px;}
+.help-content p{margin:6px 0;}
+.help-content ul{margin:6px 0; padding-left:22px;}
+
+/* Certificati */
 #certificateSheet table{width:100%; border-collapse:collapse; text-align:left;}
 #certificateSheet th, #certificateSheet td{padding:8px; border-bottom:1px solid var(--border);}
+@media screen{
+  #certificateSheet h2{font-size:20px; margin:0 0 4px;}
+  #certificateSheet p{color:var(--muted); font-size:14px; margin:0 0 12px;}
+  #certificateSheet table{background:var(--panel); border-radius:var(--radius); overflow:hidden; font-size:15px;}
+  #certificateSheet th{font-size:12px; text-transform:uppercase; color:var(--muted); font-weight:600; padding:10px 12px; border-bottom:none;}
+  #certificateSheet td{padding:11px 12px; border-bottom:none; border-top:.5px solid var(--separator);}
+}
 
-.table-wrap{ overflow-x: auto; -webkit-overflow-scrolling: touch; }
-table.roster{ min-width: 1280px; }
-table.roster input[type=text],
-table.roster input[type=number],
-table.roster input[type=date],
-table.roster select{ width:100%; min-width:0; }
+/* Accesso */
+#authPanel{max-width:420px; margin:0 auto; padding:calc(48px + env(safe-area-inset-top)) 16px 40px; text-align:center;}
+#authPanel .auth-logo{width:88px; height:88px; object-fit:contain; margin-bottom:10px;}
+#authPanel h1{font-size:28px; margin:0 0 6px;}
+#authPanel p{color:var(--muted); margin:0 0 22px; font-size:15px;}
+#authPanel .group{text-align:left; margin-bottom:16px;}
+#authPanel .row > label{min-width:92px;}
+#authPanel .row > input{text-align:left;}
+#authPanel #authError{margin-top:12px; color:var(--danger); font-size:15px;}
+#authPanel .help-link{margin-top:22px; background:none; border:none; color:var(--tint); font-size:15px; cursor:pointer;}
 
-.table-wrap::-webkit-scrollbar{ height:10px; }
-.table-wrap::-webkit-scrollbar-track{ background: var(--bg); border-radius:5px; }
-.table-wrap::-webkit-scrollbar-thumb{ background: var(--muted); border-radius:5px; }
-.table-wrap::-webkit-scrollbar-thumb:hover{ background: var(--ink); }
+/* Sola lettura */
+body.read-only #appRoot [data-ro-disabled]{cursor:not-allowed;}
+body.read-only .title-action[data-ro-disabled]{display:none;}
 
-@media(max-width:760px){
-  .wrap{ padding: 0 12px; }
-  table.roster{ font-size:.82rem; }
-  .table-wrap{
-    margin: 0 -12px;
-    padding: 0 12px 6px;
-  }
-  table.roster th, table.roster td{ padding:5px 6px; }
-  .scroll-hint{ display:block; }
+.app-footer{text-align:center; font-size:12px; color:var(--muted); padding:24px 0 4px;}
+
+@media (min-width:900px){
+  .content{padding-left:24px; padding-right:24px;}
 }
 
 /* ==================== PRINT SHEET FIGC ==================== */
@@ -206,6 +351,7 @@ table.roster select{ width:100%; min-width:0; }
   border:1px solid #ccc; box-shadow: var(--shadow);
   display:flex; flex-direction:column;
 }
+#printSheet, #bachecaSheet, #certificateSheet{ font-size:16px; line-height:normal; }
 #printSheet, #printSheet *{ box-sizing:border-box; }
 
 .ps-top-logos{
@@ -584,32 +730,32 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
   .app-footer{ display: none !important; }
 }
 
-@media screen and (max-width:760px){
-  #printSheet, #bachecaSheet{width:100%; padding:12px;}
-}
 </style>
 </head>
 <body>
-<div id="authPanel" class="card" style="display:none; max-width:440px; margin:40px auto;">
-  <div class="auth-heading">
-    <h1>Accesso ai dati condivisi</h1>
-    <button class="small" type="button" onclick="openHelp()">❔ Help</button>
-  </div>
+<div id="authPanel" style="display:none;">
+  <img class="auth-logo" src="logo.png" alt="Logo A.S.D. Campolongo">
+  <h1>Distinta Gara</h1>
   <p>Accedi con l’account creato per te dall’amministratore.</p>
   <form id="loginForm">
-    <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required></div>
-    <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
-    <button class="primary" type="submit">Accedi</button>
-    <div id="authError" role="alert" style="margin-top:10px;color:var(--danger);"></div>
+    <div class="group">
+      <div class="row"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" placeholder="nome@esempio.it" required></div>
+      <div class="row"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Obbligatoria" required></div>
+    </div>
+    <button class="btn primary block" type="submit">Accedi</button>
+    <div id="authError" role="alert"></div>
   </form>
+  <button class="help-link" type="button" onclick="openHelp()">Come funziona l’app?</button>
 </div>
+
 <dialog id="helpDialog" class="help-dialog" aria-labelledby="helpTitle" onclick="if(event.target===this) closeHelp()">
-  <div class="help-header">
-    <h2 id="helpTitle">Guida all’app Distinta Gara</h2>
-    <button class="small" type="button" onclick="closeHelp()">Chiudi</button>
+  <div class="sheet-head">
+    <span class="head-btn left"></span>
+    <h2 id="helpTitle">Guida</h2>
+    <button class="head-btn right" type="button" onclick="closeHelp()">Fine</button>
   </div>
-  <div class="help-content">
-    <p>Usa questa guida per gestire i dati della società, preparare i convocati e stampare i documenti della partita.</p>
+  <div class="sheet-body help-content">
+    <p>Usa questa guida per gestire i dati della società, preparare i convocati e stampare i documenti della partita. In basso trovi cinque schede: <b>Gara</b>, <b>Rosa</b>, <b>Convocati</b>, <b>Documenti</b> e <b>Società</b>.</p>
     <ul>
       <li><a href="#help-start">Primo utilizzo e dati della società</a></li>
       <li><a href="#help-players">Inserire un giocatore e creare la convocazione</a></li>
@@ -621,325 +767,339 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     </ul>
 
     <h3 id="help-start">Primo utilizzo e dati della società</h3>
-    <p>Se viene richiesto l’accesso, entra con le credenziali fornite dall’amministratore. Apri <b>Dati società</b> e inserisci nome squadra, matricola FIGC e sede/contatti: questi dati vengono usati nei documenti.</p>
-    <p>Le intestazioni delle schede permettono di espanderle o richiuderle. Su telefono, le tabelle ampie si scorrono orizzontalmente.</p>
+    <p>Se viene richiesto l’accesso, entra con le credenziali fornite dall’amministratore. Nella scheda <b>Società</b> inserisci nome squadra, matricola FIGC e sede/contatti: questi dati vengono usati nei documenti.</p>
 
     <h3 id="help-players">Inserire un giocatore e creare la convocazione</h3>
     <ul>
-      <li>In <b>Rosa giocatori e convocati</b>, compila i campi sotto la tabella: cognome e nome, categoria, data di nascita (giorno, mese, anno) e gli eventuali dati FIGC. Premi <b>+ Aggiungi alla rosa</b>. Il nome viene salvato in maiuscolo.</li>
-      <li>Per correggere i dati, modifica direttamente le celle della riga. Il pulsante <b>✕</b> elimina il giocatore dalla rosa.</li>
-      <li>Usa anno, categoria e ricerca per trovare un giocatore; questi filtri non cambiano la rosa.</li>
-      <li>Per convocare un giocatore, seleziona la casella nella colonna <b>Conv.</b>. Puoi inserire al massimo 20 righe complessive nella distinta.</li>
-      <li>L’elenco <b>Ordine convocati in distinta</b> stabilisce l’ordine sul documento: usa <b>↑</b> e <b>↓</b> per riordinare e <b>✕</b> per togliere un convocato. <b>+ Riga vuota in distinta</b> aggiunge una riga senza giocatore e occupa uno dei 20 posti.</li>
-      <li>Seleziona capitano e vice capitano dai giocatori convocati.</li>
+      <li>Nella scheda <b>Rosa</b> premi <b>Aggiungi</b> e compila cognome e nome, categoria, data di nascita (giorno, mese, anno) e gli eventuali dati FIGC. Il nome viene salvato in maiuscolo.</li>
+      <li>Tocca il nome di un giocatore per vedere e correggere i suoi dati; in fondo alla scheda trovi <b>Elimina giocatore</b>.</li>
+      <li>Usa la ricerca e i filtri per anno e categoria per trovare un giocatore; i filtri non cambiano la rosa.</li>
+      <li>Per convocare un giocatore tocca il cerchio a sinistra del nome. Puoi inserire al massimo 20 righe complessive nella distinta.</li>
+      <li>Nella scheda <b>Convocati</b> l’ordine dell’elenco è quello del documento: usa <b>↑</b> e <b>↓</b> per riordinare e <b>✕</b> per togliere un convocato. <b>Aggiungi riga vuota</b> inserisce una riga senza giocatore e occupa uno dei 20 posti.</li>
+      <li>Sempre in <b>Convocati</b> scegli capitano e vice capitano.</li>
     </ul>
 
     <h3 id="help-certificates">Certificati medici</h3>
-    <p>Inserisci la scadenza del certificato medico nei dati del giocatore. I nomi sono evidenziati in arancione quando il certificato scade entro 60 giorni e in rosso quando è già scaduto. Premi <b>Certificati in scadenza</b> per vedere e stampare l’elenco, che comprende anche i certificati scaduti.</p>
+    <p>Inserisci la scadenza del certificato medico nei dati del giocatore. I nomi sono evidenziati in arancione quando il certificato scade entro 60 giorni e in rosso quando è già scaduto. In <b>Rosa</b> premi <b>Certificati in scadenza</b> per vedere e stampare l’elenco, che comprende anche i certificati scaduti.</p>
 
     <h3 id="help-match">Dati gara e PDF</h3>
-    <p>In <b>Dati gara</b> imposta tipo, competizione, girone, giornata, squadre, data, ora e luogo. L’orario di convocazione viene proposto 45 minuti prima della gara se non ne inserisci uno; puoi modificarlo. Compila ritrovo e note per la bacheca quando servono.</p>
-    <p>Usa <b>Genera PDF distinta FIGC</b> per il modulo gara e <b>Genera PDF convocazione</b> per il foglio da esporre. Si apre la stampa del browser: scegli <b>Salva come PDF</b> (su Android, nel menu di stampa). Controlla l’anteprima prima di stampare.</p>
+    <p>Nella scheda <b>Gara</b> imposta tipo, competizione, girone, giornata, squadre, data, ora e luogo. L’orario di convocazione viene proposto 45 minuti prima della gara se non ne inserisci uno; puoi modificarlo. Compila ritrovo e note per la bacheca quando servono.</p>
+    <p>Nella scheda <b>Documenti</b> usa <b>PDF distinta FIGC</b> per il modulo gara e <b>PDF convocazione</b> per il foglio da esporre. Si apre la stampa del browser: scegli <b>Salva come PDF</b> (su Android nel menu di stampa; su iPhone/iPad: Condividi, poi “Salva su File”). Controlla l’anteprima prima di stampare.</p>
 
     <h3 id="help-staff">Dirigenti e staff</h3>
-    <p>Aggiungi i componenti in <b>Dirigenti / Staff</b>, compilando nome e, se necessario, categoria e dati tessera. Poi selezionali nei ruoli della scheda <b>Staff convocato</b>: dirigente accompagnatore, dirigente addetto agli ufficiali di gara, medico, allenatore e altri ruoli disponibili.</p>
+    <p>Aggiungi i componenti nella scheda <b>Società</b>, sezione <b>Dirigenti e staff</b>, compilando nome e, se necessario, categoria e dati tessera. Poi selezionali nella scheda <b>Gara</b>, sezione <b>Staff convocato</b>.</p>
 
     <h3 id="help-whatsapp">Inviare la lista su WhatsApp</h3>
-    <p>Premi <b>Genera lista convocati (WhatsApp)</b>, verifica il testo e personalizza la frase finale. Puoi copiarlo oppure premere <b>Apri in WhatsApp</b> per condividerlo.</p>
+    <p>In <b>Documenti</b> premi <b>Lista convocati per WhatsApp</b>, verifica il testo e personalizza la frase finale. Puoi copiarlo oppure premere <b>Apri in WhatsApp</b> per condividerlo.</p>
 
     <h3 id="help-data">Salvataggio, backup e nuova gara</h3>
-    <p>Le modifiche vengono salvate automaticamente. Con Supabase configurato, rosa, staff e dati società sono condivisi; la convocazione è privata per ciascun account. Senza Supabase, i dati restano nel browser in uso. Per sicurezza, apri <b>⚙️ Impostazioni</b> e usa <b>Download Dati</b> per creare una copia JSON; <b>Upload Dati</b> ripristina una copia e sostituisce rosa, staff e dati società correnti.</p>
-    <p><b>Nuova gara (pulisci convocazione)</b> azzera i dati della partita e i convocati, ma mantiene la rosa, i dati della società e l’anagrafica staff.</p>
+    <p>Le modifiche vengono salvate automaticamente. Con Supabase configurato, rosa, staff e dati società sono condivisi; la convocazione è privata per ciascun account. Senza Supabase, i dati restano nel browser in uso. Per sicurezza, tocca il tuo profilo in alto a destra e usa <b>Scarica dati</b> per creare una copia JSON; <b>Ripristina dati</b> carica una copia e sostituisce rosa, staff e dati società correnti.</p>
+    <p><b>Nuova gara</b> (in fondo alla scheda Gara) azzera i dati della partita e i convocati, ma mantiene la rosa, i dati della società e l’anagrafica staff.</p>
+    <p>Se lo stesso account è aperto su più dispositivi, solo il primo può modificare; gli altri sono in sola lettura finché non premi <b>Modifica da questo dispositivo</b>.</p>
   </div>
 </dialog>
-<div class="wrap" id="appRoot">
 
-  <div class="app-header" data-ro-allow>
-    <img class="logo" src="logo.png" alt="Logo A.S.D. Campolongo">
-    <div class="titles">
-      <h1>Distinta Gara — A.S.D. Campolongo</h1>
-      <div class="sub">Compila i dati, seleziona i convocati, poi stampa la distinta o il PDF da bacheca.</div>
-    </div>
-    <button class="small" type="button" onclick="openHelp()" aria-haspopup="dialog">❔ Help</button>
-    <div class="app-user" id="appUser" hidden>
-      <span class="app-user-name" id="appUserName"></span>
-      <button class="small theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Passa alla modalità scura" title="Passa alla modalità scura" aria-pressed="false">🌙</button>
-      <div class="settings-menu" id="settingsMenu">
-        <button class="small" type="button" id="settingsToggle" onclick="toggleSettingsMenu(event)" aria-label="Impostazioni" title="Impostazioni" aria-haspopup="true" aria-expanded="false">⚙️</button>
-        <div class="settings-dropdown" id="settingsDropdown" hidden>
-          <button type="button" class="small" onclick="downloadData()">⬇️ Download Dati</button>
-          <button type="button" class="small" onclick="uploadDataClick()">⬆️ Upload Dati</button>
-        </div>
-        <input type="file" id="uploadDataInput" accept="application/json,.json" hidden onchange="uploadDataFile(this)">
+<div id="appRoot">
+
+  <header class="nav-bar" data-ro-allow>
+    <div class="nav-inner">
+      <div class="nav-side">
+        <img class="nav-logo" src="logo.png" alt="Logo A.S.D. Campolongo">
       </div>
-      <button class="small" type="button" onclick="logout()">Esci</button>
-    </div>
-  </div>
-
-  <div class="actions-bar">
-    <button onclick="resetMatch()">🆕 Nuova gara (pulisci convocazione)</button>
-  </div>
-
-  <div class="card" id="cardTeam">
-    <h2 onclick="toggleCard('cardTeam')"><span class="chev">▾</span> Dati società</h2>
-    <div class="body">
-      <div class="grid">
-        <div class="field"><label>Nome squadra</label><input type="text" id="t_nome"></div>
-        <div class="field"><label>Matricola FIGC società</label><input type="text" id="t_matricola"></div>
-        <div class="field" style="grid-column:1/-1"><label>Sede legale / contatti</label><input type="text" id="t_sede"></div>
+      <div class="nav-title" id="navTitle">Gara</div>
+      <div class="nav-side right">
+        <button class="icon-btn" type="button" onclick="openHelp()" aria-haspopup="dialog" aria-label="Guida" title="Guida">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.7.3-1 .8-1 1.5v.6"/><circle cx="12" cy="16.9" r=".6" fill="currentColor"/></svg>
+        </button>
+        <div class="app-user" id="appUser" hidden>
+          <div class="settings-menu" id="settingsMenu">
+            <button class="icon-btn" type="button" id="settingsToggle" onclick="toggleSettingsMenu(event)" aria-label="Account e impostazioni" title="Account e impostazioni" aria-haspopup="true" aria-expanded="false"><span class="avatar" id="avatarInitials">👤</span></button>
+            <div class="settings-dropdown" id="settingsDropdown" hidden>
+              <div class="menu-head">Account<b id="appUserName"></b></div>
+              <div class="row-btn plain" style="cursor:default;"><span class="lbl">Tema</span><button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()" aria-label="Passa alla modalità scura" title="Passa alla modalità scura" aria-pressed="false">🌙</button></div>
+              <button type="button" class="row-btn" onclick="downloadData()"><span class="lbl">Scarica dati</span><span class="trail">⬇︎</span></button>
+              <button type="button" class="row-btn" onclick="uploadDataClick()"><span class="lbl">Ripristina dati…</span><span class="trail">⬆︎</span></button>
+              <button type="button" class="row-btn destructive" onclick="closeSettingsMenu(); logout()"><span class="lbl" style="color:inherit">Esci</span></button>
+            </div>
+            <input type="file" id="uploadDataInput" accept="application/json,.json" hidden onchange="uploadDataFile(this)">
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </header>
 
-  <div class="card" id="cardGara">
-    <h2 onclick="toggleCard('cardGara')"><span class="chev">▾</span> Dati gara</h2>
-    <div class="body">
-      <div class="grid">
-        <div class="field">
-          <label>Tipo di gara</label>
-          <select id="g_tipo">
-            <option>Campionato</option>
-            <option>Torneo</option>
-            <option>Amichevole</option>
-            <option>Coppa</option>
-            <option>Altro</option>
-          </select>
-        </div>
-        <div class="field"><label>Denominazione</label><input type="text" id="g_denom" placeholder="Esordienti"></div>
-        <div class="field"><label>Girone</label><input type="text" id="g_girone" placeholder="Girone A"></div>
-        <div class="field"><label>Assegna numeri</label>
-          <select id="g_assegnaNumeri"><option value="SI">SI</option><option value="NO">NO</option></select>
-        </div>
-        <div class="field"><label>Numero giornata</label><input type="text" id="g_giornata" placeholder="Es. 1ª"></div>
-        <div class="field"><label>Squadra ospitante</label><input type="text" id="g_ospitante" placeholder="Nome squadra"></div>
-        <div class="field"><label>Squadra ospite</label><input type="text" id="g_ospite" placeholder="Nome squadra"></div>
-        <div class="field"><label>Data gara</label><input type="date" id="g_data"></div>
-        <div class="field"><label>Ora gara</label><input type="time" id="g_ora"></div>
-        <div class="field"><label>Orario convocazione (auto = -45 min)</label><input type="time" id="g_orarioConvocazione"></div>
-        <div class="field"><label>Luogo</label><input type="text" id="g_luogo" placeholder="Nome del campo / città"></div>
-        <div class="field"><label>Ritrovo</label><input type="text" id="g_ritrovo" placeholder="Dove si ritrova il gruppo squadra"></div>
-        <div class="field" style="grid-column:1/-1"><label>Note Distinta Bacheca</label><textarea id="g_noteBacheca" rows="2"></textarea></div>
-      </div>
-    </div>
-  </div>
+  <main class="content">
+    <div id="cloudStatus" data-ro-allow></div>
 
-  <div class="card" id="cardRosa">
-    <h2 onclick="toggleCard('cardRosa')"><span class="chev">▾</span> Rosa giocatori e convocati</h2>
-    <div class="body">
-      <div class="count-badge" id="countBadge"></div>
-      <div class="count-badge" id="cloudStatus" style="margin-bottom:6px;" data-ro-allow></div>
-      <div class="actions-bar" data-ro-allow>
-        <button type="button" onclick="openCertificates()">Certificati in scadenza</button>
-      </div>
+    <!-- ==================== GARA ==================== -->
+    <section class="tab-panel" data-tab="gara" id="tabGara">
+      <div class="large-title-row"><div><h1 class="large-title">Gara</h1><div class="large-sub">Dati della partita e staff convocato</div></div></div>
 
-      <div class="row-inline" style="margin-bottom:10px;" data-ro-allow>
-        <div style="max-width:200px;">
-          <label>Filtra per anno di nascita</label>
-          <select id="rosterYearFilter" onchange="onRosterFilterChange()">
-            <option value="">Tutti gli anni</option>
-          </select>
+      <div id="cardGara">
+        <div class="group-title">Partita</div>
+        <div class="group">
+          <div class="row"><label for="g_tipo">Tipo</label>
+            <select id="g_tipo">
+              <option>Campionato</option>
+              <option>Torneo</option>
+              <option>Amichevole</option>
+              <option>Coppa</option>
+              <option>Altro</option>
+            </select>
+          </div>
+          <div class="row"><label for="g_denom">Denominazione</label><input type="text" id="g_denom" placeholder="Esordienti"></div>
+          <div class="row"><label for="g_girone">Girone</label><input type="text" id="g_girone" placeholder="A"></div>
+          <div class="row"><label for="g_giornata">Giornata</label><input type="text" id="g_giornata" placeholder="1ª"></div>
+          <div class="row"><label for="g_assegnaNumeri">Numeri in distinta</label>
+            <select id="g_assegnaNumeri"><option value="SI">SI</option><option value="NO">NO</option></select>
+          </div>
         </div>
-        <div style="max-width:200px;">
-          <label>Filtra per categoria</label>
-          <select id="rosterCatFilter" onchange="onRosterFilterChange()">
-            <option value="">Tutte le categorie</option>
-          </select>
+
+        <div class="group-title">Squadre</div>
+        <div class="group">
+          <div class="row"><label for="g_ospitante">Ospitante</label><input type="text" id="g_ospitante" placeholder="Nome squadra"></div>
+          <div class="row"><label for="g_ospite">Ospite</label><input type="text" id="g_ospite" placeholder="Nome squadra"></div>
         </div>
-        <div style="flex:2; min-width:200px;">
-          <label>Cerca per nome giocatore</label>
-          <input type="text" id="rosterSearch" placeholder="Cognome o nome…" oninput="onRosterFilterChange()">
+
+        <div class="group-title">Data e luogo</div>
+        <div class="group">
+          <div class="row"><label for="g_data">Data</label><input type="date" id="g_data"></div>
+          <div class="row"><label for="g_ora">Inizio gara</label><input type="time" id="g_ora"></div>
+          <div class="row"><label for="g_orarioConvocazione">Convocazione</label><input type="time" id="g_orarioConvocazione"></div>
+          <div class="row"><label for="g_luogo">Luogo</label><input type="text" id="g_luogo" placeholder="Campo / città"></div>
+          <div class="row"><label for="g_ritrovo">Ritrovo</label><input type="text" id="g_ritrovo" placeholder="Dove ci si ritrova"></div>
+        </div>
+        <div class="group-footer">Se lasci vuoto l’orario di convocazione viene proposto 45 minuti prima dell’inizio.</div>
+
+        <div class="group-title">Nota per la bacheca</div>
+        <div class="group">
+          <div class="row stacked"><textarea id="g_noteBacheca" rows="3" aria-label="Note distinta bacheca"></textarea></div>
         </div>
       </div>
 
-      <div class="table-wrap">
-        <table class="roster">
-          <thead>
-            <tr>
-              <th class="tiny-col">Conv.</th>
-              <th>Cognome e nome</th>
-              <th>Categoria</th>
-              <th class="tiny-col">G</th>
-              <th class="tiny-col">M</th>
-              <th class="tiny-col">A</th>
-              <th>N. Matricola</th>
-              <th>N. Tessera</th>
-              <th>Data Rilascio</th>
-              <th>Ente Rilascio</th>
-              <th>Scadenza certificato medico</th>
-              <th class="tiny-col"></th>
-            </tr>
-          </thead>
-          <tbody id="rosterBody"></tbody>
-        </table>
-      </div>
-      <div class="scroll-hint">← scorri lateralmente per vedere tutte le colonne →</div>
-
-      <div class="rosterhead-add">
-        <input type="text" id="np_nome" placeholder="Cognome e nome">
-        <select id="np_cat" style="max-width:150px"></select>
-        <input type="number" id="np_g" placeholder="GG" style="max-width:60px">
-        <input type="number" id="np_m" placeholder="MM" style="max-width:60px">
-        <input type="number" id="np_a" placeholder="AAAA" style="max-width:80px">
-        <input type="text" id="np_mat" placeholder="Matricola" style="max-width:110px">
-        <input type="text" id="np_tessera" placeholder="N. Tessera" style="max-width:110px">
-        <input type="date" id="np_dataRilascio" style="max-width:140px">
-        <select id="np_enteRilascio" style="max-width:120px"></select>
-        <div><label for="np_scadenzaCertificato">Scadenza certificato medico</label><input type="date" id="np_scadenzaCertificato" min="1900-01-01" max="2100-12-31"></div>
-        <button onclick="addPlayer()">+ Aggiungi alla rosa</button>
-      </div>
-
-      <div style="margin-top:18px;">
-        <b style="font-size:.9rem;">Ordine convocati in distinta</b>
-        <div class="actions-bar" style="margin:8px 0;">
-          <button onclick="addBlankSlot()" title="Aggiungi una riga vuota in distinta (es. per il secondo portiere assente)">+ Riga vuota in distinta</button>
+      <div id="cardStaffAssignments">
+        <div class="group-title">Staff convocato</div>
+        <div class="group">
+          <div class="row"><label for="s_dirigente">Dirigente accompagnatore</label><select id="s_dirigente"><option value="">—</option></select></div>
+          <div class="row"><label for="s_dirigente2">Addetto ufficiali di gara</label><select id="s_dirigente2"><option value="">—</option></select></div>
+          <div class="row"><label for="s_medico">Medico sociale</label><select id="s_medico"><option value="">—</option></select></div>
+          <div class="row"><label for="s_allenatore">Allenatore</label><select id="s_allenatore"><option value="">—</option></select></div>
+          <div class="row"><label for="s_allenatore2">Allenatore in seconda</label><select id="s_allenatore2"><option value="">—</option></select></div>
+          <div class="row"><label for="s_massaggiatore">Dirigente / Massaggiatore</label><select id="s_massaggiatore"><option value="">—</option></select></div>
         </div>
+      </div>
+
+      <div class="group-title">&nbsp;</div>
+      <div class="group">
+        <button class="row-btn destructive" type="button" onclick="resetMatch()"><span class="lbl" style="color:inherit">Nuova gara</span></button>
+      </div>
+      <div class="group-footer">Azzera i dati della partita e i convocati. Rosa, staff e dati della società restano invariati.</div>
+    </section>
+
+    <!-- ==================== ROSA ==================== -->
+    <section class="tab-panel" data-tab="rosa" id="tabRosa" hidden>
+      <div class="large-title-row">
+        <div><h1 class="large-title">Rosa</h1><div class="large-sub" id="countBadge"></div></div>
+        <button class="title-action" type="button" onclick="openSheet('addPlayerSheet')">＋ Aggiungi</button>
+      </div>
+
+      <div data-ro-allow>
+        <label class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg>
+          <input type="search" id="rosterSearch" placeholder="Cerca giocatore" aria-label="Cerca per nome giocatore" oninput="onRosterFilterChange()"></label>
+        <div class="chips">
+          <select class="chip" id="rosterYearFilter" onchange="onRosterFilterChange()" aria-label="Filtra per anno di nascita"><option value="">Tutti gli anni</option></select>
+          <select class="chip" id="rosterCatFilter" onchange="onRosterFilterChange()" aria-label="Filtra per categoria"><option value="">Tutte le categorie</option></select>
+          <button class="chip-btn" type="button" onclick="openCertificates()">⚕︎ Certificati in scadenza</button>
+        </div>
+      </div>
+
+      <div class="group" id="cardRosa"><div id="rosterBody"></div></div>
+      <div class="group-footer">Tocca il cerchio per convocare un giocatore, il nome per vederne o modificarne i dati.</div>
+    </section>
+
+    <!-- ==================== CONVOCATI ==================== -->
+    <section class="tab-panel" data-tab="convocati" id="tabConvocati" hidden>
+      <div class="large-title-row"><div><h1 class="large-title">Convocati</h1><div class="large-sub">Ordine dei giocatori nella distinta</div></div></div>
+
+      <div class="group-title">Distinta</div>
+      <div class="group">
         <div class="selected-list" id="selectedList"></div>
-        <div class="empty-hint" id="emptyHint">Nessun giocatore convocato: seleziona dalla rosa sopra.</div>
+        <div class="empty-hint" id="emptyHint">Nessun giocatore convocato: selezionali nella scheda Rosa.</div>
+        <button class="row-btn" type="button" onclick="addBlankSlot()" title="Aggiungi una riga vuota in distinta (es. per il secondo portiere assente)"><span class="lbl plain" style="color:var(--tint)">＋ Aggiungi riga vuota</span></button>
+      </div>
+      <div class="group-footer">Massimo 20 righe, comprese le righe vuote.</div>
+
+      <div class="group-title">Fascia</div>
+      <div class="group">
+        <div class="row"><label for="capSel">Capitano</label><select id="capSel"><option value="">—</option></select></div>
+        <div class="row"><label for="vcapSel">Vice capitano</label><select id="vcapSel"><option value="">—</option></select></div>
+      </div>
+    </section>
+
+    <!-- ==================== DOCUMENTI ==================== -->
+    <section class="tab-panel" data-tab="documenti" id="tabDocumenti" hidden data-ro-allow>
+      <div class="large-title-row"><div><h1 class="large-title">Documenti</h1><div class="large-sub">Stampa, PDF e messaggio per il gruppo</div></div></div>
+
+      <div class="group">
+        <button class="row-btn" type="button" onclick="printSheet('printSheet')"><span class="ico blue">📄</span><span class="lbl">PDF distinta FIGC</span><span class="chev">›</span></button>
+        <button class="row-btn" type="button" onclick="printSheet('bachecaSheet')"><span class="ico indigo">📋</span><span class="lbl">PDF convocazione (bacheca)</span><span class="chev">›</span></button>
+        <button class="row-btn" type="button" onclick="generateWhatsappList()"><span class="ico green">💬</span><span class="lbl">Lista convocati per WhatsApp</span><span class="chev">›</span></button>
+      </div>
+      <div class="group-footer">Si apre la finestra di stampa: scegli “Salva come PDF” (su Android nel menu di stampa; su iPhone/iPad: Condividi, poi “Salva su File”).</div>
+
+      <div id="cardWA" class="collapsed">
+        <div class="group-title">Messaggio WhatsApp</div>
+        <div class="group">
+          <div class="row stacked"><label for="waClosing">Frase finale (viene ricordata)</label><input type="text" id="waClosing" oninput="saveWaClosing()"></div>
+          <div class="row stacked"><label for="waText">Testo (modificabile prima dell’invio)</label><textarea id="waText" rows="14"></textarea></div>
+          <button class="row-btn" type="button" onclick="copyWaText(event)"><span class="lbl plain" style="color:var(--tint)">Copia testo</span></button>
+          <a id="waShareLink" class="row-btn" href="#" target="_blank" rel="noopener" style="text-decoration:none;"><span class="lbl plain" style="color:var(--tint)">Apri in WhatsApp</span><span class="chev">›</span></a>
+        </div>
       </div>
 
-      <div class="grid" style="margin-top:14px;">
-        <div class="field">
-          <label>Capitano</label>
-          <select id="capSel"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Vice Capitano</label>
-          <select id="vcapSel"><option value="">—</option></select>
+      <div class="group-title">Anteprima</div>
+      <div class="segmented" role="tablist">
+        <button type="button" role="tab" aria-selected="true" data-preview="cardPreview" onclick="showPreview('cardPreview')">Distinta FIGC</button>
+        <button type="button" role="tab" aria-selected="false" data-preview="cardBacheca" onclick="showPreview('cardBacheca')">Bacheca</button>
+      </div>
+      <div class="preview-frame" id="cardPreview"><div class="preview-scale"><div id="printSheet"></div></div></div>
+      <div class="preview-frame" id="cardBacheca" hidden><div class="preview-scale"><div id="bachecaSheet"></div></div></div>
+    </section>
+
+    <!-- ==================== SOCIETÀ ==================== -->
+    <section class="tab-panel" data-tab="societa" id="tabSocieta" hidden>
+      <div class="large-title-row"><div><h1 class="large-title">Società</h1><div class="large-sub">Dati usati nei documenti e anagrafica staff</div></div></div>
+
+      <div id="cardTeam">
+        <div class="group-title">Dati società</div>
+        <div class="group">
+          <div class="row"><label for="t_nome">Nome squadra</label><input type="text" id="t_nome"></div>
+          <div class="row"><label for="t_matricola">Matricola FIGC</label><input type="text" id="t_matricola" inputmode="numeric"></div>
+          <div class="row stacked"><label for="t_sede">Sede legale / contatti</label><textarea id="t_sede" rows="2"></textarea></div>
         </div>
       </div>
+
+      <div id="cardStaff">
+        <div class="large-title-row" style="margin:24px 4px 8px;">
+          <div class="group-title" style="margin:0 12px;">Dirigenti e staff</div>
+          <button class="title-action" type="button" onclick="openSheet('addStaffSheet')">＋ Aggiungi</button>
+        </div>
+        <div class="chips" data-ro-allow>
+          <select class="chip" id="staffCatFilter" onchange="renderStaffRoster()" aria-label="Filtra staff per categoria"><option value="">Tutte le categorie</option></select>
+        </div>
+        <div class="group staff-list"><div id="staffRosterBody"></div></div>
+      </div>
+
+      <div class="app-footer">developed by @giamp72</div>
+    </section>
+  </main>
+
+  <nav class="tab-bar" data-ro-allow aria-label="Sezioni">
+    <div class="tab-inner" role="tablist">
+      <button class="tab-btn" type="button" role="tab" data-tab-btn="gara" onclick="showTab('gara')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor"/></svg>Gara</button>
+      <button class="tab-btn" type="button" role="tab" data-tab-btn="rosa" onclick="showTab('rosa')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="9" cy="8" r="3.3"/><path d="M3 19.5c.6-3.3 3-5.2 6-5.2s5.4 1.9 6 5.2"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14.3c2.4.2 4 1.8 4.5 4.6"/></svg>Rosa</button>
+      <button class="tab-btn" type="button" role="tab" data-tab-btn="convocati" onclick="showTab('convocati')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M9.5 6.5H20M9.5 12H20M9.5 17.5H20"/><path d="M4 5.5l1-.8v3.6M3.8 11.2c.4-.6 1.8-.7 1.9.2.1.8-1.9 1.6-1.9 2.6h2.1M3.8 16.3c.5-.5 2-.4 2 .4 0 .6-.6.8-1 .8.5 0 1.1.3 1.1.9 0 .9-1.6 1-2.1.4"/></svg>Convocati</button>
+      <button class="tab-btn" type="button" role="tab" data-tab-btn="documenti" onclick="showTab('documenti')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M6 3.5h8l4.5 4.5v12.5H6z"/><path d="M14 3.5V8h4.5M9 12.5h6.5M9 16h6.5"/></svg>Documenti</button>
+      <button class="tab-btn" type="button" role="tab" data-tab-btn="societa" onclick="showTab('societa')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3l7.5 2.8v5.4c0 4.6-3.1 8.1-7.5 9.8-4.4-1.7-7.5-5.2-7.5-9.8V5.8z"/><path d="M9 3.9v15.6M15 3.9v15.6"/></svg>Società</button>
     </div>
-  </div>
+  </nav>
 
+  <!-- ==================== FOGLI ==================== -->
   <dialog id="certificateDialog" aria-labelledby="certificateTitle" data-ro-allow>
-    <div id="certificateSheet">
-      <h2 id="certificateTitle">Certificati scaduti e in scadenza</h2>
-      <p>Certificati scaduti o in scadenza entro i prossimi 60 giorni inclusi.</p>
-      <table>
-        <thead><tr><th>Giocatore</th><th>Scadenza</th><th>Stato</th></tr></thead>
-        <tbody id="certificateBody"></tbody>
-      </table>
-      <p id="certificateEmpty" hidden>Nessun certificato scaduto o in scadenza nei prossimi 60 giorni.</p>
+    <div class="sheet-head">
+      <button class="head-btn left" type="button" onclick="printCertificates()">Stampa</button>
+      <h2>Certificati</h2>
+      <button class="head-btn right" type="button" onclick="document.getElementById('certificateDialog').close()">Fine</button>
     </div>
-    <div class="actions-bar">
-      <button type="button" onclick="printCertificates()">Stampa lista</button>
-      <button type="button" onclick="document.getElementById('certificateDialog').close()">Chiudi</button>
+    <div class="sheet-body">
+      <div id="certificateSheet">
+        <h2 id="certificateTitle">Certificati scaduti e in scadenza</h2>
+        <p>Certificati scaduti o in scadenza entro i prossimi 60 giorni inclusi.</p>
+        <table>
+          <thead><tr><th>Giocatore</th><th>Scadenza</th><th>Stato</th></tr></thead>
+          <tbody id="certificateBody"></tbody>
+        </table>
+        <p id="certificateEmpty" hidden>Nessun certificato scaduto o in scadenza nei prossimi 60 giorni.</p>
+      </div>
     </div>
   </dialog>
 
-  <div class="card" id="cardStaffAssignments">
-    <h2>Staff convocato</h2>
-    <div class="body">
-      <div class="grid">
-        <div class="field">
-          <label>Dirigente accompagnatore ufficiale</label>
-          <select id="s_dirigente"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Dirigente addetto ufficiali di gara</label>
-          <select id="s_dirigente2"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Medico sociale</label>
-          <select id="s_medico"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Allenatore</label>
-          <select id="s_allenatore"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Allenatore in seconda</label>
-          <select id="s_allenatore2"><option value="">—</option></select>
-        </div>
-        <div class="field">
-          <label>Dirigente / Massaggiatore</label>
-          <select id="s_massaggiatore"><option value="">—</option></select>
-        </div>
-      </div>
+  <dialog id="addPlayerSheet" aria-labelledby="addPlayerTitle">
+    <div class="sheet-head">
+      <button class="head-btn left" type="button" data-ro-allow onclick="closeSheet('addPlayerSheet')">Annulla</button>
+      <h2 id="addPlayerTitle">Nuovo giocatore</h2>
+      <button class="head-btn right" type="button" onclick="submitAddPlayer()">Aggiungi</button>
     </div>
-  </div>
-
-  <div class="card collapsed" id="cardStaff">
-    <h2 onclick="toggleCard('cardStaff')"><span class="chev">▾</span> Dirigenti / Staff</h2>
-    <div class="body">
-      <label>Elenco dirigenti / staff societario</label>
-
-      <div class="row-inline" style="margin:8px 0 10px 0;" data-ro-allow>
-        <div style="max-width:220px;">
-          <label>Filtra per categoria</label>
-          <select id="staffCatFilter" onchange="renderStaffRoster()">
-            <option value="">Tutte le categorie</option>
-          </select>
-        </div>
+    <div class="sheet-body">
+      <div class="group">
+        <div class="row stacked"><label for="np_nome">Cognome e nome</label><input type="text" id="np_nome" placeholder="ROSSI MARIO" autocapitalize="characters"></div>
+        <div class="row"><label for="np_cat">Categoria</label><select id="np_cat"></select></div>
+        <div class="row"><label>Data di nascita</label><div class="control dob">
+          <input type="number" id="np_g" placeholder="GG" inputmode="numeric" aria-label="Giorno di nascita">
+          <input type="number" id="np_m" placeholder="MM" inputmode="numeric" aria-label="Mese di nascita">
+          <input type="number" id="np_a" placeholder="AAAA" inputmode="numeric" class="year" aria-label="Anno di nascita"></div></div>
       </div>
-
-      <div class="table-wrap">
-        <table class="roster">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Categoria</th>
-              <th>Matricola</th>
-              <th>N. Tessera</th>
-              <th>Data Rilascio</th>
-              <th>Ente Rilascio</th>
-              <th class="tiny-col"></th>
-            </tr>
-          </thead>
-          <tbody id="staffRosterBody"></tbody>
-        </table>
+      <div class="group-title">Tesseramento FIGC</div>
+      <div class="group">
+        <div class="row"><label for="np_mat">Matricola</label><input type="text" id="np_mat" inputmode="numeric" placeholder="Facoltativa"></div>
+        <div class="row"><label for="np_tessera">N. tessera</label><input type="text" id="np_tessera" placeholder="Facoltativo"></div>
+        <div class="row"><label for="np_dataRilascio">Data rilascio</label><input type="date" id="np_dataRilascio"></div>
+        <div class="row"><label for="np_enteRilascio">Ente rilascio</label><select id="np_enteRilascio"></select></div>
       </div>
-      <div class="scroll-hint">← scorri lateralmente per vedere tutte le colonne →</div>
-
-      <div class="rosterhead-add">
-        <input type="text" id="ns_nome" placeholder="Nome e cognome">
-        <select id="ns_cat" style="max-width:150px"></select>
-        <input type="text" id="ns_mat" placeholder="Matricola" style="max-width:110px">
-        <input type="text" id="ns_tess" placeholder="N. Tessera" style="max-width:110px">
-        <input type="date" id="ns_dataRilascio" style="max-width:140px">
-        <select id="ns_enteRilascio" style="max-width:120px"></select>
-        <button onclick="addStaff()">+ Aggiungi alla lista</button>
+      <div class="group-title">Certificato medico</div>
+      <div class="group">
+        <div class="row"><label for="np_scadenzaCertificato">Scadenza</label><input type="date" id="np_scadenzaCertificato" min="1900-01-01" max="2100-12-31"></div>
       </div>
+      <div class="group-title">&nbsp;</div>
+      <button class="btn primary block" type="button" onclick="submitAddPlayer()">＋ Aggiungi alla rosa</button>
     </div>
-  </div>
+  </dialog>
 
-  <div class="actions-bar" data-ro-allow>
-    <button class="primary" onclick="printSheet('printSheet')">📄 Genera PDF distinta FIGC</button>
-    <button class="primary" onclick="printSheet('bachecaSheet')">📄 Genera PDF convocazione</button>
-    <button onclick="generateWhatsappList()">💬 Genera lista convocati (WhatsApp)</button>
-  </div>
-  <div class="sub">Si apre la finestra di stampa: scegli “Salva come PDF” (su Android, nel menu di stampa; su iPhone/iPad: Condividi, poi “Salva su File”).</div>
+  <dialog id="playerSheet" aria-labelledby="playerSheetTitle">
+    <div class="sheet-head">
+      <span class="head-btn left"></span>
+      <h2 id="playerSheetTitle">Giocatore</h2>
+      <button class="head-btn right" type="button" data-ro-allow onclick="closeSheet('playerSheet')">Fine</button>
+    </div>
+    <div class="sheet-body" id="playerSheetBody"></div>
+  </dialog>
 
-  <div class="card collapsed" id="cardWA">
-    <h2 onclick="toggleCard('cardWA')"><span class="chev">▾</span> Lista convocati per WhatsApp</h2>
-    <div class="body" data-ro-allow>
-      <label>Frase finale del messaggio (viene ricordata)</label>
-      <input type="text" id="waClosing" oninput="saveWaClosing()" style="width:100%; margin-bottom:10px;">
-      <label>Testo generato (modificabile prima di copiare/inviare)</label>
-      <textarea id="waText" rows="14" style="width:100%; font-family:inherit; font-size:.88rem; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--field-bg); color:var(--ink);"></textarea>
-      <div class="actions-bar">
-        <button onclick="copyWaText(event)">📋 Copia testo</button>
-        <a id="waShareLink" href="#" target="_blank" rel="noopener" style="text-decoration:none;">
-          <button type="button">📲 Apri in WhatsApp</button>
-        </a>
+  <dialog id="addStaffSheet" aria-labelledby="addStaffTitle">
+    <div class="sheet-head">
+      <button class="head-btn left" type="button" data-ro-allow onclick="closeSheet('addStaffSheet')">Annulla</button>
+      <h2 id="addStaffTitle">Nuovo componente</h2>
+      <button class="head-btn right" type="button" onclick="submitAddStaff()">Aggiungi</button>
+    </div>
+    <div class="sheet-body">
+      <div class="group">
+        <div class="row stacked"><label for="ns_nome">Nome e cognome</label><input type="text" id="ns_nome" placeholder="ROSSI MARIO" autocapitalize="characters"></div>
+        <div class="row"><label for="ns_cat">Categoria</label><select id="ns_cat"></select></div>
       </div>
+      <div class="group-title">Tesseramento FIGC</div>
+      <div class="group">
+        <div class="row"><label for="ns_mat">Matricola</label><input type="text" id="ns_mat" placeholder="Facoltativa"></div>
+        <div class="row"><label for="ns_tess">N. tessera</label><input type="text" id="ns_tess" placeholder="Facoltativo"></div>
+        <div class="row"><label for="ns_dataRilascio">Data rilascio</label><input type="date" id="ns_dataRilascio"></div>
+        <div class="row"><label for="ns_enteRilascio">Ente rilascio</label><select id="ns_enteRilascio"></select></div>
+      </div>
+      <div class="group-title">&nbsp;</div>
+      <button class="btn primary block" type="button" onclick="submitAddStaff()">＋ Aggiungi alla lista</button>
     </div>
-  </div>
+  </dialog>
 
-  <div class="card" id="cardPreview">
-    <h2 onclick="toggleCard('cardPreview')"><span class="chev">▾</span> Anteprima distinta FIGC</h2>
-    <div class="body" style="overflow-x:auto; padding-top:4px;">
-      <div id="printSheet"></div>
+  <dialog id="staffSheet" aria-labelledby="staffSheetTitle">
+    <div class="sheet-head">
+      <span class="head-btn left"></span>
+      <h2 id="staffSheetTitle">Staff</h2>
+      <button class="head-btn right" type="button" data-ro-allow onclick="closeSheet('staffSheet')">Fine</button>
     </div>
-  </div>
-
-  <div class="card" id="cardBacheca">
-    <h2 onclick="toggleCard('cardBacheca')"><span class="chev">▾</span> Anteprima PDF bacheca</h2>
-    <div class="body" style="overflow-x:auto; padding-top:4px;">
-      <div id="bachecaSheet"></div>
-    </div>
-  </div>
-
-  <div class="app-footer">developed by @giamp72</div>
+    <div class="sheet-body" id="staffSheetBody"></div>
+  </dialog>
 
 </div>
 
@@ -1090,6 +1250,8 @@ function renderUserMenu(){
   if(userMenu.hidden) return;
   document.getElementById('appUserName').textContent =
     user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.display_name || user.email || 'Utente';
+  const initials = document.getElementById('avatarInitials');
+  if(initials) initials.textContent = (document.getElementById('appUserName').textContent.match(/[A-Za-zÀ-ÿ]/g) || ['U']).slice(0, 1).join('').toUpperCase();
 }
 async function authRequest(path, body){
   let res;
@@ -1872,18 +2034,19 @@ function renderStaffRoster(){
     .sort((a,b)=> a.nome.localeCompare(b.nome, 'it'));
 
   sortedStaff.forEach(s=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><input type="text" value="${escapeAttr(s.nome)}" onchange="editStaff(${s.id},'nome',this.value)"></td>
-      <td><select onchange="editStaff(${s.id},'categoria',this.value)">${categoriaOptions(s.categoria||'')}</select></td>
-      <td><input type="text" value="${escapeAttr(s.matricola||'')}" onchange="editStaff(${s.id},'matricola',this.value)"></td>
-      <td><input type="text" value="${escapeAttr(s.tessera||'')}" onchange="editStaff(${s.id},'tessera',this.value)"></td>
-      <td><input type="date" value="${escapeAttr(s.dataRilascio||'')}" onchange="editStaff(${s.id},'dataRilascio',this.value)"></td>
-      <td><select onchange="editStaff(${s.id},'enteRilascio',this.value)">${enteRilascioOptions(s.enteRilascio||'')}</select></td>
-      <td><button class="link danger small" onclick="removeStaff(${s.id})" title="Rimuovi dalla lista">✕</button></td>
+    const row = document.createElement('div');
+    row.className = 'list-row';
+    const sub = [s.categoria, s.tessera ? `Tessera ${s.tessera}` : '', s.matricola ? `Matr. ${s.matricola}` : ''].filter(Boolean).map(escapeHtml).join(' · ');
+    row.innerHTML = `
+      <div class="row-main" role="button" tabindex="0" onclick="openStaffSheet(${s.id})" onkeydown="if(event.key==='Enter')openStaffSheet(${s.id})">
+        <div class="row-title">${escapeHtml(s.nome)}</div>
+        <div class="row-sub">${sub || 'Nessun dato di tesseramento'}</div>
+      </div>
+      <span class="chev" onclick="openStaffSheet(${s.id})">›</span>
     `;
-    body.appendChild(tr);
+    body.appendChild(row);
   });
+  if(!sortedStaff.length) body.innerHTML = '<div class="empty-hint">Nessun componente dello staff.</div>';
 
   const roles = [
     ['s_dirigente','staffDirigente'],
@@ -2019,31 +2182,29 @@ function renderRoster(){
   const canSelectMore = match.rows.length < 20;
 
   sortedRoster.forEach(p=>{
-    const tr = document.createElement('tr');
+    const row = document.createElement('div');
+    row.className = 'list-row';
     const checked = isPlayerInRows(p.id);
     const disabled = !checked && !canSelectMore ? 'disabled' : '';
     const certificate = certificateStatus(p.scadenzaCertificato);
-    tr.innerHTML = `
-      <td style="text-align:center"><input type="checkbox" class="chk" ${checked?'checked':''} ${disabled} onchange="toggleSelect(${p.id}, this.checked)"></td>
-      <td><input type="text" ${certificate?`class="certificate-${certificate}" title="Certificato ${certificate === 'expired' ? 'scaduto' : 'in scadenza'}"`:''} value="${escapeAttr(p.nome)}" onchange="editPlayer(${p.id},'nome',this.value)"></td>
-      <td><select onchange="editPlayer(${p.id},'categoria',this.value)">${categoriaOptions(p.categoria||'')}</select></td>
-      <td><input type="number" value="${p.g??''}" style="width:52px" onchange="editPlayer(${p.id},'g',this.value)"></td>
-      <td><input type="number" value="${p.m??''}" style="width:52px" onchange="editPlayer(${p.id},'m',this.value)"></td>
-      <td><input type="number" value="${p.a??''}" style="width:70px" onchange="editPlayer(${p.id},'a',this.value)"></td>
-      <td><input type="text" value="${escapeAttr(p.mat||'')}" onchange="editPlayer(${p.id},'mat',this.value)"></td>
-      <td><input type="text" value="${escapeAttr(p.tessera||'')}" onchange="editPlayer(${p.id},'tessera',this.value)"></td>
-      <td><input type="date" value="${escapeAttr(p.dataRilascio||'')}" onchange="editPlayer(${p.id},'dataRilascio',this.value)"></td>
-      <td><select onchange="editPlayer(${p.id},'enteRilascio',this.value)">${enteRilascioOptions(p.enteRilascio||'')}</select></td>
-      <td><input type="date" min="1900-01-01" max="2100-12-31" aria-label="Scadenza certificato medico" value="${escapeAttr(p.scadenzaCertificato||'')}" onchange="editPlayer(${p.id},'scadenzaCertificato',this.value)"></td>
-      <td><button class="link danger small" onclick="removePlayer(${p.id})" title="Rimuovi dalla rosa">✕</button></td>
+    const sub = [p.a, p.categoria, p.mat ? `Matr. ${p.mat}` : ''].filter(Boolean).map(escapeHtml).join(' · ');
+    const badge = certificate ? `<span class="badge ${certificate}">${certificate === 'expired' ? 'Scaduto' : 'In scadenza'}</span>` : '';
+    row.innerHTML = `
+      <label class="check" title="Convoca"><input type="checkbox" class="chk" aria-label="Convoca ${escapeAttr(p.nome)}" ${checked?'checked':''} ${disabled} onchange="toggleSelect(${p.id}, this.checked)"><span></span></label>
+      <div class="row-main" role="button" tabindex="0" onclick="openPlayerSheet(${p.id})" onkeydown="if(event.key==='Enter')openPlayerSheet(${p.id})">
+        <div class="row-title${certificate?` certificate-${certificate}`:''}"${certificate?` title="Certificato ${certificate === 'expired' ? 'scaduto' : 'in scadenza'}"`:''}>${escapeHtml(p.nome)}</div>
+        <div class="row-sub">${sub || '&nbsp;'}</div>
+      </div>
+      ${badge}<span class="chev" onclick="openPlayerSheet(${p.id})">›</span>
     `;
-    body.appendChild(tr);
+    body.appendChild(row);
   });
+  if(!sortedRoster.length) body.innerHTML = `<div class="empty-hint">${roster.length ? 'Nessun giocatore corrisponde ai filtri.' : 'La rosa è vuota: premi Aggiungi.'}</div>`;
   const playerCount = match.rows.filter(r=>r.type==='player').length;
   const blankCount = match.rows.filter(r=>r.type==='blank').length;
   const totalRows = match.rows.length;
   const selColor = totalRows >= 20 ? 'color:#b3261e;' : '';
-  document.getElementById('countBadge').innerHTML = `<b>${roster.length}</b> giocatori in rosa · <b style="${selColor}">${playerCount} convocati${blankCount>0?` + ${blankCount} righe vuote`:''} (${totalRows} / 20)</b>`;
+  document.getElementById('countBadge').innerHTML = `${roster.length} giocatori · <b style="${selColor}">${playerCount} convocati${blankCount>0?` + ${blankCount} righe vuote`:''} (${totalRows}/20)</b>`;
   applyReadOnlyUi();
 }
 function onRosterFilterChange(){
@@ -2191,20 +2352,19 @@ function renderSelectedList(){
         <div class="name${certificate?` certificate-${certificate}`:''}"${certificate?` title="Certificato ${certificate === 'expired' ? 'scaduto' : 'in scadenza'}"`:''}>${escapeHtml(p.nome)}</div>
         ${tag}
         <div class="btns">
-          <button class="small" onclick="moveRow(${i},-1)" ${i===0?'disabled':''}>↑</button>
-          <button class="small" onclick="moveRow(${i},1)" ${i===match.rows.length-1?'disabled':''}>↓</button>
-          <button class="small danger" onclick="removeRow(${i})">✕</button>
+          <button type="button" onclick="moveRow(${i},-1)" ${i===0?'disabled':''} aria-label="Sposta su">↑</button>
+          <button type="button" onclick="moveRow(${i},1)" ${i===match.rows.length-1?'disabled':''} aria-label="Sposta giù">↓</button>
+          <button type="button" class="danger" onclick="removeRow(${i})" aria-label="Togli dalla distinta">✕</button>
         </div>
       `;
     } else {
-      el.style.opacity = '.65';
       el.innerHTML = `
         <div class="num">${i+1}</div>
-        <div class="name" style="font-style:italic; color:var(--muted);">(riga vuota)</div>
+        <div class="name blank">Riga vuota</div>
         <div class="btns">
-          <button class="small" onclick="moveRow(${i},-1)" ${i===0?'disabled':''}>↑</button>
-          <button class="small" onclick="moveRow(${i},1)" ${i===match.rows.length-1?'disabled':''}>↓</button>
-          <button class="small danger" onclick="removeRow(${i})">✕</button>
+          <button type="button" onclick="moveRow(${i},-1)" ${i===0?'disabled':''} aria-label="Sposta su">↑</button>
+          <button type="button" onclick="moveRow(${i},1)" ${i===match.rows.length-1?'disabled':''} aria-label="Sposta giù">↓</button>
+          <button type="button" class="danger" onclick="removeRow(${i})" aria-label="Togli dalla distinta">✕</button>
         </div>
       `;
     }
@@ -2589,6 +2749,144 @@ function copyWaText(ev){
 function toggleCard(id){
   document.getElementById(id).classList.toggle('collapsed');
 }
+
+/* ---------------- Interfaccia: schede, fogli e anteprime (solo presentazione) ---------------- */
+const TAB_TITLES = { gara:'Gara', rosa:'Rosa', convocati:'Convocati', documenti:'Documenti', societa:'Società' };
+function showTab(name){
+  if(!TAB_TITLES[name]) name = 'gara';
+  document.querySelectorAll('.tab-panel').forEach(panel=>{ panel.hidden = panel.dataset.tab !== name; });
+  document.querySelectorAll('[data-tab-btn]').forEach(btn=>btn.setAttribute('aria-selected', String(btn.dataset.tabBtn === name)));
+  document.getElementById('navTitle').textContent = TAB_TITLES[name];
+  try{ localStorage.setItem('campolongo_ui_tab', name); }catch(e){}
+  window.scrollTo(0, 0);
+  if(name === 'documenti') requestAnimationFrame(fitPreviews);
+}
+function showPreview(id){
+  document.querySelectorAll('.preview-frame').forEach(frame=>{ frame.hidden = frame.id !== id; });
+  document.querySelectorAll('[data-preview]').forEach(btn=>btn.setAttribute('aria-selected', String(btn.dataset.preview === id)));
+  requestAnimationFrame(fitPreviews);
+}
+// Mostra i fogli A4 in scala alla larghezza disponibile; in stampa il foglio viene spostato
+// fuori dal riquadro (printSheet) e torna alle dimensioni reali.
+function fitPreviews(){
+  document.querySelectorAll('.preview-frame').forEach(frame=>{
+    const inner = frame.querySelector('.preview-scale');
+    const sheet = inner && inner.firstElementChild;
+    const width = frame.clientWidth;
+    if(frame.hidden || !sheet || !width || !sheet.offsetWidth) return;
+    const scale = Math.min(1, width / sheet.offsetWidth);
+    inner.style.transform = `scale(${scale})`;
+    frame.style.height = Math.ceil(sheet.offsetHeight * scale) + 'px';
+  });
+}
+function openSheet(id){
+  const dialog = document.getElementById(id);
+  if(dialog && !dialog.open){
+    dialog.showModal();
+    applyReadOnlyUi();
+    if(document.activeElement && document.activeElement.classList.contains('head-btn')) document.activeElement.blur();
+    const first = dialog.querySelector('.sheet-body input:not([disabled])');
+    if(first && id.startsWith('add') && window.matchMedia('(pointer:fine)').matches) first.focus();
+  }
+}
+function closeSheet(id){
+  const dialog = document.getElementById(id);
+  if(dialog && dialog.open) dialog.close();
+}
+function submitAddPlayer(){
+  const nome = document.getElementById('np_nome');
+  if(!nome.value.trim()){ nome.focus(); return; }
+  const count = roster.length;
+  addPlayer();
+  if(roster.length > count) closeSheet('addPlayerSheet');
+}
+function submitAddStaff(){
+  const nome = document.getElementById('ns_nome');
+  if(!nome.value.trim()){ nome.focus(); return; }
+  const count = staffRoster.length;
+  addStaff();
+  if(staffRoster.length > count) closeSheet('addStaffSheet');
+}
+function sheetRow(label, control, stacked){
+  return `<div class="row${stacked ? ' stacked' : ''}"><label>${label}</label>${control}</div>`;
+}
+function openPlayerSheet(id){
+  const p = roster.find(x=>x.id===id);
+  if(!p) return;
+  const certificate = certificateStatus(p.scadenzaCertificato);
+  const certificateNote = certificate === 'expired' ? '<div class="group-footer" style="color:var(--certificate-expired)">Certificato scaduto.</div>'
+    : certificate === 'warning' ? '<div class="group-footer" style="color:var(--certificate-warning)">Certificato in scadenza entro 60 giorni.</div>' : '';
+  const ed = field => `onchange="editPlayer(${p.id},'${field}',this.value)"`;
+  document.getElementById('playerSheetTitle').textContent = p.nome;
+  document.getElementById('playerSheetBody').innerHTML = `
+    <div class="group">
+      ${sheetRow('Cognome e nome', `<input type="text" value="${escapeAttr(p.nome)}" autocapitalize="characters" ${ed('nome')}>`, true)}
+      ${sheetRow('Categoria', `<select ${ed('categoria')}>${categoriaOptions(p.categoria||'')}</select>`)}
+      ${sheetRow('Data di nascita', `<div class="control dob">
+        <input type="number" inputmode="numeric" placeholder="GG" aria-label="Giorno di nascita" value="${p.g??''}" ${ed('g')}>
+        <input type="number" inputmode="numeric" placeholder="MM" aria-label="Mese di nascita" value="${p.m??''}" ${ed('m')}>
+        <input type="number" inputmode="numeric" placeholder="AAAA" aria-label="Anno di nascita" class="year" value="${p.a??''}" ${ed('a')}></div>`)}
+    </div>
+    <div class="group-title">Tesseramento FIGC</div>
+    <div class="group">
+      ${sheetRow('Matricola', `<input type="text" inputmode="numeric" value="${escapeAttr(p.mat||'')}" ${ed('mat')}>`)}
+      ${sheetRow('N. tessera', `<input type="text" value="${escapeAttr(p.tessera||'')}" ${ed('tessera')}>`)}
+      ${sheetRow('Data rilascio', `<input type="date" value="${escapeAttr(p.dataRilascio||'')}" ${ed('dataRilascio')}>`)}
+      ${sheetRow('Ente rilascio', `<select ${ed('enteRilascio')}>${enteRilascioOptions(p.enteRilascio||'')}</select>`)}
+    </div>
+    <div class="group-title">Certificato medico</div>
+    <div class="group">
+      ${sheetRow('Scadenza', `<input type="date" min="1900-01-01" max="2100-12-31" aria-label="Scadenza certificato medico" value="${escapeAttr(p.scadenzaCertificato||'')}" ${ed('scadenzaCertificato')}>`)}
+    </div>
+    ${certificateNote}
+    <div class="group-title">&nbsp;</div>
+    <div class="group">
+      <button class="row-btn destructive" type="button" title="Rimuovi dalla rosa" onclick="removePlayer(${p.id}); if(!roster.some(x=>x.id===${p.id})) closeSheet('playerSheet');"><span class="lbl" style="color:inherit">Elimina giocatore</span></button>
+    </div>
+  `;
+  openSheet('playerSheet');
+}
+function openStaffSheet(id){
+  const s = staffRoster.find(x=>x.id===id);
+  if(!s) return;
+  const ed = field => `onchange="editStaff(${s.id},'${field}',this.value)"`;
+  document.getElementById('staffSheetTitle').textContent = s.nome;
+  document.getElementById('staffSheetBody').innerHTML = `
+    <div class="group">
+      ${sheetRow('Nome e cognome', `<input type="text" value="${escapeAttr(s.nome)}" autocapitalize="characters" ${ed('nome')}>`, true)}
+      ${sheetRow('Categoria', `<select ${ed('categoria')}>${categoriaOptions(s.categoria||'')}</select>`)}
+    </div>
+    <div class="group-title">Tesseramento FIGC</div>
+    <div class="group">
+      ${sheetRow('Matricola', `<input type="text" value="${escapeAttr(s.matricola||'')}" ${ed('matricola')}>`)}
+      ${sheetRow('N. tessera', `<input type="text" value="${escapeAttr(s.tessera||'')}" ${ed('tessera')}>`)}
+      ${sheetRow('Data rilascio', `<input type="date" value="${escapeAttr(s.dataRilascio||'')}" ${ed('dataRilascio')}>`)}
+      ${sheetRow('Ente rilascio', `<select ${ed('enteRilascio')}>${enteRilascioOptions(s.enteRilascio||'')}</select>`)}
+    </div>
+    <div class="group-title">&nbsp;</div>
+    <div class="group">
+      <button class="row-btn destructive" type="button" title="Rimuovi dalla lista" onclick="removeStaff(${s.id}); if(!staffRoster.some(x=>x.id===${s.id})) closeSheet('staffSheet');"><span class="lbl" style="color:inherit">Elimina dallo staff</span></button>
+    </div>
+  `;
+  openSheet('staffSheet');
+}
+function initUi(){
+  let tab = 'gara';
+  try{ tab = localStorage.getItem('campolongo_ui_tab') || 'gara'; }catch(e){}
+  showTab(tab);
+  // Alla chiusura dei fogli di modifica le liste si aggiornano (es. nome cambiato)
+  document.getElementById('playerSheet').addEventListener('close', ()=>{ renderRoster(); renderSelectedList(); });
+  document.getElementById('staffSheet').addEventListener('close', ()=>{ renderStaffRoster(); });
+  // Tocco sullo sfondo: chiude il foglio
+  document.querySelectorAll('#appRoot dialog').forEach(dialog=>{
+    dialog.addEventListener('click', event=>{ if(event.target === dialog) dialog.close(); });
+  });
+  if(window.ResizeObserver){
+    const observer = new ResizeObserver(()=>fitPreviews());
+    document.querySelectorAll('.preview-frame, #printSheet, #bachecaSheet').forEach(el=>observer.observe(el));
+  } else window.addEventListener('resize', fitPreviews);
+  fitPreviews();
+}
 function resetMatch(){
   if(!confirm('Svuotare la convocazione e i dati gara per iniziare una nuova distinta? La rosa giocatori resta invariata.')) return;
   const staffSelections = {
@@ -2631,6 +2929,7 @@ initFields();
 bindFieldListeners();
 renderAll();
 showAuthPanel();
+initUi();
 document.getElementById('loginForm').addEventListener('submit', login);
 if(CLOUD_ENABLED){
   if(authSession) (async ()=>{
