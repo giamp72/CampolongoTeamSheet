@@ -1,4 +1,4 @@
-const CACHE_NAME = 'campolongo-team-sheet-v2';
+const CACHE_NAME = 'campolongo-team-sheet-v3';
 const APP_SHELL = [
   './',
   './index.html',
@@ -7,7 +7,9 @@ const APP_SHELL = [
   './icon-512.png',
   './logo.png',
   './logolega.jpg',
-  './giocatore.png'
+  './giocatore.png',
+  './vendor/html2canvas.min.js',
+  './vendor/jspdf.umd.min.js'
 ];
 
 self.addEventListener('install', event=>{
@@ -49,7 +51,7 @@ self.addEventListener('fetch', event=>{
     return;
   }
 
-  if(request.destination === 'image' || request.url.endsWith('.webmanifest')){
+  if(request.destination === 'image' || request.url.endsWith('.webmanifest') || new URL(request.url).pathname.includes('/vendor/')){
     event.respondWith(
       caches.match(request).then(cached=>{
         if(cached) return cached;
