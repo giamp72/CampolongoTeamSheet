@@ -253,6 +253,16 @@ button.danger{color:var(--danger); background:var(--fill); border:none; border-r
 .preview-scale{transform-origin:top left; width:210mm;}
 .preview-frame #printSheet, .preview-frame #bachecaSheet{border:none; box-shadow:none; margin:0;}
 .preview-frame[hidden]{display:none;}
+/* Durante la stampa il foglio viene spostato in .print-wrapper (in fondo alla pagina). A schermo il
+   contenitore resta fuori dal layout: altrimenti su iPhone il foglio A4 allarga e rimpicciolisce la pagina
+   finché la stampa non si chiude. In stampa valgono le regole di @media print (invariate). */
+@media screen{
+  .print-wrapper{position:fixed; left:0; top:0; width:0; height:0; overflow:hidden; pointer-events:none;}
+  .preview-frame:has(.preview-scale:empty)::after{
+    content:"Stampa in corso…"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:15px;
+  }
+}
 
 /* WhatsApp */
 #cardWA.collapsed{display:none;}
@@ -342,6 +352,40 @@ body.read-only .title-action[data-ro-disabled]{display:none;}
 @media (min-width:900px){
   .content{padding-left:24px; padding-right:24px;}
 }
+
+/* ==================== PDF CREATO DALL'APP (iPhone/iPad) ====================
+   Stesse misure di @media print: il foglio viene disegnato fuori schermo e convertito in PDF. */
+.pdf-capture{position:fixed; left:-10000px; top:0; width:200mm; background:#fff; color:#000; pointer-events:none;}
+.pdf-capture #printSheet, .pdf-capture #bachecaSheet{
+  width:200mm !important; height:auto !important; min-height:280mm !important; max-height:none !important;
+  padding:4mm 5mm !important; margin:0 !important; border:none !important; box-shadow:none !important;
+  box-sizing:border-box !important; display:flex !important; flex-direction:column !important; overflow:visible !important;
+}
+.pdf-capture #bachecaSheet .bk-footer{ background:#111 !important; color:#fff !important; }
+.pdf-capture #bachecaSheet .bk-brandbar{ background:#2a7ec7 !important; color:#fff !important; }
+.pdf-capture #bachecaSheet .bk-footer .dot{ background:#2a7ec7 !important; }
+.pdf-capture #bachecaSheet .bk-players{ overflow:visible !important; }
+.pdf-capture #printSheet .ps-table{ flex:1 1 auto !important; }
+.pdf-capture #printSheet .ps-table tbody tr.ps-player-row,
+.pdf-capture #printSheet .ps-table tbody tr.ps-player-row td{ height:24px !important; }
+.pdf-capture #printSheet .ps-table tbody tr td{ padding:3px 4px !important; }
+.pdf-capture #printSheet .ps-footer-line .val{ min-height:14px !important; }
+.pdf-capture #printSheet .ps-sign-row{ margin-top:auto !important; padding-top:12mm !important; }
+.pdf-capture #printSheet .ps-final-note{ margin-bottom:3mm !important; }
+.pdf-capture #certificateSheet{ color:#000; background:#fff; padding:0; }
+.pdf-capture #certificateSheet h2{ font-size:1.5em; margin:.83em 0; }
+.pdf-capture #certificateSheet p{ color:#000; font-size:16px; margin:1em 0; }
+.pdf-capture #certificateSheet table{ background:#fff; border-radius:0; font-size:16px; }
+.pdf-capture #certificateSheet th{ text-transform:none; color:#000; font-size:16px; font-weight:700; padding:8px; border-top:none; border-bottom:1px solid #999; }
+.pdf-capture #certificateSheet td{ padding:8px; border-top:none; border-bottom:1px solid #999; }
+.pdf-capture #certificateSheet .certificate-warning{ color:#a64b00; }
+.pdf-capture #certificateSheet .certificate-expired{ color:#b3261e; }
+.pdf-state{display:flex; flex-direction:column; align-items:center; gap:10px; text-align:center; padding:18px 8px 22px; color:var(--ink);}
+.pdf-icon{width:56px; height:70px; border-radius:8px; background:#e5342a; color:#fff; font-weight:800; font-size:15px; display:flex; align-items:flex-end; justify-content:center; padding-bottom:10px;}
+.pdf-name{font-weight:600; word-break:break-word;}
+.pdf-size{color:var(--muted); font-size:14px;}
+.spinner{width:30px; height:30px; border-radius:50%; border:3px solid var(--fill); border-top-color:var(--tint); animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
 
 /* ==================== PRINT SHEET FIGC ==================== */
 :root{ --ps-blue:#000099; --ps-blue2:#000099; }
@@ -784,7 +828,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 
     <h3 id="help-match">Dati gara e PDF</h3>
     <p>Nella scheda <b>Gara</b> imposta tipo, competizione, girone, giornata, squadre, data, ora e luogo. L’orario di convocazione viene proposto 45 minuti prima della gara se non ne inserisci uno; puoi modificarlo. Compila ritrovo e note per la bacheca quando servono.</p>
-    <p>Nella scheda <b>Documenti</b> usa <b>PDF distinta FIGC</b> per il modulo gara e <b>PDF convocazione</b> per il foglio da esporre. Si apre la stampa del browser: scegli <b>Salva come PDF</b> (su Android nel menu di stampa; su iPhone/iPad: Condividi, poi “Salva su File”). Controlla l’anteprima prima di stampare.</p>
+    <p>Nella scheda <b>Documenti</b> usa <b>PDF distinta FIGC</b> per il modulo gara e <b>PDF convocazione</b> per il foglio da esporre. Su computer e Android si apre la stampa del browser: scegli <b>Salva come PDF</b> (su Android nel menu di stampa). Su iPhone e iPad l’app crea direttamente il PDF: premi <b>Condividi o salva</b> e scegli “Salva su File”, WhatsApp, Mail oppure “Stampa”. Controlla l’anteprima prima di stampare.</p>
 
     <h3 id="help-staff">Dirigenti e staff</h3>
     <p>Aggiungi i componenti nella scheda <b>Società</b>, sezione <b>Dirigenti e staff</b>, compilando nome e, se necessario, categoria e dati tessera. Poi selezionali nella scheda <b>Gara</b>, sezione <b>Staff convocato</b>.</p>
@@ -945,7 +989,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
         <button class="row-btn" type="button" onclick="printSheet('bachecaSheet')"><span class="ico indigo">📋</span><span class="lbl">PDF convocazione (bacheca)</span><span class="chev">›</span></button>
         <button class="row-btn" type="button" onclick="generateWhatsappList()"><span class="ico green">💬</span><span class="lbl">Lista convocati per WhatsApp</span><span class="chev">›</span></button>
       </div>
-      <div class="group-footer">Si apre la finestra di stampa: scegli “Salva come PDF” (su Android nel menu di stampa; su iPhone/iPad: Condividi, poi “Salva su File”).</div>
+      <div class="group-footer">Su computer e Android si apre la stampa: scegli “Salva come PDF”. Su iPhone e iPad l’app crea il PDF, che puoi salvare su File o condividere.</div>
 
       <div id="cardWA" class="collapsed">
         <div class="group-title">Messaggio WhatsApp</div>
@@ -1090,6 +1134,15 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
       <div class="group-title">&nbsp;</div>
       <button class="btn primary block" type="button" onclick="submitAddStaff()">＋ Aggiungi alla lista</button>
     </div>
+  </dialog>
+
+  <dialog id="pdfSheet" aria-labelledby="pdfSheetTitle" data-ro-allow>
+    <div class="sheet-head">
+      <span class="head-btn left"></span>
+      <h2 id="pdfSheetTitle">PDF</h2>
+      <button class="head-btn right" type="button" onclick="closeSheet('pdfSheet')">Fine</button>
+    </div>
+    <div class="sheet-body" id="pdfSheetBody"></div>
   </dialog>
 
   <dialog id="staffSheet" aria-labelledby="staffSheetTitle">
@@ -2637,6 +2690,10 @@ function renderBacheca(){
 function printSheet(id){
   const el = document.getElementById(id);
   if(!el) return;
+  if(shouldExportPdf()){
+    exportPdf(id);
+    return;
+  }
 
   const parent = el.parentNode;
   const nextSibling = el.nextSibling;
@@ -2648,16 +2705,7 @@ function printSheet(id){
   document.body.appendChild(wrapper);
 
   const previousTitle = document.title;
-  const names = {
-    printSheet: 'DistintaGara',
-    bachecaSheet: 'DistintaBacheca',
-    certificateSheet: 'Certificati scaduti e in scadenza'
-  };
-  const dateParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(match.data || '');
-  const dateStamp = dateParts ? `${dateParts[3]}${dateParts[2]}${dateParts[1].slice(-2)}` : '';
-  document.title = id === 'certificateSheet'
-    ? `${names[id]} - ${team.nome || 'Campolongo'}`
-    : `${names[id] || 'Documento'}${dateStamp ? `_${dateStamp}` : ''}`;
+  document.title = documentFileName(id);
 
   void wrapper.offsetHeight;
   let restored = false;
@@ -2680,6 +2728,165 @@ function printSheet(id){
     return;
   }
   fallbackTimer = setTimeout(restore, 60000);
+}
+
+/* ---------------- PDF creato dall'app su iPhone/iPad ----------------
+   Safari su iPhone non stampa in modo affidabile e l'app aperta dall'icona della schermata Home
+   non può aprire la stampa. Lì il foglio viene disegnato con le stesse regole della stampa
+   (.pdf-capture) e trasformato in un PDF A4 da condividere o salvare. Chrome su iPhone,
+   computer e Android continuano a usare la stampa del browser. */
+function shouldExportPdf(){
+  const ua = navigator.userAgent;
+  const appleMobile = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  return appleMobile && !/CriOS/.test(ua);
+}
+function documentFileName(id){
+  const names = {
+    printSheet: 'DistintaGara',
+    bachecaSheet: 'DistintaBacheca',
+    certificateSheet: 'Certificati scaduti e in scadenza'
+  };
+  const dateParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(match.data || '');
+  const dateStamp = dateParts ? `${dateParts[3]}${dateParts[2]}${dateParts[1].slice(-2)}` : '';
+  return id === 'certificateSheet'
+    ? `${names[id]} - ${team.nome || 'Campolongo'}`
+    : `${names[id] || 'Documento'}${dateStamp ? `_${dateStamp}` : ''}`;
+}
+let pdfLibsPromise = null;
+function loadScriptOnce(src){
+  return new Promise((resolve, reject)=>{
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = ()=>reject(new Error('Impossibile caricare ' + src));
+    document.head.appendChild(script);
+  });
+}
+function loadPdfLibs(){
+  if(!pdfLibsPromise){
+    pdfLibsPromise = Promise.all([
+      window.html2canvas ? null : loadScriptOnce('vendor/html2canvas.min.js'),
+      window.jspdf ? null : loadScriptOnce('vendor/jspdf.umd.min.js')
+    ]).catch(e=>{ pdfLibsPromise = null; throw e; });
+  }
+  return pdfLibsPromise;
+}
+function waitForImages(root){
+  const images = [...root.querySelectorAll('img')].filter(img=>!img.complete);
+  return Promise.all(images.map(img=>new Promise(resolve=>{ img.onload = img.onerror = resolve; })));
+}
+// A4 con margini di 5 mm come @page: distinta e bacheca stanno sempre in una pagina,
+// i certificati vanno su più pagine se la lista è lunga.
+function canvasToPdfBlob(canvas, singlePage){
+  const pdf = new window.jspdf.jsPDF({ unit:'mm', format:'a4', orientation:'portrait', compress:true });
+  const margin = 5, maxW = 200, maxH = 287;
+  const ratio = canvas.height / canvas.width;
+  if(singlePage || maxW * ratio <= maxH){
+    let w = maxW, h = maxW * ratio;
+    if(h > maxH){ h = maxH; w = maxH / ratio; }
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', margin + (maxW - w) / 2, margin, w, h);
+  } else {
+    const pageHeightPx = Math.floor(canvas.width * maxH / maxW);
+    for(let y = 0, page = 0; y < canvas.height; y += pageHeightPx, page++){
+      const slice = document.createElement('canvas');
+      slice.width = canvas.width;
+      slice.height = Math.min(pageHeightPx, canvas.height - y);
+      const ctx = slice.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, slice.width, slice.height);
+      ctx.drawImage(canvas, 0, -y);
+      if(page) pdf.addPage();
+      pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG', margin, margin, maxW, slice.height * maxW / canvas.width);
+    }
+  }
+  return pdf.output('blob');
+}
+let pdfExportBusy = false;
+let pdfReadyFile = null;
+async function exportPdf(id){
+  const el = document.getElementById(id);
+  if(!el || pdfExportBusy) return;
+  pdfExportBusy = true;
+  pdfReadyFile = null;
+  showPdfSheet('working');
+  const parent = el.parentNode;
+  const nextSibling = el.nextSibling;
+  const box = document.createElement('div');
+  box.className = 'pdf-capture';
+  const restore = ()=>{
+    if(el.parentNode !== box) return;
+    if(nextSibling) parent.insertBefore(el, nextSibling);
+    else parent.appendChild(el);
+  };
+  try{
+    await loadPdfLibs();
+    box.appendChild(el);
+    document.body.appendChild(box);
+    if(document.fonts && document.fonts.ready) await document.fonts.ready;
+    await waitForImages(el);
+    const canvas = await window.html2canvas(el, {
+      scale: 2.5, backgroundColor: '#ffffff', logging: false, useCORS: true,
+      scrollX: 0, scrollY: 0,
+      onclone: doc=>{ const clone = doc.querySelector('.pdf-capture'); if(clone) clone.style.left = '0'; }
+    });
+    restore();
+    box.remove();
+    const blob = canvasToPdfBlob(canvas, id !== 'certificateSheet');
+    pdfReadyFile = new File([blob], documentFileName(id) + '.pdf', { type: 'application/pdf' });
+    showPdfSheet('ready');
+  }catch(e){
+    console.error(e);
+    showPdfSheet('error');
+  }finally{
+    restore();
+    box.remove();
+    pdfExportBusy = false;
+  }
+}
+function showPdfSheet(state){
+  const body = document.getElementById('pdfSheetBody');
+  if(state === 'working'){
+    body.innerHTML = '<div class="pdf-state"><div class="spinner" aria-hidden="true"></div><div>Creo il PDF…</div></div>';
+  } else if(state === 'ready'){
+    const kb = Math.max(1, Math.round(pdfReadyFile.size / 1024));
+    body.innerHTML = `
+      <div class="pdf-state"><div class="pdf-icon" aria-hidden="true">PDF</div>
+        <div class="pdf-name">${escapeHtml(pdfReadyFile.name)}</div><div class="pdf-size">${kb} KB</div></div>
+      <button class="btn primary block" type="button" onclick="sharePdf()">Condividi o salva</button>
+      <button class="btn block" type="button" style="margin-top:10px" onclick="openPdfFile()">Apri il PDF</button>
+      <div class="group-footer" style="margin-top:12px">Da “Condividi o salva” scegli “Salva su File”, WhatsApp, Mail oppure “Stampa”.</div>`;
+  } else {
+    body.innerHTML = `<div class="pdf-state"><div>Non è stato possibile creare il PDF.</div></div>
+      <div class="group-footer">Riprova; se il problema continua apri l’app con Chrome o da computer.</div>`;
+  }
+  openSheet('pdfSheet');
+}
+async function sharePdf(){
+  const file = pdfReadyFile;
+  if(!file) return;
+  if(navigator.canShare && navigator.canShare({ files: [file] })){
+    try{
+      await navigator.share({ files: [file], title: file.name });
+      closeSheet('pdfSheet');
+    }catch(e){
+      if(e && e.name === 'AbortError') return;
+      openPdfFile();
+    }
+  } else openPdfFile();
+}
+function openPdfFile(){
+  const file = pdfReadyFile;
+  if(!file) return;
+  const url = URL.createObjectURL(file);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = file.name;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 60000);
 }
 
 /* ---------------- WhatsApp ---------------- */
