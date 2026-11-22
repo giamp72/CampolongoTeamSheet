@@ -13,6 +13,20 @@ The first signed-in user can initialize an empty shared roster record from that 
 
 If Supabase is not configured, the app remains in local-only mode.
 
+## Sessioni multiple dello stesso account
+
+Se lo stesso account è aperto su più dispositivi, solo la prima sessione aperta può modificare i dati; le altre sono in **sola lettura** (consultazione, filtri, stampe e lista WhatsApp restano disponibili) e si aggiornano automaticamente ogni 30 secondi. Il ruolo di modifica passa a un'altra sessione quando la prima esce, resta inattiva per 90 secondi oppure quando da un'altra sessione si preme **Modifica da questo dispositivo**, che disconnette le altre. Account diversi non si bloccano a vicenda.
+
+Dopo l'aggiornamento dell'app eseguire di nuovo [`supabase.sql`](supabase.sql) nel SQL Editor: aggiunge la colonna `is_editor` a `user_sessions` e aggiorna le funzioni delle sessioni. Lo script è ripetibile e non modifica rosa e convocazioni. Finché il database non è aggiornato, tutte le sessioni restano modificabili come prima.
+
+Senza connessione l'app resta utilizzabile con i dati locali e non chiede un nuovo accesso: la sincronizzazione riprende quando torna la rete.
+
+## Test
+
+```
+npm test
+```
+
 ## Install as an app
 
 On Android, open the published site in Chrome and choose **Install app** (or **Add to Home screen**) from the browser menu. The app shell and images are cached for offline opening; signing in and synchronizing with Supabase still require an internet connection. Printing uses the browser's print dialog: choose **Save as PDF** on Android.

@@ -125,6 +125,11 @@ create table if not exists public.user_sessions (
   primary key (user_id, session_id)
 );
 
+-- Una sola sessione per account può modificare i dati (la prima aperta): le altre sono in sola lettura.
+-- Il ruolo di "editor" passa a un'altra sessione solo se quella attuale chiude, resta inattiva per 90 secondi
+-- oppure viene disconnessa con "Disconnetti le altre sessioni".
+alter table public.user_sessions add column if not exists is_editor boolean not null default false;
+
 alter table public.user_sessions enable row level security;
 revoke all on public.user_sessions from anon, authenticated;
 
@@ -137,10 +142,14 @@ as $$
 declare
   uid uuid := auth.uid();
   is_revoked boolean;
+  other_editor boolean;
 begin
   if uid is null then
     raise exception 'Authentication required';
   end if;
+
+  -- Serializza i heartbeat dello stesso utente: due sessioni non possono diventare editor insieme
+  perform pg_advisory_xact_lock(hashtext('user_sessions:' || uid::text));
 
   delete from public.user_sessions
   where user_id = uid and last_seen < now() - interval '1 day';
@@ -152,13 +161,25 @@ begin
     return jsonb_build_object('revoked', true);
   end if;
 
-  insert into public.user_sessions (user_id, session_id, device, last_seen)
-  values (uid, p_session_id, left(p_device, 80), now())
+  select exists(
+    select 1 from public.user_sessions
+    where user_id = uid and session_id <> p_session_id and is_editor
+      and not revoked and last_seen > now() - interval '90 seconds'
+  ) into other_editor;
+
+  if not other_editor then
+    update public.user_sessions set is_editor = false
+    where user_id = uid and session_id <> p_session_id and is_editor;
+  end if;
+
+  insert into public.user_sessions (user_id, session_id, device, last_seen, is_editor)
+  values (uid, p_session_id, left(p_device, 80), now(), not other_editor)
   on conflict (user_id, session_id)
-  do update set last_seen = now(), device = excluded.device;
+  do update set last_seen = now(), device = excluded.device, is_editor = excluded.is_editor;
 
   return jsonb_build_object(
     'revoked', false,
+    'editor', not other_editor,
     'others', coalesce((
       select jsonb_agg(jsonb_build_object('device', device, 'last_seen', last_seen))
       from public.user_sessions
@@ -179,8 +200,11 @@ begin
   if auth.uid() is null then
     raise exception 'Authentication required';
   end if;
-  update public.user_sessions set revoked = true
+  perform pg_advisory_xact_lock(hashtext('user_sessions:' || auth.uid()::text));
+  update public.user_sessions set revoked = true, is_editor = false
   where user_id = auth.uid() and session_id <> p_session_id;
+  update public.user_sessions set is_editor = true, last_seen = now()
+  where user_id = auth.uid() and session_id = p_session_id and not revoked;
 end;
 $$;
 

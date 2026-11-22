@@ -1,0 +1,8 @@
+{
+  "name": "campolongo-team-sheet",
+  "private": true,
+  "description": "Distinta gara, convocazioni e gestione della rosa A.S.D. Campolongo",
+  "scripts": {
+    "test": "node --test"
+  }
+}

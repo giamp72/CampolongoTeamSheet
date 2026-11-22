@@ -149,6 +149,7 @@ table.roster input[type=text],table.roster input[type=number],table.roster input
 .count-badge b{color:var(--ink);}
 .cloud-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;}
 .cloud-actions button{font-size:.82rem;}
+body.read-only #appRoot [data-ro-disabled]{opacity:.6; cursor:not-allowed;}
 .table-wrap{overflow-x:auto; -webkit-overflow-scrolling: touch;}
 .scroll-hint{display:none; text-align:center; font-size:.72rem; color:var(--muted); font-style:italic; margin-top:4px;}
 
@@ -653,7 +654,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 </dialog>
 <div class="wrap" id="appRoot">
 
-  <div class="app-header">
+  <div class="app-header" data-ro-allow>
     <img class="logo" src="logo.png" alt="Logo A.S.D. Campolongo">
     <div class="titles">
       <h1>Distinta Gara — A.S.D. Campolongo</h1>
@@ -726,12 +727,12 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     <h2 onclick="toggleCard('cardRosa')"><span class="chev">▾</span> Rosa giocatori e convocati</h2>
     <div class="body">
       <div class="count-badge" id="countBadge"></div>
-      <div class="count-badge" id="cloudStatus" style="margin-bottom:6px;"></div>
-      <div class="actions-bar">
+      <div class="count-badge" id="cloudStatus" style="margin-bottom:6px;" data-ro-allow></div>
+      <div class="actions-bar" data-ro-allow>
         <button type="button" onclick="openCertificates()">Certificati in scadenza</button>
       </div>
 
-      <div class="row-inline" style="margin-bottom:10px;">
+      <div class="row-inline" style="margin-bottom:10px;" data-ro-allow>
         <div style="max-width:200px;">
           <label>Filtra per anno di nascita</label>
           <select id="rosterYearFilter" onchange="onRosterFilterChange()">
@@ -809,7 +810,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     </div>
   </div>
 
-  <dialog id="certificateDialog" aria-labelledby="certificateTitle">
+  <dialog id="certificateDialog" aria-labelledby="certificateTitle" data-ro-allow>
     <div id="certificateSheet">
       <h2 id="certificateTitle">Certificati scaduti e in scadenza</h2>
       <p>Certificati scaduti o in scadenza entro i prossimi 60 giorni inclusi.</p>
@@ -862,7 +863,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     <div class="body">
       <label>Elenco dirigenti / staff societario</label>
 
-      <div class="row-inline" style="margin:8px 0 10px 0;">
+      <div class="row-inline" style="margin:8px 0 10px 0;" data-ro-allow>
         <div style="max-width:220px;">
           <label>Filtra per categoria</label>
           <select id="staffCatFilter" onchange="renderStaffRoster()">
@@ -901,7 +902,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
     </div>
   </div>
 
-  <div class="actions-bar">
+  <div class="actions-bar" data-ro-allow>
     <button class="primary" onclick="printSheet('printSheet')">📄 Genera PDF distinta FIGC</button>
     <button class="primary" onclick="printSheet('bachecaSheet')">📄 Genera PDF convocazione</button>
     <button onclick="generateWhatsappList()">💬 Genera lista convocati (WhatsApp)</button>
@@ -910,7 +911,7 @@ table.ps-table tr.ps-assist td.assist-label{ font-weight: 700; }
 
   <div class="card collapsed" id="cardWA">
     <h2 onclick="toggleCard('cardWA')"><span class="chev">▾</span> Lista convocati per WhatsApp</h2>
-    <div class="body">
+    <div class="body" data-ro-allow>
       <label>Frase finale del messaggio (viene ricordata)</label>
       <input type="text" id="waClosing" oninput="saveWaClosing()" style="width:100%; margin-bottom:10px;">
       <label>Testo generato (modificabile prima di copiare/inviare)</label>
@@ -969,6 +970,8 @@ let matchCloudDirty = false;
 let matchCloudRevision = 0;
 let matchCloudPushTimer = null;
 let matchCloudWriteInFlight = false;
+// true quando lo stesso account è già aperto in modifica su un'altra sessione
+let sessionReadOnly = false;
 
 function isDarkTheme(){
   const theme = document.documentElement.dataset.theme;
@@ -1042,6 +1045,7 @@ async function downloadData(){
 }
 function uploadDataClick(){
   closeSettingsMenu();
+  if(isReadOnly()){ alert(READ_ONLY_MESSAGE); return; }
   document.getElementById('uploadDataInput').click();
 }
 function uploadDataFile(input){
@@ -1088,13 +1092,25 @@ function renderUserMenu(){
     user.user_metadata?.full_name || user.user_metadata?.name || user.user_metadata?.display_name || user.email || 'Utente';
 }
 async function authRequest(path, body){
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/${path}`, {
-    method: 'POST',
-    headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  const data = await res.json();
-  if(!res.ok) throw new Error(data.msg || data.message || 'Accesso non riuscito.');
+  let res;
+  try{
+    res = await fetch(`${SUPABASE_URL}/auth/v1/${path}`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  }catch(e){
+    const err = new Error('Connessione non disponibile. Riprova quando sei online.');
+    err.network = true;
+    throw err;
+  }
+  let data = {};
+  try{ data = await res.json(); }catch(e){}
+  if(!res.ok){
+    const err = new Error(data.msg || data.error_description || data.message || 'Accesso non riuscito.');
+    err.status = res.status;
+    throw err;
+  }
   return data;
 }
 let refreshPromise = null;
@@ -1109,8 +1125,13 @@ async function accessToken(){
         saveJSON('campolongo_supabase_session', authSession);
       })
       .catch(e => {
-        handleAuthFailure();
-        throw new Error('Sessione scaduta. Accedi di nuovo.');
+        // Esce solo se Supabase rifiuta il refresh token: senza rete la sessione resta valida
+        // e l'app continua a funzionare con i dati locali.
+        if([400, 401, 403].includes(e.status)){
+          handleAuthFailure();
+          throw new Error('Sessione scaduta. Accedi di nuovo.');
+        }
+        throw new Error('Connessione non disponibile: sincronizzazione rimandata.');
       })
       .finally(() => { refreshPromise = null; });
   }
@@ -1119,7 +1140,9 @@ async function accessToken(){
 }
 function handleAuthFailure(){
   authSession = null;
+  sessionReadOnly = false;
   saveJSON('campolongo_supabase_session', null);
+  applyReadOnlyUi();
   showAuthPanel();
 }
 async function login(event){
@@ -1146,6 +1169,7 @@ async function login(event){
     renderCloudStatus();
     populateMatchFields();
     cloudStatus = 'connecting';
+    await sessionHeartbeat(); // stabilisce se questa sessione può modificare prima di caricare i dati
     await cloudRefresh(true);
     await matchCloudRefresh(true);
     cloudInitialized = true;
@@ -1183,10 +1207,12 @@ async function cloudFetch(){
   return records[0] || null;
 }
 function cloudPayload(){
-  return { roster, staffRoster, team };
+  // nextId/nextStaffId viaggiano con i dati condivisi: gli ID cancellati non vengono mai riassegnati,
+  // così le convocazioni degli altri utenti non puntano a un giocatore diverso.
+  return { roster, staffRoster, team, nextId, nextStaffId };
 }
 function scheduleCloudPush(){
-  if(!CLOUD_ENABLED || !authSession) return;
+  if(!CLOUD_ENABLED || !authSession || sessionReadOnly) return;
   cloudDirty = true;
   cloudRevision++;
   cloudStatus = 'connecting';
@@ -1195,7 +1221,7 @@ function scheduleCloudPush(){
   cloudPushTimer = setTimeout(flushCloudPush, 500);
 }
 async function flushCloudPush(){
-  if(!CLOUD_ENABLED || !authSession || !cloudDirty || cloudVersion === null) return;
+  if(!CLOUD_ENABLED || !authSession || !cloudDirty || cloudVersion === null || sessionReadOnly) return;
   if(cloudWriteInFlight) return;
   cloudWriteInFlight = true;
   const revision = cloudRevision;
@@ -1237,8 +1263,7 @@ function applyCloudPayload(payload){
   if(Array.isArray(payload.roster)) roster = payload.roster.map(p => ({ categoria: "", tessera: "", dataRilascio: "", enteRilascio: "", ...p }));
   if(Array.isArray(payload.staffRoster)) staffRoster = payload.staffRoster.map(s => ({ categoria: "", matricola: "", dataRilascio: "", enteRilascio: "", ...s }));
   if(payload.team && typeof payload.team === 'object') team = { ...team, ...payload.team };
-  nextId = Math.max(0, ...roster.map(p=>p.id), 0) + 1;
-  nextStaffId = Math.max(0, ...staffRoster.map(s=>s.id), 0) + 1;
+  updateIdCounters(payload);
   saveJSON('campolongo_roster', roster);
   saveJSON('campolongo_staff_roster', staffRoster);
   saveJSON('campolongo_team', team);
@@ -1257,7 +1282,7 @@ async function matchCloudFetch(){
   return records[0] || null;
 }
 function scheduleMatchCloudPush(){
-  if(!CLOUD_ENABLED || !authSession) return;
+  if(!CLOUD_ENABLED || !authSession || sessionReadOnly) return;
   matchCloudDirty = true;
   matchCloudRevision++;
   matchCloudStatus = 'connecting';
@@ -1266,7 +1291,7 @@ function scheduleMatchCloudPush(){
   matchCloudPushTimer = setTimeout(flushMatchCloudPush, 500);
 }
 async function flushMatchCloudPush(){
-  if(!CLOUD_ENABLED || !authSession || !matchCloudDirty || matchCloudVersion === null || matchCloudWriteInFlight) return;
+  if(!CLOUD_ENABLED || !authSession || !matchCloudDirty || matchCloudVersion === null || matchCloudWriteInFlight || sessionReadOnly) return;
   matchCloudWriteInFlight = true;
   const revision = matchCloudRevision;
   try{
@@ -1393,6 +1418,7 @@ async function matchCloudRefresh(showLoading, discardLocal){
 }
 async function matchCloudForceSave(){
   if(!CLOUD_ENABLED || !authSession) return;
+  if(sessionReadOnly){ alert(READ_ONLY_MESSAGE); return; }
   if(!confirm('Salvare la convocazione di questa sessione sovrascrivendo quella salvata (anche da altri browser)?')) return;
   matchCloudStatus = 'connecting';
   renderCloudStatus();
@@ -1451,18 +1477,63 @@ async function sessionHeartbeat(){
       return;
     }
     otherSessions = (r && r.others) || [];
+    // Un database non ancora aggiornato non restituisce "editor": in quel caso si resta in modifica
+    const wasReadOnly = sessionReadOnly;
+    setReadOnly(!!r && r.editor === false);
+    // Le sessioni in sola lettura ricaricano periodicamente i dati salvati dalla sessione che modifica;
+    // una sessione appena diventata editor ricarica una volta prima di modificare.
+    if((sessionReadOnly || wasReadOnly) && cloudInitialized && !cloudDirty && !matchCloudDirty) await refreshCloudData();
   }catch(e){
+    // Senza rete si mantiene lo stato precedente
     if(e.message.includes('Sessione scaduta')) return;
   }
   renderCloudStatus();
 }
 function startSessionHeartbeat(){
   clearInterval(sessionHeartbeatTimer);
-  sessionHeartbeat();
   sessionHeartbeatTimer = setInterval(sessionHeartbeat, 30000);
 }
-async function kickOtherSessions(){
-  if(!confirm('Disconnettere tutte le altre sessioni aperte con il tuo account?')) return;
+
+/* ---- Sola lettura per le sessioni secondarie dello stesso account ---- */
+const READ_ONLY_MESSAGE = 'Questa sessione è in sola lettura: il tuo account è già aperto in modifica su un altro dispositivo.\n\nPer modificare da qui usa "Modifica da questo dispositivo" (l’altra sessione verrà disconnessa).';
+function isReadOnly(){
+  return CLOUD_ENABLED && !!authSession && sessionReadOnly;
+}
+function setReadOnly(readOnly){
+  if(readOnly === sessionReadOnly) return;
+  sessionReadOnly = readOnly;
+  if(readOnly){
+    clearTimeout(cloudPushTimer);
+    clearTimeout(matchCloudPushTimer);
+  } else {
+    // Diventata la sessione che modifica: riprende le eventuali modifiche locali in sospeso
+    if(cloudDirty) cloudPushTimer = setTimeout(flushCloudPush, 0);
+    if(matchCloudDirty) matchCloudPushTimer = setTimeout(flushMatchCloudPush, 0);
+  }
+  applyReadOnlyUi();
+  renderCloudStatus();
+}
+// Disabilita i comandi che modificano i dati; restano attivi filtri, stampe, WhatsApp e menu.
+// Gli elementi (o i loro contenitori) con data-ro-allow non vengono toccati.
+function applyReadOnlyUi(){
+  const readOnly = isReadOnly();
+  document.body.classList.toggle('read-only', readOnly);
+  document.querySelectorAll('#appRoot input, #appRoot select, #appRoot textarea, #appRoot button').forEach(el=>{
+    if(el.closest('[data-ro-allow]')) return;
+    if(readOnly && !el.disabled){
+      el.disabled = true;
+      el.dataset.roDisabled = '1';
+    } else if(!readOnly && el.dataset.roDisabled){
+      el.disabled = false;
+      delete el.dataset.roDisabled;
+    }
+  });
+}
+async function takeEditControl(){
+  await kickOtherSessions('Modificare da questo dispositivo?\n\nLe altre sessioni aperte con il tuo account verranno disconnesse.');
+}
+async function kickOtherSessions(message){
+  if(!confirm(typeof message === 'string' ? message : 'Disconnettere tutte le altre sessioni aperte con il tuo account?')) return;
   try{
     await sessionRpc('kick_other_sessions', { p_session_id: currentSessionId() });
     const token = await accessToken();
@@ -1541,6 +1612,7 @@ function renderCloudStatus(){
   renderCloudStatusMain();
   const el = document.getElementById('cloudStatus');
   if(!el || !CLOUD_ENABLED || !authSession || !otherSessions.length) return;
+  if(sessionReadOnly) return;
   const names = otherSessions.map(x => escapeHtml(x.device || 'Altro dispositivo')).join(', ');
   const forceSaveButton = matchCloudStatus === 'conflict' ? '' :
     '<button class="primary" type="button" onclick="matchCloudForceSave()">Forza scrittura convocazione</button>';
@@ -1551,6 +1623,13 @@ function renderCloudStatusMain(){
   if(!el) return;
   if(!CLOUD_ENABLED){
     el.innerHTML = '📴 Configura Supabase per condividere i dati; per ora sono salvati solo in questo browser.';
+    return;
+  }
+  if(isReadOnly()){
+    const pending = cloudDirty || matchCloudDirty
+      ? '<br>⚠️ In questo dispositivo ci sono modifiche non ancora salvate: verranno salvate solo se riprendi la modifica da qui.' : '';
+    el.innerHTML = '👁️ <b>Sola lettura</b>: il tuo account è già aperto in modifica su un altro dispositivo. Puoi consultare, stampare e inviare la lista WhatsApp; i dati si aggiornano da soli.' + pending +
+      '<div class="cloud-actions"><button class="primary" type="button" onclick="takeEditControl()">Modifica da questo dispositivo</button><button class="link" type="button" onclick="logout()" style="font-size:.78rem;">Esci</button></div>';
     return;
   }
   if(cloudStatus==='conflict') el.innerHTML = '⚠️ Modifica simultanea della rosa rilevata: modifiche locali conservate. <button class="link" onclick="cloudRefresh(true,true)" style="font-size:.78rem;">Ricarica rosa condivisa</button>';
@@ -1637,8 +1716,21 @@ function isPlayerInRows(id){
   return match.rows.some(r => r.type==='player' && r.id === id);
 }
 
-let nextId = Math.max(0, ...roster.map(p=>p.id)) + 1;
-let nextStaffId = Math.max(0, ...staffRoster.map(p=>p.id)) + 1;
+let nextId = 1;
+let nextStaffId = 1;
+function maxNumericId(list){
+  return list.reduce((max, item)=>{
+    const id = Number(item && item.id);
+    return Number.isFinite(id) && id > max ? id : max;
+  }, 0);
+}
+// I contatori crescono soltanto: valore salvato, valore ricevuto e ID più alto presente
+function updateIdCounters(source){
+  nextId = Math.max(nextId, Number(source?.nextId) || 0, maxNumericId(roster) + 1);
+  nextStaffId = Math.max(nextStaffId, Number(source?.nextStaffId) || 0, maxNumericId(staffRoster) + 1);
+  saveJSON('campolongo_id_counters', { nextId, nextStaffId });
+}
+updateIdCounters(loadJSON('campolongo_id_counters', null));
 
 /* ---------------- Init ---------------- */
 function initFields(){
@@ -1651,21 +1743,12 @@ function initFields(){
   document.getElementById('t_matricola').value = team.matricola;
   document.getElementById('t_sede').value = team.sede;
 
-  document.getElementById('g_tipo').value = match.tipo || "Campionato";
-  document.getElementById('g_denom').value = match.denom || "";
-  document.getElementById('g_girone').value = match.girone || "";
-  document.getElementById('g_giornata').value = match.giornata || "";
-  document.getElementById('g_assegnaNumeri').value = match.assegnaNumeri === "NO" ? "NO" : "SI";
-  document.getElementById('g_ospitante').value = match.ospitante || team.nome;
-  document.getElementById('g_ospite').value = match.ospite || "";
-  document.getElementById('g_data').value = match.data || "";
-  document.getElementById('g_ora').value = match.ora || "";
-  document.getElementById('g_orarioConvocazione').value = match.orarioConvocazione || "";
-  document.getElementById('g_luogo').value = match.luogo || "";
-  if(ensureBachecaNote()) persistMatch();
-  document.getElementById('g_ritrovo').value = match.ritrovo || "";
-  document.getElementById('g_noteBacheca').value = match.noteBacheca;
+  populateMatchFields();
+}
 
+// Collega gli eventi ai campi: va eseguita una sola volta all'avvio.
+// Chiamarla di nuovo (es. da "Nuova gara") duplicherebbe i listener.
+function bindFieldListeners(){
   document.getElementById('s_dirigente').addEventListener('change', ()=>{ match.staffDirigente = document.getElementById('s_dirigente').value||null; persistMatch(); renderPrint(); renderBacheca(); });
   document.getElementById('s_dirigente2').addEventListener('change', ()=>{ match.staffDirigente2 = document.getElementById('s_dirigente2').value||null; persistMatch(); renderPrint(); renderBacheca(); });
   document.getElementById('s_medico').addEventListener('change', ()=>{ match.staffMedico = document.getElementById('s_medico').value||null; persistMatch(); renderPrint(); renderBacheca(); });
@@ -1817,6 +1900,7 @@ function renderStaffRoster(){
       `<option value="${s.id}" ${currentVal==s.id?'selected':''}>${escapeHtml(s.nome)}${s.categoria?` (${escapeHtml(s.categoria)})`:''}</option>`
     ).join('');
   });
+  applyReadOnlyUi();
 }
 function addStaff(){
   if(staffRoster.length >= 100){
@@ -1835,6 +1919,7 @@ function addStaff(){
     enteRilascio: document.getElementById('ns_enteRilascio').value || ""
   });
   saveJSON('campolongo_staff_roster', staffRoster);
+  updateIdCounters();
   ['ns_nome','ns_mat','ns_tess','ns_dataRilascio'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('ns_cat').value='';
   document.getElementById('ns_enteRilascio').value='';
@@ -1959,6 +2044,7 @@ function renderRoster(){
   const totalRows = match.rows.length;
   const selColor = totalRows >= 20 ? 'color:#b3261e;' : '';
   document.getElementById('countBadge').innerHTML = `<b>${roster.length}</b> giocatori in rosa · <b style="${selColor}">${playerCount} convocati${blankCount>0?` + ${blankCount} righe vuote`:''} (${totalRows} / 20)</b>`;
+  applyReadOnlyUi();
 }
 function onRosterFilterChange(){
   match.rosterFilters = {
@@ -1993,6 +2079,7 @@ function addPlayer(){
   };
   roster.push(p);
   saveJSON('campolongo_roster', roster);
+  updateIdCounters();
   ['np_nome','np_g','np_m','np_a','np_mat','np_tessera','np_dataRilascio','np_scadenzaCertificato'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('np_cat').value = '';
   document.getElementById('np_enteRilascio').value = '';
@@ -2096,10 +2183,7 @@ function renderSelectedList(){
 
     if(row.type === 'player'){
       const p = roster.find(x=>x.id===row.id);
-      if(!p){
-        match.rows.splice(i,1);
-        return;
-      }
+      if(!p) return; // giocatore non più in rosa: rimosso da pruneOrphanRows()
       const tag = (match.capitanoId==row.id) ? '<span class="tag">C</span>' : (match.vcapId==row.id ? '<span class="tag">VC</span>' : '');
       const certificate = certificateStatus(p.scadenzaCertificato);
       el.innerHTML = `
@@ -2138,6 +2222,7 @@ function renderSelectedList(){
     const p = roster.find(x=>x.id===id);
     return p ? `<option value="${id}" ${match.vcapId==id?'selected':''}>${escapeHtml(p.nome)}</option>` : '';
   }).join('');
+  applyReadOnlyUi();
 }
 function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
@@ -2512,26 +2597,46 @@ function resetMatch(){
   };
   match = { ...defaultMatch(), ...staffSelections, rosterFilters: { ...match.rosterFilters } };
   persistMatch();
-  initFields();
-  renderThemeToggle();
+  populateMatchFields();
   renderAll();
 }
 
+// Toglie dalla convocazione i giocatori eliminati dalla rosa (anche da altri utenti).
+// Non agisce finché la rosa condivisa non è stata caricata, per non perdere convocati
+// a causa di una copia locale non aggiornata.
+function pruneOrphanRows(){
+  if(CLOUD_ENABLED && authSession && cloudVersion === null) return;
+  const exists = id => roster.some(p=>p.id==id);
+  const rows = match.rows.filter(r => r.type !== 'player' || exists(r.id));
+  const removed = rows.length !== match.rows.length;
+  match.rows = rows;
+  let changed = removed;
+  if(match.capitanoId && !exists(match.capitanoId)){ match.capitanoId = null; changed = true; }
+  if(match.vcapId && !exists(match.vcapId)){ match.vcapId = null; changed = true; }
+  if(changed) persistMatch();
+}
+
 function renderAll(){
+  pruneOrphanRows();
   renderRoster();
   renderSelectedList();
   renderStaffRoster();
   renderPrint();
   renderBacheca();
   renderCloudStatus();
+  applyReadOnlyUi();
 }
 
 initFields();
+bindFieldListeners();
 renderAll();
 showAuthPanel();
 document.getElementById('loginForm').addEventListener('submit', login);
 if(CLOUD_ENABLED){
-  if(authSession) refreshCloudData().finally(()=>{
+  if(authSession) (async ()=>{
+    await sessionHeartbeat(); // stabilisce se questa sessione può modificare prima di caricare i dati
+    await refreshCloudData();
+  })().finally(()=>{
     cloudInitialized = true;
     showAuthPanel();
     renderAll();
