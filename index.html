@@ -2731,14 +2731,14 @@ function printSheet(id){
 }
 
 /* ---------------- PDF creato dall'app su iPhone/iPad ----------------
-   Safari su iPhone non stampa in modo affidabile e l'app aperta dall'icona della schermata Home
-   non può aprire la stampa. Lì il foglio viene disegnato con le stesse regole della stampa
-   (.pdf-capture) e trasformato in un PDF A4 da condividere o salvare. Chrome su iPhone,
-   computer e Android continuano a usare la stampa del browser. */
+   Su iPhone/iPad la stampa del browser non è affidabile: l'app aperta dall'icona della schermata
+   Home non può aprirla, Safari non stampa la bacheca e tutti i browser iOS (Chrome compreso, che usa
+   lo stesso motore) ignorano @page A4 e possono aggiungere una pagina bianca. Lì il foglio viene
+   disegnato con le stesse regole della stampa (.pdf-capture) e trasformato in un PDF A4 di una pagina
+   da condividere o salvare. Computer e Android continuano a usare la stampa del browser. */
 function shouldExportPdf(){
   const ua = navigator.userAgent;
-  const appleMobile = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  return appleMobile && !/CriOS/.test(ua);
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 function documentFileName(id){
   const names = {
