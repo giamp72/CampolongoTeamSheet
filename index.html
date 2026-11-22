@@ -253,6 +253,16 @@ button.danger{color:var(--danger); background:var(--fill); border:none; border-r
 .preview-scale{transform-origin:top left; width:210mm;}
 .preview-frame #printSheet, .preview-frame #bachecaSheet{border:none; box-shadow:none; margin:0;}
 .preview-frame[hidden]{display:none;}
+/* Durante la stampa il foglio viene spostato in .print-wrapper (in fondo alla pagina). A schermo il
+   contenitore resta fuori dal layout: altrimenti su iPhone il foglio A4 allarga e rimpicciolisce la pagina
+   finché la stampa non si chiude. In stampa valgono le regole di @media print (invariate). */
+@media screen{
+  .print-wrapper{position:fixed; left:0; top:0; width:0; height:0; overflow:hidden; pointer-events:none;}
+  .preview-frame:has(.preview-scale:empty)::after{
+    content:"Stampa in corso…"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:15px;
+  }
+}
 
 /* WhatsApp */
 #cardWA.collapsed{display:none;}
