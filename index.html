@@ -1593,29 +1593,14 @@ function enteRilascioOptions(selected){
 }
 
 /* ---------------- Defaults ---------------- */
-const DEFAULT_ROSTER = [
-  {id:1, nome:"MEMAJ ALTEO", g:22, m:8, a:2016, mat:"4240115", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
-  {id:2, nome:"BOTTEGA PIETRO", g:7, m:10, a:2016, mat:"4210962", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
-  {id:3, nome:"CAMI ANGELO ANTONIO", g:27, m:5, a:2016, mat:"3624295", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
-  {id:4, nome:"DA RE FRANCESCO", g:15, m:3, a:2016, mat:"4513064", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
-  {id:5, nome:"LALA LIAM", g:26, m:5, a:2016, mat:"3624297", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
-  {id:6, nome:"ROS TOMMASO", g:16, m:7, a:2016, mat:"3878297", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
-  {id:7, nome:"SANCA GOMES RUIDY", g:11, m:1, a:2016, mat:"4437996", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
-  {id:8, nome:"SCALA EMANUELE", g:7, m:6, a:2016, mat:"4472053", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
-  {id:9, nome:"GJORGA FRANCESCO", g:4, m:10, a:2016, mat:"4923885", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
-  {id:10, nome:"TOMASELLA LEONARDO", g:15, m:10, a:2016, mat:"3918179", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
-  {id:11, nome:"AGYEKUM ELLIOT AMOAKO", g:24, m:6, a:2016, mat:"3649907", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""},
-  {id:12, nome:"SHANE JOEN", g:30, m:1, a:2016, mat:"4254632", categoria:"", tessera:"", dataRilascio:"", enteRilascio:""}
-];
+// Nessun dato personale nel codice: la rosa reale vive su Supabase (o nel browser in modalità locale).
+const DEFAULT_ROSTER = [];
 const DEFAULT_TEAM = {
   nome: "A.S.D. CAMPOLONGO",
   matricola: "934019",
   sede: "Sede legale e operativa: Via Monticano 4- Conegliano (Treviso) - Tel. 3333254028 - calcio@campolongo.org"
 };
-const DEFAULT_STAFF_ROSTER = [
-  {id:1, nome:"TOMASELLA GIANPIETRO", tessera:"2026934", categoria:"", matricola:"", dataRilascio:"", enteRilascio:""},
-  {id:2, nome:"MODOLO LUIGINO", tessera:"48508", categoria:"", matricola:"", dataRilascio:"", enteRilascio:""}
-];
+const DEFAULT_STAFF_ROSTER = [];
 function defaultMatch(){
   return {
     tipo:"Campionato", denom:"", girone:"", giornata:"", ospitante: team.nome, ospite:"", data:"", ora:"", luogo:"", ritrovo:"", orarioConvocazione:"",
